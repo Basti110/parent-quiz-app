@@ -1,0 +1,256 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/user_model.dart';
+import '../models/question_state.dart';
+import '../models/weekly_points.dart';
+
+class UserService {
+  final FirebaseFirestore _firestore;
+
+  UserService({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  /// Get user data as a one-time fetch
+  Future<UserModel> getUserData(String userId) async {
+    final doc = await _firestore.collection('user').doc(userId).get();
+
+    if (!doc.exists) {
+      throw Exception('User not found');
+    }
+
+    return UserModel.fromMap(doc.data()!, userId);
+  }
+
+  /// Get user data as a stream for real-time updates
+  Stream<UserModel> getUserStream(String userId) {
+    return _firestore.collection('user').doc(userId).snapshots().map((doc) {
+      if (!doc.exists) {
+        throw Exception('User not found');
+      }
+      return UserModel.fromMap(doc.data()!, userId);
+    });
+  }
+
+  /// Update user's streak based on last active date
+  /// Property 15: Streak continuation - if lastActiveAt is yesterday, increment streak
+  /// Property 16: Streak reset - if lastActiveAt is more than 1 day ago, reset to 1
+  Future<void> updateStreak(String userId) async {
+    final user = await getUserData(userId);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastActive = DateTime(
+      user.lastActiveAt.year,
+      user.lastActiveAt.month,
+      user.lastActiveAt.day,
+    );
+
+    // If already active today, no change needed
+    if (_isSameDay(today, lastActive)) {
+      return;
+    }
+
+    int newStreakCurrent;
+    int newStreakLongest = user.streakLongest;
+
+    // Check if lastActive was yesterday
+    if (_isYesterday(lastActive, today)) {
+      // Consecutive day - increment streak
+      newStreakCurrent = user.streakCurrent + 1;
+
+      // Update longest streak if current exceeds it
+      if (newStreakCurrent > newStreakLongest) {
+        newStreakLongest = newStreakCurrent;
+      }
+    } else {
+      // Streak broken - reset to 1
+      newStreakCurrent = 1;
+    }
+
+    // Update user document
+    await _firestore.collection('user').doc(userId).update({
+      'lastActiveAt': Timestamp.fromDate(now),
+      'streakCurrent': newStreakCurrent,
+      'streakLongest': newStreakLongest,
+    });
+  }
+
+  /// Calculate user level based on total XP (100 XP per level)
+  /// Property 18: Level calculation - currentLevel = floor(totalXp / 100) + 1
+  int calculateLevel(int totalXp) {
+    return (totalXp ~/ 100) + 1;
+  }
+
+  /// Update weekly XP with week rollover logic
+  /// Property 21: Weekly XP accumulation - add to weeklyXpCurrent if in current week
+  /// Property 22: Weekly XP reset - reset if new week started
+  Future<void> updateWeeklyXP(String userId, int xpGained) async {
+    final user = await getUserData(userId);
+    final now = DateTime.now();
+    final currentMonday = _getMondayOfWeek(now);
+
+    // Check if we're in a new week
+    if (user.weeklyXpWeekStart.isBefore(currentMonday)) {
+      // New week started - save previous week to history and reset
+      await _saveWeeklyPointsToHistory(userId, user);
+
+      // Reset weekly XP
+      await _firestore.collection('user').doc(userId).update({
+        'weeklyXpCurrent': xpGained,
+        'weeklyXpWeekStart': Timestamp.fromDate(currentMonday),
+      });
+    } else {
+      // Same week - accumulate XP
+      await _firestore.collection('user').doc(userId).update({
+        'weeklyXpCurrent': user.weeklyXpCurrent + xpGained,
+      });
+    }
+  }
+
+  /// Save completed week to history subcollection
+  Future<void> _saveWeeklyPointsToHistory(String userId, UserModel user) async {
+    // Format date as yyyy-MM-dd for the Monday of the week
+    final weekStart = user.weeklyXpWeekStart;
+    final dateKey = _formatDate(weekStart);
+
+    // Calculate week end (Sunday)
+    final weekEnd = weekStart.add(const Duration(days: 6));
+
+    final weeklyPoints = WeeklyPoints(
+      date: dateKey,
+      weekStart: weekStart,
+      weekEnd: weekEnd,
+      points: user.weeklyXpCurrent,
+      sessionsCompleted: 0, // Will be tracked in future enhancements
+      questionsAnswered: 0,
+      correctAnswers: 0,
+    );
+
+    await _firestore
+        .collection('user')
+        .doc(userId)
+        .collection('history')
+        .doc(dateKey)
+        .set(weeklyPoints.toMap());
+  }
+
+  /// Update question state for mastery tracking
+  /// Property 7: Question state update on answer
+  /// Property 19: Question mastery threshold - mastered when correctCount >= 3
+  Future<void> updateQuestionState(
+    String userId,
+    String questionId,
+    bool correct,
+  ) async {
+    final docRef = _firestore
+        .collection('user')
+        .doc(userId)
+        .collection('questionStates')
+        .doc(questionId);
+
+    final doc = await docRef.get();
+
+    if (doc.exists) {
+      // Update existing question state
+      final state = QuestionState.fromMap(doc.data()!);
+      final newCorrectCount = correct
+          ? state.correctCount + 1
+          : state.correctCount;
+      final newMastered = newCorrectCount >= 3;
+
+      await docRef.update({
+        'seenCount': state.seenCount + 1,
+        'correctCount': newCorrectCount,
+        'lastSeenAt': Timestamp.fromDate(DateTime.now()),
+        'mastered': newMastered,
+      });
+    } else {
+      // Create new question state
+      final newState = QuestionState(
+        questionId: questionId,
+        seenCount: 1,
+        correctCount: correct ? 1 : 0,
+        lastSeenAt: DateTime.now(),
+        mastered: false, // Can't be mastered on first attempt
+      );
+
+      await docRef.set(newState.toMap());
+    }
+  }
+
+  /// Get category mastery percentage
+  /// Property 20: Category mastery calculation
+  Future<Map<String, double>> getCategoryMastery(String userId) async {
+    // Get all question states for the user
+    final statesSnapshot = await _firestore
+        .collection('user')
+        .doc(userId)
+        .collection('questionStates')
+        .get();
+
+    if (statesSnapshot.docs.isEmpty) {
+      return {};
+    }
+
+    // Get all questions to map them to categories
+    final questionsSnapshot = await _firestore
+        .collection('question')
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    // Map questionId to categoryId
+    final questionToCategory = <String, String>{};
+    for (final doc in questionsSnapshot.docs) {
+      questionToCategory[doc.id] = doc.data()['categoryId'] as String;
+    }
+
+    // Count mastered and total questions per category
+    final categoryMastered = <String, int>{};
+    final categoryTotal = <String, int>{};
+
+    for (final stateDoc in statesSnapshot.docs) {
+      final state = QuestionState.fromMap(stateDoc.data());
+      final categoryId = questionToCategory[state.questionId];
+
+      if (categoryId != null) {
+        categoryTotal[categoryId] = (categoryTotal[categoryId] ?? 0) + 1;
+
+        if (state.mastered) {
+          categoryMastered[categoryId] =
+              (categoryMastered[categoryId] ?? 0) + 1;
+        }
+      }
+    }
+
+    // Calculate percentages
+    final mastery = <String, double>{};
+    for (final categoryId in categoryTotal.keys) {
+      final total = categoryTotal[categoryId]!;
+      final mastered = categoryMastered[categoryId] ?? 0;
+      mastery[categoryId] = (mastered / total) * 100;
+    }
+
+    return mastery;
+  }
+
+  // Helper methods
+
+  bool _isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+
+  bool _isYesterday(DateTime lastActive, DateTime today) {
+    final yesterday = today.subtract(const Duration(days: 1));
+    return _isSameDay(lastActive, yesterday);
+  }
+
+  DateTime _getMondayOfWeek(DateTime date) {
+    final daysFromMonday = date.weekday - DateTime.monday;
+    final monday = date.subtract(Duration(days: daysFromMonday));
+    return DateTime(monday.year, monday.month, monday.day);
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+}

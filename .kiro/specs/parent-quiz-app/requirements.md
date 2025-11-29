@@ -157,4 +157,16 @@ ParentQuiz is an evidence-based, gamified quiz application for parents built wit
 2. WHEN a question is answered THEN the ParentQuiz SHALL store or update a document at user/{userId}/questionStates/{questionId} with fields: questionId, seenCount, correctCount, lastSeenAt, mastered
 3. WHEN a friend is added THEN the ParentQuiz SHALL store a document at user/{userId}/friends/{friendUserId} with fields: friendUserId, status, createdAt, createdBy
 4. WHEN categories are loaded THEN the ParentQuiz SHALL read from the category collection with fields: title, description, order, iconName, isPremium
-5. WHEN questions are loaded THEN the ParentQuiz SHALL read from the question collection with fields: categoryId, text, options, correctIndex, explanation, sourceLabel, sourceUrl, difficulty, isActive
+5. WHEN questions are loaded THEN the ParentQuiz SHALL read from the question collection with fields: categoryId, text, options, correctIndices (list supporting multiple correct answers), explanation, sourceLabel, sourceUrl, difficulty, isActive
+
+### Requirement 12
+
+**User Story:** As a user, I want a modern but simple UI design, so that I can focus on learning without visual distractions.
+
+#### Acceptance Criteria
+
+1. WHEN any screen is displayed THEN the ParentQuiz SHALL use standard Flutter Material Design components
+2. WHEN UI elements are rendered THEN the ParentQuiz SHALL maintain consistent spacing and alignment using standard Flutter layouts
+3. WHEN the app is used THEN the ParentQuiz SHALL provide a clean, minimal interface without custom theming or complex visual effects
+4. WHEN navigation occurs THEN the ParentQuiz SHALL use standard Flutter navigation patterns and transitions
+5. WHEN forms are displayed THEN the ParentQuiz SHALL use standard TextFormField and button widgets with default styling

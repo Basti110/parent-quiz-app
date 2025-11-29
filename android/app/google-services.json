@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "596941524882",
+    "project_id": "kiducation-a0d40",
+    "storage_bucket": "kiducation-a0d40.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596941524882:android:7b0edc324397db70ad7b4b",
+        "android_client_info": {
+          "package_name": "com.example.babycation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoKT2Kh0adRlQDAKKcymFulVp_2-vsiKg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
