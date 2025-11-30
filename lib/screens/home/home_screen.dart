@@ -9,7 +9,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authService = ref.read(authServiceProvider);
     final userId = ref.watch(currentUserIdProvider);
 
     // Watch user data if userId is available
@@ -22,12 +21,9 @@ class HomeScreen extends ConsumerWidget {
         title: const Text('ParentQuiz'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await authService.signOut();
-              if (context.mounted) {
-                Navigator.of(context).pushReplacementNamed('/login');
-              }
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).pushNamed('/settings');
             },
           ),
         ],

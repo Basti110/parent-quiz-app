@@ -170,3 +170,15 @@ ParentQuiz is an evidence-based, gamified quiz application for parents built wit
 3. WHEN the app is used THEN the ParentQuiz SHALL provide a clean, minimal interface without custom theming or complex visual effects
 4. WHEN navigation occurs THEN the ParentQuiz SHALL use standard Flutter navigation patterns and transitions
 5. WHEN forms are displayed THEN the ParentQuiz SHALL use standard TextFormField and button widgets with default styling
+
+### Requirement 13
+
+**User Story:** As a user, I want to access a settings screen where I can manage my account and preferences, so that I can customize my experience and manage my account.
+
+#### Acceptance Criteria
+
+1. WHEN a user navigates to the settings screen THEN the ParentQuiz SHALL display options for logout, name change, and theme selection
+2. WHEN a user taps the logout button THEN the ParentQuiz SHALL sign out the user and navigate to the login screen
+3. WHEN a user changes their display name THEN the ParentQuiz SHALL update the displayName field in the user document
+4. WHEN a user selects light or dark mode THEN the ParentQuiz SHALL apply the selected theme throughout the app
+5. WHEN a user reopens the app THEN the ParentQuiz SHALL restore the previously selected theme preference

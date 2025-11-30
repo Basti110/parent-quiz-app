@@ -48,8 +48,16 @@ class LeaderboardService {
       }
 
       return entries;
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error loading global leaderboard: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to load leaderboard. Please check your connection and try again.',
+      );
     } catch (e) {
-      throw Exception('Failed to load global leaderboard: $e');
+      print('Error loading global leaderboard: $e');
+      throw Exception('Failed to load leaderboard. Please try again.');
     }
   }
 
@@ -76,8 +84,14 @@ class LeaderboardService {
 
       // Rank is count of higher-ranked users + 1
       return higherRankedCount.count! + 1;
+    } on FirebaseException catch (e) {
+      print('Firebase error getting user rank: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to get your rank. Please check your connection and try again.',
+      );
     } catch (e) {
-      throw Exception('Failed to get user rank: $e');
+      print('Error getting user rank: $e');
+      throw Exception('Failed to get your rank. Please try again.');
     }
   }
 
@@ -132,8 +146,16 @@ class LeaderboardService {
       }
 
       return entries;
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error loading friends leaderboard: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to load friends leaderboard. Please check your connection and try again.',
+      );
     } catch (e) {
-      throw Exception('Failed to load friends leaderboard: $e');
+      print('Error loading friends leaderboard: $e');
+      throw Exception('Failed to load friends leaderboard. Please try again.');
     }
   }
 }

@@ -27,8 +27,16 @@ class FriendsService {
 
       final doc = querySnapshot.docs.first;
       return UserModel.fromMap(doc.data(), doc.id);
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error finding user by friend code: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to find user. Please check your connection and try again.',
+      );
     } catch (e) {
-      throw Exception('Failed to find user by friend code: $e');
+      print('Error finding user by friend code: $e');
+      throw Exception('Failed to find user. Please try again.');
     }
   }
 
@@ -68,7 +76,13 @@ class FriendsService {
           .collection('friends')
           .doc(friendUserId)
           .set(friend.toMap());
+    } on FirebaseException catch (e) {
+      print('Firebase error adding friend: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to add friend. Please check your connection and try again.',
+      );
     } catch (e) {
+      print('Error adding friend: $e');
       rethrow;
     }
   }
@@ -105,8 +119,14 @@ class FriendsService {
           .toList();
 
       return friends;
+    } on FirebaseException catch (e) {
+      print('Firebase error getting friends: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to load friends. Please check your connection and try again.',
+      );
     } catch (e) {
-      throw Exception('Failed to get friends: $e');
+      print('Error getting friends: $e');
+      throw Exception('Failed to load friends. Please try again.');
     }
   }
 
@@ -157,8 +177,16 @@ class FriendsService {
       friends.sort((a, b) => b.weeklyXpCurrent.compareTo(a.weeklyXpCurrent));
 
       return friends;
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error getting friends leaderboard: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to load friends leaderboard. Please check your connection and try again.',
+      );
     } catch (e) {
-      throw Exception('Failed to get friends leaderboard: $e');
+      print('Error getting friends leaderboard: $e');
+      rethrow;
     }
   }
 }

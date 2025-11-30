@@ -15,14 +15,24 @@ class QuizService {
   /// Get all active categories
   /// Requirements: 3.2, 11.4
   Future<List<Category>> getCategories() async {
-    final snapshot = await _firestore
-        .collection('category')
-        .orderBy('order')
-        .get();
+    try {
+      final snapshot = await _firestore
+          .collection('category')
+          .orderBy('order')
+          .get();
 
-    return snapshot.docs
-        .map((doc) => Category.fromMap(doc.data(), doc.id))
-        .toList();
+      return snapshot.docs
+          .map((doc) => Category.fromMap(doc.data(), doc.id))
+          .toList();
+    } on FirebaseException catch (e) {
+      print('Firebase error loading categories: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to load categories. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error loading categories: $e');
+      throw Exception('Failed to load categories. Please try again.');
+    }
   }
 
   /// Get questions for a quiz session with intelligent selection
@@ -34,65 +44,75 @@ class QuizService {
     int count,
     String userId,
   ) async {
-    // Load all active questions for the category
-    final questionsSnapshot = await _firestore
-        .collection('question')
-        .where('categoryId', isEqualTo: categoryId)
-        .where('isActive', isEqualTo: true)
-        .get();
+    try {
+      // Load all active questions for the category
+      final questionsSnapshot = await _firestore
+          .collection('question')
+          .where('categoryId', isEqualTo: categoryId)
+          .where('isActive', isEqualTo: true)
+          .get();
 
-    if (questionsSnapshot.docs.isEmpty) {
-      return [];
-    }
-
-    final allQuestions = questionsSnapshot.docs
-        .map((doc) => Question.fromMap(doc.data(), doc.id))
-        .toList();
-
-    // Load user's question states
-    final statesSnapshot = await _firestore
-        .collection('user')
-        .doc(userId)
-        .collection('questionStates')
-        .get();
-
-    final questionStates = <String, QuestionState>{};
-    for (final doc in statesSnapshot.docs) {
-      final state = QuestionState.fromMap(doc.data());
-      questionStates[state.questionId] = state;
-    }
-
-    // Separate questions into unseen and seen
-    final unseenQuestions = <Question>[];
-    final seenQuestions = <Question>[];
-
-    for (final question in allQuestions) {
-      final state = questionStates[question.id];
-      if (state == null || state.seenCount == 0) {
-        unseenQuestions.add(question);
-      } else {
-        seenQuestions.add(question);
+      if (questionsSnapshot.docs.isEmpty) {
+        return [];
       }
+
+      final allQuestions = questionsSnapshot.docs
+          .map((doc) => Question.fromMap(doc.data(), doc.id))
+          .toList();
+
+      // Load user's question states
+      final statesSnapshot = await _firestore
+          .collection('user')
+          .doc(userId)
+          .collection('questionStates')
+          .get();
+
+      final questionStates = <String, QuestionState>{};
+      for (final doc in statesSnapshot.docs) {
+        final state = QuestionState.fromMap(doc.data());
+        questionStates[state.questionId] = state;
+      }
+
+      // Separate questions into unseen and seen
+      final unseenQuestions = <Question>[];
+      final seenQuestions = <Question>[];
+
+      for (final question in allQuestions) {
+        final state = questionStates[question.id];
+        if (state == null || state.seenCount == 0) {
+          unseenQuestions.add(question);
+        } else {
+          seenQuestions.add(question);
+        }
+      }
+
+      // Priority 1: Select from unseen questions
+      if (unseenQuestions.isNotEmpty) {
+        unseenQuestions.shuffle(_random);
+        return unseenQuestions.take(count).toList();
+      }
+
+      // Priority 2: Select from seen questions, oldest first
+      seenQuestions.sort((a, b) {
+        final stateA = questionStates[a.id]!;
+        final stateB = questionStates[b.id]!;
+        return stateA.lastSeenAt.compareTo(stateB.lastSeenAt);
+      });
+
+      // Take oldest questions and shuffle them for variety
+      final oldestQuestions = seenQuestions.take(count * 2).toList();
+      oldestQuestions.shuffle(_random);
+
+      return oldestQuestions.take(count).toList();
+    } on FirebaseException catch (e) {
+      print('Firebase error loading questions: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to load questions. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error loading questions: $e');
+      throw Exception('Failed to load questions. Please try again.');
     }
-
-    // Priority 1: Select from unseen questions
-    if (unseenQuestions.isNotEmpty) {
-      unseenQuestions.shuffle(_random);
-      return unseenQuestions.take(count).toList();
-    }
-
-    // Priority 2: Select from seen questions, oldest first
-    seenQuestions.sort((a, b) {
-      final stateA = questionStates[a.id]!;
-      final stateB = questionStates[b.id]!;
-      return stateA.lastSeenAt.compareTo(stateB.lastSeenAt);
-    });
-
-    // Take oldest questions and shuffle them for variety
-    final oldestQuestions = seenQuestions.take(count * 2).toList();
-    oldestQuestions.shuffle(_random);
-
-    return oldestQuestions.take(count).toList();
   }
 
   /// Calculate XP for a quiz session
@@ -150,35 +170,55 @@ class QuizService {
   /// Property 14: Session XP persistence - update totalXp and weeklyXpCurrent
   /// Requirements: 5.7, 7.1
   Future<void> updateUserXP(String userId, int xpGained) async {
-    final userDoc = await _firestore.collection('user').doc(userId).get();
+    try {
+      final userDoc = await _firestore.collection('user').doc(userId).get();
 
-    if (!userDoc.exists) {
-      throw Exception('User not found');
+      if (!userDoc.exists) {
+        throw Exception('User not found');
+      }
+
+      final userData = userDoc.data()!;
+      final currentTotalXp = userData['totalXp'] as int;
+      final newTotalXp = currentTotalXp + xpGained;
+
+      // Calculate new level (100 XP per level)
+      final newLevel = (newTotalXp ~/ 100) + 1;
+
+      // Update user document with new XP and level
+      await _firestore.collection('user').doc(userId).update({
+        'totalXp': newTotalXp,
+        'currentLevel': newLevel,
+      });
+    } on FirebaseException catch (e) {
+      print('Firebase error updating user XP: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to update XP. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error updating user XP: $e');
+      rethrow;
     }
-
-    final userData = userDoc.data()!;
-    final currentTotalXp = userData['totalXp'] as int;
-    final newTotalXp = currentTotalXp + xpGained;
-
-    // Calculate new level (100 XP per level)
-    final newLevel = (newTotalXp ~/ 100) + 1;
-
-    // Update user document with new XP and level
-    await _firestore.collection('user').doc(userId).update({
-      'totalXp': newTotalXp,
-      'currentLevel': newLevel,
-    });
   }
 
   /// Get a single question by ID
   /// Used for VS Mode to load specific questions
   Future<Question?> getQuestionById(String questionId) async {
-    final doc = await _firestore.collection('question').doc(questionId).get();
+    try {
+      final doc = await _firestore.collection('question').doc(questionId).get();
 
-    if (!doc.exists) {
-      return null;
+      if (!doc.exists) {
+        return null;
+      }
+
+      return Question.fromMap(doc.data()!, doc.id);
+    } on FirebaseException catch (e) {
+      print('Firebase error loading question: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to load question. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error loading question: $e');
+      throw Exception('Failed to load question. Please try again.');
     }
-
-    return Question.fromMap(doc.data()!, doc.id);
   }
 }

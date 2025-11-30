@@ -284,6 +284,71 @@ class HistoryService {
 - Show monthly/yearly statistics
 - Identify learning patterns and streaks
 
+### 8. Settings and Preferences System
+
+**Screens:**
+
+- `SettingsScreen`: Display user preferences and account management options
+
+**SettingsService:**
+
+```dart
+class SettingsService {
+  final FirebaseFirestore _firestore;
+  final SharedPreferences _prefs;
+
+  Future<void> updateDisplayName(String userId, String newName);
+  Future<void> setThemeMode(ThemeMode mode);
+  Future<ThemeMode> getThemeMode();
+  Future<void> logout();
+}
+```
+
+**Theme Management:**
+
+- Store theme preference locally using `shared_preferences` package
+- Support three modes: light, dark, and system (follows device setting)
+- Apply theme using `ThemeMode` in MaterialApp
+- Persist selection across app restarts
+
+**Settings Options:**
+
+1. **Account Settings:**
+
+   - Display current display name with edit button
+   - Logout button with confirmation dialog
+
+2. **Appearance Settings:**
+   - Theme selector: Light, Dark, System
+   - Visual preview of selected theme
+
+**State Management:**
+
+```dart
+// Theme Provider
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+  return ThemeModeNotifier();
+});
+
+class ThemeModeNotifier extends StateNotifier<ThemeMode> {
+  ThemeModeNotifier() : super(ThemeMode.system) {
+    _loadThemeMode();
+  }
+
+  Future<void> _loadThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final themeModeString = prefs.getString('theme_mode') ?? 'system';
+    state = _parseThemeMode(themeModeString);
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    state = mode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme_mode', mode.toString().split('.').last);
+  }
+}
+```
+
 ## Data Models
 
 ### User Model
@@ -575,6 +640,20 @@ Property 37: History date format
 _For any_ history document, the date field should be in yyyy-MM-dd format representing the Monday of that week
 **Validates: Requirements 11.1**
 
+### Settings and Preferences Properties
+
+Property 38: Display name update persistence
+_For any_ valid display name change, the user document's displayName field should be updated to the new value
+**Validates: Requirements 13.3**
+
+Property 39: Theme mode persistence
+_For any_ theme mode selection (light, dark, or system), the preference should be stored locally and restored on app restart
+**Validates: Requirements 13.4, 13.5**
+
+Property 40: Logout state cleanup
+_For any_ logout action, the user should be signed out from Firebase Auth and navigated to the login screen
+**Validates: Requirements 13.2**
+
 ## Error Handling
 
 ### Authentication Errors
@@ -762,6 +841,7 @@ Use Flutter's `Navigator` with named routes:
 '/vs-mode-setup': VSModeSetupScreen
 '/vs-mode-quiz': VSModeQuizScreen
 '/vs-mode-result': VSModeResultScreen
+'/settings': SettingsScreen
 ```
 
 ### State Management
@@ -816,6 +896,12 @@ final friendsServiceProvider = Provider<FriendsService>((ref) => FriendsService(
 final friendsListProvider = StreamProvider.family<List<UserModel>, String>((ref, userId) {
   final service = ref.watch(friendsServiceProvider);
   return service.getFriendsStream(userId);
+});
+
+// Settings
+final settingsServiceProvider = Provider<SettingsService>((ref) => SettingsService());
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+  return ThemeModeNotifier();
 });
 ```
 

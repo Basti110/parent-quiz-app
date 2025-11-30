@@ -11,13 +11,23 @@ class UserService {
 
   /// Get user data as a one-time fetch
   Future<UserModel> getUserData(String userId) async {
-    final doc = await _firestore.collection('user').doc(userId).get();
+    try {
+      final doc = await _firestore.collection('user').doc(userId).get();
 
-    if (!doc.exists) {
-      throw Exception('User not found');
+      if (!doc.exists) {
+        throw Exception('User not found');
+      }
+
+      return UserModel.fromMap(doc.data()!, userId);
+    } on FirebaseException catch (e) {
+      print('Firebase error loading user data: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to load user data. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error loading user data: $e');
+      rethrow;
     }
-
-    return UserModel.fromMap(doc.data()!, userId);
   }
 
   /// Get user data as a stream for real-time updates
@@ -34,43 +44,53 @@ class UserService {
   /// Property 15: Streak continuation - if lastActiveAt is yesterday, increment streak
   /// Property 16: Streak reset - if lastActiveAt is more than 1 day ago, reset to 1
   Future<void> updateStreak(String userId) async {
-    final user = await getUserData(userId);
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final lastActive = DateTime(
-      user.lastActiveAt.year,
-      user.lastActiveAt.month,
-      user.lastActiveAt.day,
-    );
+    try {
+      final user = await getUserData(userId);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final lastActive = DateTime(
+        user.lastActiveAt.year,
+        user.lastActiveAt.month,
+        user.lastActiveAt.day,
+      );
 
-    // If already active today, no change needed
-    if (_isSameDay(today, lastActive)) {
-      return;
-    }
-
-    int newStreakCurrent;
-    int newStreakLongest = user.streakLongest;
-
-    // Check if lastActive was yesterday
-    if (_isYesterday(lastActive, today)) {
-      // Consecutive day - increment streak
-      newStreakCurrent = user.streakCurrent + 1;
-
-      // Update longest streak if current exceeds it
-      if (newStreakCurrent > newStreakLongest) {
-        newStreakLongest = newStreakCurrent;
+      // If already active today, no change needed
+      if (_isSameDay(today, lastActive)) {
+        return;
       }
-    } else {
-      // Streak broken - reset to 1
-      newStreakCurrent = 1;
-    }
 
-    // Update user document
-    await _firestore.collection('user').doc(userId).update({
-      'lastActiveAt': Timestamp.fromDate(now),
-      'streakCurrent': newStreakCurrent,
-      'streakLongest': newStreakLongest,
-    });
+      int newStreakCurrent;
+      int newStreakLongest = user.streakLongest;
+
+      // Check if lastActive was yesterday
+      if (_isYesterday(lastActive, today)) {
+        // Consecutive day - increment streak
+        newStreakCurrent = user.streakCurrent + 1;
+
+        // Update longest streak if current exceeds it
+        if (newStreakCurrent > newStreakLongest) {
+          newStreakLongest = newStreakCurrent;
+        }
+      } else {
+        // Streak broken - reset to 1
+        newStreakCurrent = 1;
+      }
+
+      // Update user document
+      await _firestore.collection('user').doc(userId).update({
+        'lastActiveAt': Timestamp.fromDate(now),
+        'streakCurrent': newStreakCurrent,
+        'streakLongest': newStreakLongest,
+      });
+    } on FirebaseException catch (e) {
+      print('Firebase error updating streak: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to update streak. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error updating streak: $e');
+      rethrow;
+    }
   }
 
   /// Calculate user level based on total XP (100 XP per level)
@@ -83,53 +103,73 @@ class UserService {
   /// Property 21: Weekly XP accumulation - add to weeklyXpCurrent if in current week
   /// Property 22: Weekly XP reset - reset if new week started
   Future<void> updateWeeklyXP(String userId, int xpGained) async {
-    final user = await getUserData(userId);
-    final now = DateTime.now();
-    final currentMonday = _getMondayOfWeek(now);
+    try {
+      final user = await getUserData(userId);
+      final now = DateTime.now();
+      final currentMonday = _getMondayOfWeek(now);
 
-    // Check if we're in a new week
-    if (user.weeklyXpWeekStart.isBefore(currentMonday)) {
-      // New week started - save previous week to history and reset
-      await _saveWeeklyPointsToHistory(userId, user);
+      // Check if we're in a new week
+      if (user.weeklyXpWeekStart.isBefore(currentMonday)) {
+        // New week started - save previous week to history and reset
+        await _saveWeeklyPointsToHistory(userId, user);
 
-      // Reset weekly XP
-      await _firestore.collection('user').doc(userId).update({
-        'weeklyXpCurrent': xpGained,
-        'weeklyXpWeekStart': Timestamp.fromDate(currentMonday),
-      });
-    } else {
-      // Same week - accumulate XP
-      await _firestore.collection('user').doc(userId).update({
-        'weeklyXpCurrent': user.weeklyXpCurrent + xpGained,
-      });
+        // Reset weekly XP
+        await _firestore.collection('user').doc(userId).update({
+          'weeklyXpCurrent': xpGained,
+          'weeklyXpWeekStart': Timestamp.fromDate(currentMonday),
+        });
+      } else {
+        // Same week - accumulate XP
+        await _firestore.collection('user').doc(userId).update({
+          'weeklyXpCurrent': user.weeklyXpCurrent + xpGained,
+        });
+      }
+    } on FirebaseException catch (e) {
+      print('Firebase error updating weekly XP: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to update weekly XP. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error updating weekly XP: $e');
+      rethrow;
     }
   }
 
   /// Save completed week to history subcollection
   Future<void> _saveWeeklyPointsToHistory(String userId, UserModel user) async {
-    // Format date as yyyy-MM-dd for the Monday of the week
-    final weekStart = user.weeklyXpWeekStart;
-    final dateKey = _formatDate(weekStart);
+    try {
+      // Format date as yyyy-MM-dd for the Monday of the week
+      final weekStart = user.weeklyXpWeekStart;
+      final dateKey = _formatDate(weekStart);
 
-    // Calculate week end (Sunday)
-    final weekEnd = weekStart.add(const Duration(days: 6));
+      // Calculate week end (Sunday)
+      final weekEnd = weekStart.add(const Duration(days: 6));
 
-    final weeklyPoints = WeeklyPoints(
-      date: dateKey,
-      weekStart: weekStart,
-      weekEnd: weekEnd,
-      points: user.weeklyXpCurrent,
-      sessionsCompleted: 0, // Will be tracked in future enhancements
-      questionsAnswered: 0,
-      correctAnswers: 0,
-    );
+      final weeklyPoints = WeeklyPoints(
+        date: dateKey,
+        weekStart: weekStart,
+        weekEnd: weekEnd,
+        points: user.weeklyXpCurrent,
+        sessionsCompleted: 0, // Will be tracked in future enhancements
+        questionsAnswered: 0,
+        correctAnswers: 0,
+      );
 
-    await _firestore
-        .collection('user')
-        .doc(userId)
-        .collection('history')
-        .doc(dateKey)
-        .set(weeklyPoints.toMap());
+      await _firestore
+          .collection('user')
+          .doc(userId)
+          .collection('history')
+          .doc(dateKey)
+          .set(weeklyPoints.toMap());
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error saving weekly points to history: ${e.code} - ${e.message}',
+      );
+      // Don't throw here - this is a background operation that shouldn't block the main flow
+    } catch (e) {
+      print('Error saving weekly points to history: $e');
+      // Don't throw here - this is a background operation that shouldn't block the main flow
+    }
   }
 
   /// Update question state for mastery tracking
@@ -140,95 +180,113 @@ class UserService {
     String questionId,
     bool correct,
   ) async {
-    final docRef = _firestore
-        .collection('user')
-        .doc(userId)
-        .collection('questionStates')
-        .doc(questionId);
+    try {
+      final docRef = _firestore
+          .collection('user')
+          .doc(userId)
+          .collection('questionStates')
+          .doc(questionId);
 
-    final doc = await docRef.get();
+      final doc = await docRef.get();
 
-    if (doc.exists) {
-      // Update existing question state
-      final state = QuestionState.fromMap(doc.data()!);
-      final newCorrectCount = correct
-          ? state.correctCount + 1
-          : state.correctCount;
-      final newMastered = newCorrectCount >= 3;
+      if (doc.exists) {
+        // Update existing question state
+        final state = QuestionState.fromMap(doc.data()!);
+        final newCorrectCount = correct
+            ? state.correctCount + 1
+            : state.correctCount;
+        final newMastered = newCorrectCount >= 3;
 
-      await docRef.update({
-        'seenCount': state.seenCount + 1,
-        'correctCount': newCorrectCount,
-        'lastSeenAt': Timestamp.fromDate(DateTime.now()),
-        'mastered': newMastered,
-      });
-    } else {
-      // Create new question state
-      final newState = QuestionState(
-        questionId: questionId,
-        seenCount: 1,
-        correctCount: correct ? 1 : 0,
-        lastSeenAt: DateTime.now(),
-        mastered: false, // Can't be mastered on first attempt
+        await docRef.update({
+          'seenCount': state.seenCount + 1,
+          'correctCount': newCorrectCount,
+          'lastSeenAt': Timestamp.fromDate(DateTime.now()),
+          'mastered': newMastered,
+        });
+      } else {
+        // Create new question state
+        final newState = QuestionState(
+          questionId: questionId,
+          seenCount: 1,
+          correctCount: correct ? 1 : 0,
+          lastSeenAt: DateTime.now(),
+          mastered: false, // Can't be mastered on first attempt
+        );
+
+        await docRef.set(newState.toMap());
+      }
+    } on FirebaseException catch (e) {
+      print('Firebase error updating question state: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to update question state. Please check your connection and try again.',
       );
-
-      await docRef.set(newState.toMap());
+    } catch (e) {
+      print('Error updating question state: $e');
+      rethrow;
     }
   }
 
   /// Get category mastery percentage
   /// Property 20: Category mastery calculation
   Future<Map<String, double>> getCategoryMastery(String userId) async {
-    // Get all question states for the user
-    final statesSnapshot = await _firestore
-        .collection('user')
-        .doc(userId)
-        .collection('questionStates')
-        .get();
+    try {
+      // Get all question states for the user
+      final statesSnapshot = await _firestore
+          .collection('user')
+          .doc(userId)
+          .collection('questionStates')
+          .get();
 
-    if (statesSnapshot.docs.isEmpty) {
-      return {};
-    }
+      if (statesSnapshot.docs.isEmpty) {
+        return {};
+      }
 
-    // Get all questions to map them to categories
-    final questionsSnapshot = await _firestore
-        .collection('question')
-        .where('isActive', isEqualTo: true)
-        .get();
+      // Get all questions to map them to categories
+      final questionsSnapshot = await _firestore
+          .collection('question')
+          .where('isActive', isEqualTo: true)
+          .get();
 
-    // Map questionId to categoryId
-    final questionToCategory = <String, String>{};
-    for (final doc in questionsSnapshot.docs) {
-      questionToCategory[doc.id] = doc.data()['categoryId'] as String;
-    }
+      // Map questionId to categoryId
+      final questionToCategory = <String, String>{};
+      for (final doc in questionsSnapshot.docs) {
+        questionToCategory[doc.id] = doc.data()['categoryId'] as String;
+      }
 
-    // Count mastered and total questions per category
-    final categoryMastered = <String, int>{};
-    final categoryTotal = <String, int>{};
+      // Count mastered and total questions per category
+      final categoryMastered = <String, int>{};
+      final categoryTotal = <String, int>{};
 
-    for (final stateDoc in statesSnapshot.docs) {
-      final state = QuestionState.fromMap(stateDoc.data());
-      final categoryId = questionToCategory[state.questionId];
+      for (final stateDoc in statesSnapshot.docs) {
+        final state = QuestionState.fromMap(stateDoc.data());
+        final categoryId = questionToCategory[state.questionId];
 
-      if (categoryId != null) {
-        categoryTotal[categoryId] = (categoryTotal[categoryId] ?? 0) + 1;
+        if (categoryId != null) {
+          categoryTotal[categoryId] = (categoryTotal[categoryId] ?? 0) + 1;
 
-        if (state.mastered) {
-          categoryMastered[categoryId] =
-              (categoryMastered[categoryId] ?? 0) + 1;
+          if (state.mastered) {
+            categoryMastered[categoryId] =
+                (categoryMastered[categoryId] ?? 0) + 1;
+          }
         }
       }
-    }
 
-    // Calculate percentages
-    final mastery = <String, double>{};
-    for (final categoryId in categoryTotal.keys) {
-      final total = categoryTotal[categoryId]!;
-      final mastered = categoryMastered[categoryId] ?? 0;
-      mastery[categoryId] = (mastered / total) * 100;
-    }
+      // Calculate percentages
+      final mastery = <String, double>{};
+      for (final categoryId in categoryTotal.keys) {
+        final total = categoryTotal[categoryId]!;
+        final mastered = categoryMastered[categoryId] ?? 0;
+        mastery[categoryId] = (mastered / total) * 100;
+      }
 
-    return mastery;
+      return mastery;
+    } on FirebaseException catch (e) {
+      print('Firebase error calculating category mastery: ${e.code} - ${e.message}');
+      throw Exception('Failed to calculate category mastery. Please check your connection and try again.');
+    } catch (e) {
+      print('Error calculating category mastery: $e');
+      rethrow;
+    }
   }
 
   // Helper methods

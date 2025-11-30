@@ -334,28 +334,68 @@
     - Handle initial route based on auth state
     - _Requirements: 1.1, 1.2, 2.4_
 
-- [ ] 18. Add error handling and loading states
+- [x] 18. Add error handling and loading states
 
-  - [ ] 18.1 Implement error handling for all Firestore operations
+  - [x] 18.1 Implement error handling for all Firestore operations
     - Wrap operations in try-catch blocks
     - Display user-friendly error messages via SnackBar
     - Print errors to debug console for debugging purposes
     - Handle offline scenarios with caching where possible
     - _Requirements: 2.3, 4.1, 10.3_
-  - [ ] 18.2 Add loading indicators for async operations
+  - [x] 18.2 Add loading indicators for async operations
     - Show CircularProgressIndicator during data loads
     - Disable buttons during processing
     - _Requirements: 3.2, 4.1, 8.4_
 
-- [ ] 19. Final checkpoint - Ensure all tests pass
+- [x] 19. Final checkpoint - Ensure all tests pass
 
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 20. Seed Firestore with test data
-  - [ ] 20.1 Create sample categories
+- [x] 20. Implement SettingsService and theme management
+
+  - [x] 20.1 Add shared_preferences package to pubspec.yaml
+    - Add dependency for local storage of theme preference
+    - _Requirements: 13.5_
+  - [x] 20.2 Create SettingsService with theme and account management
+    - Implement updateDisplayName to update user document
+    - Implement setThemeMode and getThemeMode for theme persistence
+    - Implement logout method
+    - _Requirements: 13.2, 13.3, 13.4, 13.5_
+  - [ ]\* 20.3 Write property test for display name update
+    - **Property 38: Display name update persistence**
+    - **Validates: Requirements 13.3**
+  - [ ]\* 20.4 Write property test for theme mode persistence
+    - **Property 39: Theme mode persistence**
+    - **Validates: Requirements 13.4, 13.5**
+  - [ ]\* 20.5 Write property test for logout state cleanup
+    - **Property 40: Logout state cleanup**
+    - **Validates: Requirements 13.2**
+  - [x] 20.6 Create Riverpod providers for settings and theme
+    - Implement settingsServiceProvider and themeModeProvider
+    - Create ThemeModeNotifier for theme state management
+    - _Requirements: 13.4, 13.5_
+
+- [x] 21. Build SettingsScreen UI
+
+  - [x] 21.1 Create SettingsScreen with account and appearance sections
+    - Display current display name with edit button
+    - Add logout button with confirmation dialog
+    - Add theme selector (Light, Dark, System)
+    - _Requirements: 13.1, 13.2, 13.3, 13.4_
+  - [x] 21.2 Integrate theme provider with MaterialApp
+    - Update main.dart to use themeModeProvider
+    - Define light and dark theme data
+    - _Requirements: 13.4, 13.5_
+  - [x] 21.3 Add settings navigation from HomeScreen
+    - Add settings icon/button to HomeScreen AppBar
+    - Navigate to SettingsScreen on tap
+    - _Requirements: 13.1_
+
+- [ ] 22. Seed Firestore with test data
+  - [ ] 22.1 Create sample categories
     - Add 5-10 categories with German titles and descriptions
     - _Requirements: 11.4_
-  - [ ] 20.2 Create sample questions
+  - [ ] 22.2 Create sample questions
     - Add 50-100 questions across categories
     - Include both single-choice and multiple-choice questions
     - Add explanations and sources

@@ -16,7 +16,9 @@ import 'screens/vs_mode/vs_mode_setup_screen.dart';
 import 'screens/vs_mode/vs_mode_quiz_screen.dart';
 import 'screens/vs_mode/vs_mode_handoff_screen.dart';
 import 'screens/vs_mode/vs_mode_result_screen.dart';
+import 'screens/settings/settings_screen.dart';
 import 'providers/auth_providers.dart';
+import 'providers/settings_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,9 +37,21 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp(
       title: 'ParentQuiz',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        brightness: Brightness.light,
+      ),
+      darkTheme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        brightness: Brightness.dark,
+      ),
+      themeMode: themeMode,
       initialRoute: '/',
       routes: {
         '/': (context) => const AuthGate(),
@@ -55,6 +69,7 @@ class MainApp extends ConsumerWidget {
         '/vs-mode-quiz': (context) => const VSModeQuizScreen(),
         '/vs-mode-handoff': (context) => const VSModeHandoffScreen(),
         '/vs-mode-result': (context) => const VSModeResultScreen(),
+        '/settings': (context) => const SettingsScreen(),
       },
     );
   }

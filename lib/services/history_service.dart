@@ -18,28 +18,36 @@ class HistoryService {
     int questionsAnswered = 0,
     int correctAnswers = 0,
   }) async {
-    // Format date as yyyy-MM-dd for the Monday of the week
-    final dateKey = _formatDate(weekStart);
+    try {
+      // Format date as yyyy-MM-dd for the Monday of the week
+      final dateKey = _formatDate(weekStart);
 
-    // Calculate week end (Sunday)
-    final weekEnd = weekStart.add(const Duration(days: 6));
+      // Calculate week end (Sunday)
+      final weekEnd = weekStart.add(const Duration(days: 6));
 
-    final weeklyPoints = WeeklyPoints(
-      date: dateKey,
-      weekStart: weekStart,
-      weekEnd: weekEnd,
-      points: points,
-      sessionsCompleted: sessionsCompleted,
-      questionsAnswered: questionsAnswered,
-      correctAnswers: correctAnswers,
-    );
+      final weeklyPoints = WeeklyPoints(
+        date: dateKey,
+        weekStart: weekStart,
+        weekEnd: weekEnd,
+        points: points,
+        sessionsCompleted: sessionsCompleted,
+        questionsAnswered: questionsAnswered,
+        correctAnswers: correctAnswers,
+      );
 
-    await _firestore
-        .collection('user')
-        .doc(userId)
-        .collection('history')
-        .doc(dateKey)
-        .set(weeklyPoints.toMap());
+      await _firestore
+          .collection('user')
+          .doc(userId)
+          .collection('history')
+          .doc(dateKey)
+          .set(weeklyPoints.toMap());
+    } on FirebaseException catch (e) {
+      print('Firebase error saving weekly points: ${e.code} - ${e.message}');
+      // Don't throw - this is a background operation that shouldn't block the main flow
+    } catch (e) {
+      print('Error saving weekly points: $e');
+      // Don't throw - this is a background operation that shouldn't block the main flow
+    }
   }
 
   /// Get points history for a user
@@ -48,24 +56,36 @@ class HistoryService {
     String userId, {
     int? limit,
   }) async {
-    Query query = _firestore
-        .collection('user')
-        .doc(userId)
-        .collection('history')
-        .orderBy('weekStart', descending: true);
+    try {
+      Query query = _firestore
+          .collection('user')
+          .doc(userId)
+          .collection('history')
+          .orderBy('weekStart', descending: true);
 
-    if (limit != null) {
-      query = query.limit(limit);
+      if (limit != null) {
+        query = query.limit(limit);
+      }
+
+      final snapshot = await query.get();
+
+      return snapshot.docs
+          .map(
+            (doc) => WeeklyPoints.fromMap(
+              doc.data() as Map<String, dynamic>,
+              doc.id,
+            ),
+          )
+          .toList();
+    } on FirebaseException catch (e) {
+      print('Firebase error getting points history: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to load points history. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error getting points history: $e');
+      throw Exception('Failed to load points history. Please try again.');
     }
-
-    final snapshot = await query.get();
-
-    return snapshot.docs
-        .map(
-          (doc) =>
-              WeeklyPoints.fromMap(doc.data() as Map<String, dynamic>, doc.id),
-        )
-        .toList();
   }
 
   // Helper method to format date as yyyy-MM-dd

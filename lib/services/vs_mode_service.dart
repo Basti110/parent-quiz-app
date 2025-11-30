@@ -20,51 +20,61 @@ class VSModeService {
     required String playerAName,
     required String playerBName,
   }) async {
-    // Load all active questions for the category
-    final questionsSnapshot = await _firestore
-        .collection('question')
-        .where('categoryId', isEqualTo: categoryId)
-        .where('isActive', isEqualTo: true)
-        .get();
+    try {
+      // Load all active questions for the category
+      final questionsSnapshot = await _firestore
+          .collection('question')
+          .where('categoryId', isEqualTo: categoryId)
+          .where('isActive', isEqualTo: true)
+          .get();
 
-    if (questionsSnapshot.docs.isEmpty) {
-      throw Exception('No questions available for this category');
-    }
+      if (questionsSnapshot.docs.isEmpty) {
+        throw Exception('No questions available for this category');
+      }
 
-    final allQuestions = questionsSnapshot.docs
-        .map((doc) => Question.fromMap(doc.data(), doc.id))
-        .toList();
+      final allQuestions = questionsSnapshot.docs
+          .map((doc) => Question.fromMap(doc.data(), doc.id))
+          .toList();
 
-    // Shuffle questions for random selection
-    allQuestions.shuffle(_random);
+      // Shuffle questions for random selection
+      allQuestions.shuffle(_random);
 
-    // Need enough questions for both players
-    final totalQuestionsNeeded = questionsPerPlayer * 2;
-    if (allQuestions.length < totalQuestionsNeeded) {
-      throw Exception(
-        'Not enough questions available. Need $totalQuestionsNeeded, but only ${allQuestions.length} available',
+      // Need enough questions for both players
+      final totalQuestionsNeeded = questionsPerPlayer * 2;
+      if (allQuestions.length < totalQuestionsNeeded) {
+        throw Exception(
+          'Not enough questions available. Need $totalQuestionsNeeded, but only ${allQuestions.length} available',
+        );
+      }
+
+      // Assign questions to each player
+      final playerAQuestionIds = allQuestions
+          .take(questionsPerPlayer)
+          .map((q) => q.id)
+          .toList();
+      final playerBQuestionIds = allQuestions
+          .skip(questionsPerPlayer)
+          .take(questionsPerPlayer)
+          .map((q) => q.id)
+          .toList();
+
+      return VSModeSession(
+        categoryId: categoryId,
+        questionsPerPlayer: questionsPerPlayer,
+        playerAName: playerAName,
+        playerBName: playerBName,
+        playerAQuestionIds: playerAQuestionIds,
+        playerBQuestionIds: playerBQuestionIds,
       );
+    } on FirebaseException catch (e) {
+      print('Firebase error starting VS Mode: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to start VS Mode. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error starting VS Mode: $e');
+      rethrow;
     }
-
-    // Assign questions to each player
-    final playerAQuestionIds = allQuestions
-        .take(questionsPerPlayer)
-        .map((q) => q.id)
-        .toList();
-    final playerBQuestionIds = allQuestions
-        .skip(questionsPerPlayer)
-        .take(questionsPerPlayer)
-        .map((q) => q.id)
-        .toList();
-
-    return VSModeSession(
-      categoryId: categoryId,
-      questionsPerPlayer: questionsPerPlayer,
-      playerAName: playerAName,
-      playerBName: playerBName,
-      playerAQuestionIds: playerAQuestionIds,
-      playerBQuestionIds: playerBQuestionIds,
-    );
   }
 
   /// Submit an answer for a player during VS Mode
@@ -125,40 +135,50 @@ class VSModeService {
     required VSModeResult result,
     required String userPlayerName,
   }) async {
-    final userDoc = await _firestore.collection('user').doc(userId).get();
+    try {
+      final userDoc = await _firestore.collection('user').doc(userId).get();
 
-    if (!userDoc.exists) {
-      throw Exception('User not found');
+      if (!userDoc.exists) {
+        throw Exception('User not found');
+      }
+
+      final userData = userDoc.data()!;
+      final currentDuelsPlayed = userData['duelsPlayed'] as int;
+      final currentDuelsWon = userData['duelsWon'] as int;
+      final currentDuelsLost = userData['duelsLost'] as int;
+      final currentDuelPoints = userData['duelPoints'] as int;
+
+      int newDuelsPlayed = currentDuelsPlayed + 1;
+      int newDuelsWon = currentDuelsWon;
+      int newDuelsLost = currentDuelsLost;
+      int newDuelPoints = currentDuelPoints;
+
+      if (result.isPlayerWinner(userPlayerName)) {
+        // User won: +3 points, increment duelsWon
+        newDuelsWon += 1;
+        newDuelPoints += 3;
+      } else if (result.isTie()) {
+        // Tie: +1 point
+        newDuelPoints += 1;
+      } else {
+        // User lost: increment duelsLost
+        newDuelsLost += 1;
+      }
+
+      await _firestore.collection('user').doc(userId).update({
+        'duelsPlayed': newDuelsPlayed,
+        'duelsWon': newDuelsWon,
+        'duelsLost': newDuelsLost,
+        'duelPoints': newDuelPoints,
+      });
+    } on FirebaseException catch (e) {
+      print('Firebase error updating duel stats: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to update duel stats. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error updating duel stats: $e');
+      rethrow;
     }
-
-    final userData = userDoc.data()!;
-    final currentDuelsPlayed = userData['duelsPlayed'] as int;
-    final currentDuelsWon = userData['duelsWon'] as int;
-    final currentDuelsLost = userData['duelsLost'] as int;
-    final currentDuelPoints = userData['duelPoints'] as int;
-
-    int newDuelsPlayed = currentDuelsPlayed + 1;
-    int newDuelsWon = currentDuelsWon;
-    int newDuelsLost = currentDuelsLost;
-    int newDuelPoints = currentDuelPoints;
-
-    if (result.isPlayerWinner(userPlayerName)) {
-      // User won: +3 points, increment duelsWon
-      newDuelsWon += 1;
-      newDuelPoints += 3;
-    } else if (result.isTie()) {
-      // Tie: +1 point
-      newDuelPoints += 1;
-    } else {
-      // User lost: increment duelsLost
-      newDuelsLost += 1;
-    }
-
-    await _firestore.collection('user').doc(userId).update({
-      'duelsPlayed': newDuelsPlayed,
-      'duelsWon': newDuelsWon,
-      'duelsLost': newDuelsLost,
-      'duelPoints': newDuelPoints,
-    });
   }
 }
