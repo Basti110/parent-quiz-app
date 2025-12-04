@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Firebase Question Upload Script
-Uploads sample questions to Firestore for the parent quiz app.
+Firebase Question Upload Script for Erziehungsapp
+Uploads categories and questions from Erziehungsapp.md to Firestore.
 """
 
 import firebase_admin
@@ -17,8 +17,6 @@ def initialize_firebase():
         app = firebase_admin.get_app()
     except ValueError:
         # Initialize new app
-        # You need to download your service account key from Firebase Console
-        # and save it as 'serviceAccountKey.json' in the same directory
         cred = credentials.Certificate('serviceAccountKey.json')
         app = firebase_admin.initialize_app(cred)
 
@@ -27,26 +25,130 @@ def initialize_firebase():
 # Category definitions
 CATEGORIES = [
     {
-        'id': 'motorik',
-        'title': 'Motorik / Wachstum / Bewegung',
-        'description': 'Fragen zur motorischen Entwicklung, Wachstum und Bewegung von Kindern',
+        'id': 'buerokratisches',
+        'title': 'Bürokratisches / Hilfeinstanzen',
+        'description': 'Fragen zu Behördengängen, Dokumenten und rechtlichen Themen rund um Elternschaft',
         'order': 1,
-        'iconName': 'directions_run',
+        'iconName': 'description',
         'isPremium': False
     },
     {
-        'id': 'schwangerschaft',
-        'title': 'Schwangerschaft',
-        'description': 'Fragen rund um Schwangerschaft, Ernährung und Gesundheit',
+        'id': 'motorik',
+        'title': 'Motorik / Wachstum / Bewegung',
+        'description': 'Fragen zur motorischen Entwicklung, Wachstum und Bewegung von Kindern',
         'order': 2,
-        'iconName': 'pregnant_woman',
+        'iconName': 'directions_run',
         'isPremium': False
     }
 ]
 
 # Questions data
 QUESTIONS = [
-    # Motorik / Wachstum / Bewegung (15 questions)
+    # Bürokratisches / Hilfeinstanzen
+    {
+        'categoryId': 'buerokratisches',
+        'text': 'Ihr wollt mit eurem 3 Monate alten Baby "nur mal schnell" über die Grenze nach Österreich oder in die Niederlande fahren. Was gilt bezüglich Ausweisdokumenten?',
+        'options': [
+            'Innerhalb der EU/Schengen-Raum reicht die Geburtsurkunde des Kindes völlig aus.',
+            'Solange das Baby noch gestillt wird, reicht der Eintrag im Reisepass der Mutter.',
+            'Jedes Kind braucht ab Geburt ein eigenes, gültiges Ausweisdokument (Personalausweis oder Reisepass) für jeden Grenzübertritt.',
+            'Unter 6 Monaten besteht noch keine Ausweispflicht, da sich das Gesicht zu schnell verändert.'
+        ],
+        'correctIndices': [2],
+        'explanation': 'Viele denken: "Schengen = keine Grenzen = keine Papiere". Das ist falsch. Bei einer Kontrolle ohne Dokument kann es zu Problemen kommen. Der klassische "Kinderreisepass" wurde zum 1.1.2024 abgeschafft. Jetzt gibt es nur noch den normalen Reisepass (teurer, hält länger) oder Personalausweis.',
+        'tips': 'Ihr wollt in den Urlaub? Beantragt möglichst frühzeitig einen Ausweis, da die Terminvergabe und die Bearbeitungszeit des Amtes häufig lange dauert.',
+        'sourceLabel': 'Auswärtiges Amt / Bundesministerium des Innern',
+        'sourceUrl': None,
+        'difficulty': 2,
+        'isActive': True
+    },
+    {
+        'categoryId': 'buerokratisches',
+        'text': 'Ein unverheiratetes Paar bekommt ein Kind. Der Vater erkennt die Vaterschaft vor der Geburt offiziell beim Jugendamt an und steht in der Geburtsurkunde. Wer hat das Sorgerecht?',
+        'options': [
+            'Automatisch beide Elternteile, da die Vaterschaft anerkannt ist.',
+            'Automatisch erst einmal nur die Mutter. Das gemeinsame Sorgerecht muss separat per "Sorgeerklärung" beurkundet werden.',
+            'Beide, aber nur wenn sie zusammen wohnen (Meldeadresse).',
+            'Das entscheidet das Familiengericht nach der Geburt.'
+        ],
+        'correctIndices': [1],
+        'explanation': '"Vaterschaftsanerkennung" und "Sorgerecht" sind zwei völlig verschiedene Paar Schuhe. Ohne die zweite Unterschrift (Sorgeerklärung) darf der Vater im Ernstfall (z.B. medizinische Entscheidungen) rechtlich nicht mitentscheiden.',
+        'tips': 'Macht einen Abwasch draus! Ihr könnt die Sorgeerklärung oft direkt zeitgleich mit der Vaterschaftsanerkennung beim Jugendamt unterschreiben. Das spart euch einen zweiten Behördengang nach der Geburt. Kümmert euch am besten schon in der Schwangerschaft darum.',
+        'sourceLabel': 'BGB § 1626a / Bundesministerium für Familie, Senioren, Frauen und Jugend (BMFSFJ)',
+        'sourceUrl': None,
+        'difficulty': 2,
+        'isActive': True
+    },
+    {
+        'categoryId': 'buerokratisches',
+        'text': 'Ihr plant eure Elternzeit. Wie viele Monate Basiselterngeld kann ein Elternteil maximal alleine beziehen (ohne dass der andere Partner Elterngeld nimmt)?',
+        'options': [
+            '14 Monate',
+            '12 Monate',
+            '10 Monate',
+            'So lange man möchte, bis das Kind 3 Jahre alt ist.'
+        ],
+        'correctIndices': [1],
+        'explanation': 'Man hört immer "Es gibt 14 Monate Elterngeld". Das stimmt aber nur, wenn sich beide beteiligen. Einer alleine bekommt maximal 12. Die zusätzlichen 2 Monate ("Partnermonate") gibt es nur, wenn der andere Partner auch mindestens 2 Monate Einkommenseinbußen hat und das Kind betreut.',
+        'tips': 'Das Elterngeld berechnet sich nach dem Netto-Einkommen der letzten 12 Monate vor der Geburt/Mutterschutz. Wenn verheiratete Paare rechtzeitig (mindestens 7 Monate vor Mutterschutz-Beginn) die Steuerklasse wechseln, kann das Elterngeld um mehrere hundert Euro monatlich steigen. Füllt den Antrag schon vor der Geburt so weit wie möglich aus!',
+        'sourceLabel': 'Bundeselterngeld- und Elternzeitgesetz (BEEG)',
+        'sourceUrl': None,
+        'difficulty': 2,
+        'isActive': True
+    },
+    {
+        'categoryId': 'buerokratisches',
+        'text': 'Das Baby ist da! Herzlichen Glückwunsch. Bei welcher Behörde muss das Kind innerhalb der ersten Lebenswoche (meist binnen 7 Werktagen) offiziell angemeldet werden, um eine Geburtsurkunde zu erhalten?',
+        'options': [
+            'Einwohnermeldeamt (des Geburtsortes)',
+            'Jugendamt (des Geburtsortes)',
+            'Standesamt (des Geburtsortes)',
+            'Finanzamt (des Geburtsortes)'
+        ],
+        'correctIndices': [2],
+        'explanation': 'Oft übernimmt das Krankenhaus die Weiterleitung der Anzeige, aber zuständig für die Urkunde ist das Standesamt. Ohne Geburtsurkunde kein Kindergeld und kein Elterngeld!',
+        'tips': 'Viele Krankenhäuser bieten einen Anmeldeservice direkt auf der Station an! Packt dafür unbedingt das Stammbuch bzw. eure Heiratsurkunde (oder bei Unverheirateten: eigene Geburtsurkunden & Vaterschaftsanerkennung) schon vor der Geburt in die Kliniktasche. Kreuzt im Formular direkt an, dass ihr „zweckgebundene Originale" benötigt (für Elterngeld, Kindergeld und Krankenkasse).',
+        'sourceLabel': 'Personenstandsgesetz (PstG)',
+        'sourceUrl': None,
+        'difficulty': 1,
+        'isActive': True
+    },
+    {
+        'categoryId': 'buerokratisches',
+        'text': 'Im Stress der ersten Monate habt ihr vergessen, den Kindergeldantrag abzuschicken. Wie lange wird Kindergeld maximal rückwirkend ausgezahlt?',
+        'options': [
+            'Gar nicht, das Geld für die vergangenen Monate ist weg.',
+            'Bis zu 4 Jahre rückwirkend.',
+            'Nur für die letzten 6 Monate vor Eingang des Antrags.',
+            'Bis zum 1. Geburtstag des Kindes.'
+        ],
+        'correctIndices': [2],
+        'explanation': 'Diese Frist wurde vor einigen Jahren verkürzt (früher waren es 4 Jahre). Wer den Antrag erst zum 1. Geburtstag stellt, verliert also das Geld der ersten 6 Monate!',
+        'tips': 'Auch hier lohnt es sich den Antrag bereits vor der Geburt „vorzubereiten" und nach der Geburt nur noch die fehlenden Daten hinzuzufügen.',
+        'sourceLabel': 'Bundesagentur für Arbeit / Einkommensteuergesetz (EStG)',
+        'sourceUrl': None,
+        'difficulty': 2,
+        'isActive': True
+    },
+    {
+        'categoryId': 'buerokratisches',
+        'text': 'Wie lange dauert die gesetzliche Mutterschutzfrist nach der Geburt (bei einer unkomplizierten Geburt, keine Früh- oder Mehrlingsgeburt), in der die Mutter im Normalfall nicht arbeiten darf?',
+        'options': [
+            '4 Wochen',
+            '6 Wochen',
+            '8 Wochen',
+            '12 Wochen'
+        ],
+        'correctIndices': [2],
+        'explanation': 'In diesen 8 Wochen nach der Geburt besteht ein absolutes Beschäftigungsverbot für den Arbeitgeber (außer in sehr seltenen Ausnahmen auf ausdrücklichen Wunsch der Mutter, was aber fast nie vorkommt). Bei Frühchen/Zwillingen sind es 12 Wochen.',
+        'tips': 'Damit du pünktlich dein Mutterschaftsgeld bekommst, brauchst du das "Zeugnis über den mutmaßlichen Tag der Entbindung". Dein Frauenarzt darf dir diesen gelben Schein frühestens 7 Wochen vor dem Termin ausstellen. Mach dir dafür am besten schon jetzt eine Erinnerung ins Handy.',
+        'sourceLabel': 'Mutterschutzgesetz (MuSchG)',
+        'sourceUrl': None,
+        'difficulty': 1,
+        'isActive': True
+    },
+
+    # Motorik / Wachstum / Bewegung
     {
         'categoryId': 'motorik',
         'text': 'Was besagt Remo Largos Hauptbotschaft zur Geh-Entwicklung (Motorik)?',
@@ -302,176 +404,55 @@ QUESTIONS = [
         'difficulty': 2,
         'isActive': True
     },
-
-    # Schwangerschaft (10 questions)
     {
-        'categoryId': 'schwangerschaft',
-        'text': 'Schwangere Frauen sollen Folsäure zu sich nehmen. Warum empfehlen Ärzte aber dringend, damit schon vor dem Absetzen der Verhütung zu beginnen?',
+        'categoryId': 'motorik',
+        'text': 'Ein 10 Monate altes Baby greift Spielzeug, Löffel und Bausteine ausschließlich mit der linken Hand. Die rechte Hand wird kaum aktiv genutzt, bleibt oft gefäustet. Die Eltern freuen sich über den „entschlossenen kleinen Linkshänder". Wie bewerten Entwicklungsneurologen diese Situation?',
         'options': [
-            'Um die Fruchtbarkeit zu steigern und schneller schwanger zu werden.',
-            'Damit die Mutter keine schlechte Haut bekommt (Schwangerschaftsakne).',
-            'Weil sich das Neuralrohr (Vorstufe von Gehirn und Rückenmark) bereits am 28. Tag nach der Empfängnis schließt. Zu diesem Zeitpunkt wissen viele Frauen noch gar nicht, dass sie schwanger sind.',
-            'Weil Folsäure Übelkeit im ersten Trimester verhindert.'
+            'Es ist ein positives Zeichen für eine frühe kognitive Reifung, da sich die Gehirndominanz schneller als beim Durchschnitt etabliert hat.',
+            'Es ist eine normale genetische Variation; die Händigkeit ist bereits im Mutterleib festgelegt und zeigt sich bei manchen Kindern eben früher.',
+            'Es ist ein medizinisches Warnsignal. Eine klare Handdominanz vor dem 12.–18. Lebensmonat ist pathologisch und deutet oft auf eine motorische Störung (z.B. leichte Hemiparese) der anderen (inaktiven) Körperseite hin.',
+            'Es ist ein Hinweis darauf, dass das Kind im „Sprung" ist und die rechte Gehirnhälfte gerade umgebaut wird, weshalb die linke Hand (gesteuert von rechts) aktiver ist.'
         ],
         'correctIndices': [2],
-        'explanation': 'Der kritischste Moment für Fehlbildungen (offener Rücken/Spina bifida) passiert oft schon in der 4. Schwangerschaftswoche. Der Speicher muss also vorher voll sein.',
-        'tips': 'Viele denken, es reicht, wenn der Schwangerschaftstest positiv ist. Aber der kritischste Moment passiert oft schon vorher. Beginne mit Folsäure, sobald du die Verhütung absetzt.',
-        'sourceLabel': 'Bundesinstitut für Risikobewertung (BfR) / Deutsche Gesellschaft für Ernährung',
-        'sourceUrl': None,
-        'difficulty': 2,
-        'isActive': True
-    },
-    {
-        'categoryId': 'schwangerschaft',
-        'text': 'Was ist statistisch gesehen die häufigste Ursache für virusbedingte Schädigungen des Ungeborenen, über die aber kaum gesprochen wird?',
-        'options': [
-            'Röteln (durch ungeimpfte Erwachsene).',
-            'Listerien (durch Rohmilchkäse).',
-            'Das Cytomegalievirus (CMV). Die Hauptansteckungsquelle ist der Speichel oder Urin von Kleinkindern.',
-            'Salmonellen (durch rohe Eier).'
-        ],
-        'correctIndices': [2],
-        'explanation': 'CMV ist für das Ungeborene gefährlich (Hörschäden, Entwicklungsverzögerung). Hygiene beim Wickeln und kein "Schnuller-Ablecken" sind der beste Schutz.',
-        'tips': 'Fast jeder kennt "Katzenklo meiden" (Toxoplasmose), aber kaum ein Arzt warnt vor dem Speichel des eigenen Kleinkindes. Hygiene beim Wickeln und kein Schnuller-Ablecken schützen.',
-        'sourceLabel': 'Robert Koch-Institut (RKI) Ratgeber Cytomegalievirus',
+        'explanation': 'Ein gesundes Baby sollte beide Hände benutzen. Wenn es sich unter 1 Jahr schon festlegt, liegt das meist daran, dass die andere Seite eingeschränkt ist. Ein echter Linkshänder zeigt sich meist erst ab 2–3 Jahren.',
+        'tips': 'Wenn dein Baby unter 12 Monaten nur eine Hand benutzt, sprich mit deinem Kinderarzt. Eine frühe Handdominanz kann auf eine motorische Störung hinweisen.',
+        'sourceLabel': 'Vojta-Diagnostik / Largo, R. (Babyjahre)',
         'sourceUrl': None,
         'difficulty': 3,
         'isActive': True
     },
     {
-        'categoryId': 'schwangerschaft',
-        'text': 'Warum wird Schwangeren geraten, im zweiten Trimester eine professionelle Zahnreinigung durchführen zu lassen?',
+        'categoryId': 'motorik',
+        'text': 'Ein 3-jähriges Kind steht im Badezimmer vor dir. Dabei fallen deutlich sichtbare „X-Beine" (Genu valgum) auf: Die Knie berühren sich, während die Knöchel weit auseinander stehen. Das Kind läuft jedoch schmerzfrei. Was ist die korrekte physiologische Einschätzung?',
         'options': [
-            'Weil die Zähne durch den Kalkbedarf des Babys weicher werden.',
-            'Schwangerschaftshormone machen das Zahnfleisch durchlässiger. Eine unbehandelte Parodontitis erhöht das Risiko für eine Frühgeburt signifikant.',
-            'Damit das Baby später weißere Zähne bekommt.',
-            'Um Mundgeruch durch Sodbrennen zu vermeiden.'
+            'Dies ist in diesem Alter physiologisch völlig normal. Die Beinachse entwickelt sich von O-Beinen (Säugling) über X-Beine (Kleinkind/Vorschulalter) hin zu geraden Beinen (Schulalter).',
+            'Das ist ein klassisches Anzeichen für einen Vitamin-D-Mangel (Rachitis), der sofort hochdosiert supplementiert werden muss.',
+            'Dies deutet auf eine Bindegewebsschwäche hin, die durch zu frühes Tragen von festem Schuhwerk verursacht wurde.',
+            'Das Kind hat vermutlich eine Hüftdysplasie, die im Säuglingsalter übersehen wurde.'
         ],
-        'correctIndices': [1],
-        'explanation': 'Der Mund ist das Tor zum Körper. Entzündungsbotenstoffe aus dem Zahnfleisch können vorzeitige Wehen auslösen.',
-        'tips': 'Schwangerschaftshormone machen das Zahnfleisch durchlässiger. Eine professionelle Zahnreinigung im zweiten Trimester ist eine wichtige Vorsorgemaßnahme.',
-        'sourceLabel': 'Bundeszahnärztekammer / DGZMK',
+        'correctIndices': [0],
+        'explanation': 'Die X-Bein-Stellung bei 3-Jährigen ist physiologisch normal. Die Beinachse entwickelt sich von O-Beinen über X-Beine zu geraden Beinen im Schulalter.',
+        'tips': 'Wenn dein Kind X-Beine hat, aber schmerzfrei läuft, ist das meist normal. Bei Schmerzen oder extremer Ausprägung solltest du einen Kinderorthopäden aufsuchen.',
+        'sourceLabel': 'Leitlinien Kinderorthopädie',
         'sourceUrl': None,
-        'difficulty': 2,
+        'difficulty': 3,
         'isActive': True
     },
     {
-        'categoryId': 'schwangerschaft',
-        'text': 'Ein alter Spruch besagt: "Du musst jetzt für zwei essen!" Wie viel zusätzliche Kalorien braucht eine Schwangere im letzten Drittel der Schwangerschaft wirklich pro Tag?',
+        'categoryId': 'motorik',
+        'text': 'Viele Eltern hören bei der U-Untersuchung oder vom Physiotherapeuten den Begriff „Rumpfhypotonie" (zu schlaffer Rumpf). Was ist der medizinisch genaue Unterschied zwischen „Muskeltonus" und „Muskelkraft", die von Laien oft verwechselt werden?',
         'options': [
-            'Doppelt so viele wie vorher (ca. 4000 kcal).',
-            'Gar keine zusätzlichen Kalorien.',
-            'Nur etwa 250 bis 500 kcal (das entspricht etwa einem belegten Brot oder einer kleinen Portion Müsli).',
-            'Mindestens 1000 kcal extra.'
+            'Es gibt keinen Unterschied, es sind zwei Begriffe für dasselbe Phänomen.',
+            'Hypotonie bedeutet, dass die Muskeln verkürzt sind, während Kraft die Länge beschreibt.',
+            'Der Tonus ist die neurologische Grundspannung im Ruhezustand (wie gespannt das "Gummiband" ist). Kraft ist die Fähigkeit, aktiv ein Gewicht zu bewegen. Ein Kind kann hypoton sein (weich wie Wackelpudding), aber trotzdem viel Kraft haben, wenn es sich anstrengt.',
+            'Tonus beschreibt die Ausdauer, Kraft beschreibt die Maximalkraft.'
         ],
         'correctIndices': [2],
-        'explanation': 'Der Nährstoffbedarf (Vitamine/Mineralien) steigt stark, aber der Kalorienbedarf kaum. "Klasse statt Masse" ist die Devise.',
-        'tips': 'Der alte Spruch "für zwei essen" ist ein Mythos. Du brauchst nur etwa 250-500 kcal extra – das entspricht einem belegten Brot. Fokus auf Nährstoffqualität, nicht Menge.',
-        'sourceLabel': 'Deutsche Gesellschaft für Ernährung (DGE)',
+        'explanation': 'Hypotonie ist eine Sache des Nervensystems/Gehirns, Kraft ist Muskelsache. Ein hypotones Kind muss lernen, seine Kraft schneller abzurufen, um die fehlende Grundspannung auszugleichen.',
+        'tips': 'Wenn dein Kind hypoton ist, bedeutet das nicht automatisch, dass es schwach ist. Es braucht nur mehr Zeit, um die Kraft zu aktivieren.',
+        'sourceLabel': 'Pädiatrische Physiotherapie',
         'sourceUrl': None,
-        'difficulty': 2,
-        'isActive': True
-    },
-    {
-        'categoryId': 'schwangerschaft',
-        'text': 'Früher hieß es "Schonen!". Was ist die heutige Empfehlung für gesunde Schwangere in Bezug auf Sport (z.B. Joggen, Schwimmen, Yoga)?',
-        'options': [
-            'Sport ist im ersten Drittel verboten, um Fehlgeburten zu vermeiden.',
-            'Moderate Bewegung ist ausdrücklich erwünscht. Sie beugt Schwangerschaftsdiabetes vor, verbessert die Stimmung und kann die Geburt erleichtern.',
-            'Nur Bettruhe ist sicher.',
-            'Nur Dehnübungen sind erlaubt, kein Ausdauersport.'
-        ],
-        'correctIndices': [1],
-        'explanation': 'Solange keine medizinischen Risiken vorliegen, ist Sport gesund. Tabu sind nur Kontaktsportarten (Verletzungsgefahr) oder Tauchen.',
-        'tips': 'Früher hieß es "Schonen!", heute ist moderate Bewegung erwünscht. Sie beugt Schwangerschaftsdiabetes vor und kann die Geburt erleichtern. Höre auf deinen Körper.',
-        'sourceLabel': 'Deutsche Sporthochschule Köln / Leitlinien der DGGG',
-        'sourceUrl': None,
-        'difficulty': 2,
-        'isActive': True
-    },
-    {
-        'categoryId': 'schwangerschaft',
-        'text': 'Darf man sich in der Schwangerschaft die Haare färben?',
-        'options': [
-            'Nein, die Chemikalien gehen sofort ins Gehirn des Babys.',
-            'Ja, aber man sollte idealerweise das erste Trimester abwarten und Produkte ohne Ammoniak verwenden. Es gibt keinen Beleg für Schäden, aber Vorsicht ist die Mutter der Porzellankiste.',
-            'Nur mit Pflanzenfarbe (Henna), alles andere ist verboten.',
-            'Ja, ohne jegliche Einschränkungen.'
-        ],
-        'correctIndices': [1],
-        'explanation': 'Es gibt keinen wissenschaftlichen Beleg für Schäden durch Haarfärbemittel, aber aus Vorsichtsgründen wird empfohlen, das erste Trimester abzuwarten.',
-        'tips': 'Wenn du dir unsicher bist, warte das erste Trimester ab und verwende Produkte ohne Ammoniak. Strähnchen sind eine gute Alternative, da sie nicht die Kopfhaut berühren.',
-        'sourceLabel': 'NHS (National Health Service UK) / Embryotox',
-        'sourceUrl': None,
-        'difficulty': 1,
-        'isActive': True
-    },
-    {
-        'categoryId': 'schwangerschaft',
-        'text': 'Warum sind Salami und Camembert oft tabu in der Schwangerschaft?',
-        'options': [
-            'Wegen des hohen Fettgehalts.',
-            'Wegen der Gefahr von Listerien und Toxoplasmose. Diese Erreger sterben erst beim Erhitzen oder langen Reifeprozessen ab.',
-            'Weil sie Allergien auslösen.',
-            'Weil sie zu viel Salz enthalten.'
-        ],
-        'correctIndices': [1],
-        'explanation': 'Kochschinken ist okay (gekocht), Salami ist roh (geräuchert/luftgetrocknet) → Risiko. Salami auf der Pizza (im Ofen bei 200 Grad) ist wieder okay!',
-        'tips': 'Wichtiger Alltags-Hack: Salami auf der Pizza ist sicher, weil sie im Ofen erhitzt wurde! Kochschinken ist okay, roher Schinken nicht. Erhitzen tötet die Erreger ab.',
-        'sourceLabel': 'Lebensmittelsicherheit in der Schwangerschaft',
-        'sourceUrl': None,
-        'difficulty': 1,
-        'isActive': True
-    },
-    {
-        'categoryId': 'schwangerschaft',
-        'text': 'Welche Schlafposition wird Schwangeren ab dem zweiten Trimester empfohlen?',
-        'options': [
-            'Auf dem Rücken, um die Wirbelsäule zu entlasten.',
-            'Auf dem Bauch mit einem speziellen Kissen.',
-            'Auf der linken Seite, um die Durchblutung der Plazenta zu optimieren.',
-            'Die Schlafposition spielt keine Rolle.'
-        ],
-        'correctIndices': [2],
-        'explanation': 'Die linke Seitenlage verhindert, dass die wachsende Gebärmutter auf die große Hohlvene (Vena Cava) drückt, was die Blutzufuhr zum Baby verbessern kann.',
-        'tips': 'Ein Stillkissen zwischen den Knien macht die Seitenlage bequemer. Wenn du nachts auf dem Rücken aufwachst, ist das kein Drama – dreh dich einfach wieder auf die Seite.',
-        'sourceLabel': 'Geburtshilfe-Leitlinien',
-        'sourceUrl': None,
-        'difficulty': 2,
-        'isActive': True
-    },
-    {
-        'categoryId': 'schwangerschaft',
-        'text': 'Ab wann kann ein Schwangerschaftstest zuverlässig eine Schwangerschaft nachweisen?',
-        'options': [
-            'Sofort nach dem Geschlechtsverkehr.',
-            'Etwa 1-2 Tage nach der ausgebliebenen Periode.',
-            'Etwa 10-14 Tage nach der Empfängnis (ca. zum Zeitpunkt der ausbleibenden Periode).',
-            'Erst nach 4 Wochen.'
-        ],
-        'correctIndices': [2],
-        'explanation': 'Das Schwangerschaftshormon hCG ist etwa 10-14 Tage nach der Empfängnis im Urin nachweisbar, was ungefähr dem Zeitpunkt der ausbleibenden Periode entspricht.',
-        'tips': 'Frühtests können schon einige Tage vor der Periode anschlagen, sind aber weniger zuverlässig. Der beste Zeitpunkt ist der erste Tag der ausbleibenden Periode mit Morgenurin.',
-        'sourceLabel': 'Gynäkologische Fachliteratur',
-        'sourceUrl': None,
-        'difficulty': 1,
-        'isActive': True
-    },
-    {
-        'categoryId': 'schwangerschaft',
-        'text': 'Warum sollten Schwangere auf rohen Fisch (z.B. Sushi) verzichten?',
-        'options': [
-            'Wegen des hohen Jodgehalts.',
-            'Wegen möglicher Parasiten und Bakterien, die dem Baby schaden können.',
-            'Weil Fisch generell in der Schwangerschaft verboten ist.',
-            'Wegen des Quecksilbergehalts, der nur in rohem Fisch gefährlich ist.'
-        ],
-        'correctIndices': [1],
-        'explanation': 'Roher Fisch kann Parasiten (z.B. Nematoden) und Bakterien (z.B. Listerien) enthalten. Gekochter oder gebratener Fisch ist hingegen sicher und sogar empfohlen wegen der Omega-3-Fettsäuren.',
-        'tips': 'Du musst nicht auf Sushi verzichten – wähle einfach gekochte Varianten wie Ebi (gekochte Garnelen) oder vegetarisches Sushi. Fisch ist gesund, er muss nur durchgegart sein.',
-        'sourceLabel': 'Ernährungsempfehlungen für Schwangere',
-        'sourceUrl': None,
-        'difficulty': 1,
+        'difficulty': 3,
         'isActive': True
     }
 ]
@@ -518,7 +499,7 @@ def upload_questions(db):
 def main():
     """Main function to upload all data."""
     print("=" * 60)
-    print("Firebase Question Upload Script")
+    print("Firebase Question Upload Script - Erziehungsapp")
     print("=" * 60)
     print()
 

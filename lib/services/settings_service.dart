@@ -14,7 +14,7 @@ class SettingsService {
   /// Update the display name for a user
   Future<void> updateDisplayName(String userId, String newName) async {
     try {
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'displayName': newName,
       });
     } on FirebaseException catch (e) {

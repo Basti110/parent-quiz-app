@@ -27,7 +27,7 @@ class LeaderboardService {
   Future<List<LeaderboardEntry>> getGlobalLeaderboard([int limit = 50]) async {
     try {
       final querySnapshot = await _firestore
-          .collection('user')
+          .collection('users')
           .orderBy('weeklyXpCurrent', descending: true)
           .limit(limit)
           .get();
@@ -67,7 +67,7 @@ class LeaderboardService {
   Future<int?> getUserRank(String userId) async {
     try {
       // Get the user's weekly XP
-      final userDoc = await _firestore.collection('user').doc(userId).get();
+      final userDoc = await _firestore.collection('users').doc(userId).get();
       if (!userDoc.exists) {
         return null;
       }
@@ -77,7 +77,7 @@ class LeaderboardService {
 
       // Count how many users have more weekly XP
       final higherRankedCount = await _firestore
-          .collection('user')
+          .collection('users')
           .where('weeklyXpCurrent', isGreaterThan: userWeeklyXp)
           .count()
           .get();
@@ -101,7 +101,7 @@ class LeaderboardService {
     try {
       // Get list of friend user IDs
       final friendsSnapshot = await _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('friends')
           .get();
@@ -119,7 +119,7 @@ class LeaderboardService {
 
       // Fetch all friend user documents
       final userDocs = await Future.wait(
-        friendUserIds.map((id) => _firestore.collection('user').doc(id).get()),
+        friendUserIds.map((id) => _firestore.collection('users').doc(id).get()),
       );
 
       // Convert to UserModel and sort by weeklyXpCurrent

@@ -17,7 +17,7 @@ class QuizService {
   Future<List<Category>> getCategories() async {
     try {
       final snapshot = await _firestore
-          .collection('category')
+          .collection('categories')
           .orderBy('order')
           .get();
 
@@ -47,7 +47,7 @@ class QuizService {
     try {
       // Load all active questions for the category
       final questionsSnapshot = await _firestore
-          .collection('question')
+          .collection('questions')
           .where('categoryId', isEqualTo: categoryId)
           .where('isActive', isEqualTo: true)
           .get();
@@ -62,7 +62,7 @@ class QuizService {
 
       // Load user's question states
       final statesSnapshot = await _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('questionStates')
           .get();
@@ -171,7 +171,7 @@ class QuizService {
   /// Requirements: 5.7, 7.1
   Future<void> updateUserXP(String userId, int xpGained) async {
     try {
-      final userDoc = await _firestore.collection('user').doc(userId).get();
+      final userDoc = await _firestore.collection('users').doc(userId).get();
 
       if (!userDoc.exists) {
         throw Exception('User not found');
@@ -185,7 +185,7 @@ class QuizService {
       final newLevel = (newTotalXp ~/ 100) + 1;
 
       // Update user document with new XP and level
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'totalXp': newTotalXp,
         'currentLevel': newLevel,
       });
@@ -204,7 +204,10 @@ class QuizService {
   /// Used for VS Mode to load specific questions
   Future<Question?> getQuestionById(String questionId) async {
     try {
-      final doc = await _firestore.collection('question').doc(questionId).get();
+      final doc = await _firestore
+          .collection('questions')
+          .doc(questionId)
+          .get();
 
       if (!doc.exists) {
         return null;

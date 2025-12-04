@@ -9,6 +9,7 @@ import 'screens/home/home_screen.dart';
 import 'screens/quiz/category_selection_screen.dart';
 import 'screens/quiz/quiz_length_screen.dart';
 import 'screens/quiz/quiz_screen.dart';
+import 'screens/quiz/quiz_explanation_screen.dart';
 import 'screens/quiz/quiz_result_screen.dart';
 import 'screens/leaderboard/leaderboard_screen.dart';
 import 'screens/friends/friends_screen.dart';
@@ -62,6 +63,7 @@ class MainApp extends ConsumerWidget {
         '/category-selection': (context) => const CategorySelectionScreen(),
         '/quiz-length': (context) => const QuizLengthScreen(),
         '/quiz': (context) => const QuizScreen(),
+        '/quiz-explanation': (context) => const QuizExplanationScreen(),
         '/quiz-result': (context) => const QuizResultScreen(),
         '/leaderboard': (context) => const LeaderboardScreen(),
         '/friends': (context) => const FriendsScreen(),

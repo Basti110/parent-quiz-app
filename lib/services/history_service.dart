@@ -36,7 +36,7 @@ class HistoryService {
       );
 
       await _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('history')
           .doc(dateKey)
@@ -58,7 +58,7 @@ class HistoryService {
   }) async {
     try {
       Query query = _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('history')
           .orderBy('weekStart', descending: true);

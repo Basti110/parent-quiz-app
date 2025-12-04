@@ -44,7 +44,7 @@ void main() {
         duelPoints: 0,
       );
 
-      await fakeFirestore.collection('user').doc(userId).set(user.toMap());
+      await fakeFirestore.collection('users').doc(userId).set(user.toMap());
       return user;
     }
 
@@ -212,7 +212,7 @@ void main() {
             );
 
             await fakeFirestore
-                .collection('user')
+                .collection('users')
                 .doc(userId)
                 .set(user.toMap());
 
@@ -280,7 +280,7 @@ void main() {
             );
 
             await fakeFirestore
-                .collection('user')
+                .collection('users')
                 .doc(userId)
                 .set(user.toMap());
 

@@ -6,7 +6,7 @@ inclusion: always
 
 ## Collections
 
-### user/{userId}
+### users/{userId}
 
 User documents with the following fields:
 
@@ -30,7 +30,7 @@ User documents with the following fields:
 }
 ```
 
-### user/{userId}/questionStates/{questionId}
+### users/{userId}/questionStates/{questionId}
 
 Tracks user progress per question:
 
@@ -44,7 +44,7 @@ Tracks user progress per question:
 }
 ```
 
-### user/{userId}/friends/{friendUserId}
+### users/{userId}/friends/{friendUserId}
 
 Friend relationships:
 
@@ -57,7 +57,7 @@ Friend relationships:
 }
 ```
 
-### user/{userId}/history/{date}
+### users/{userId}/history/{date}
 
 Weekly points history (date format: yyyy-MM-dd):
 
@@ -73,7 +73,7 @@ Weekly points history (date format: yyyy-MM-dd):
 }
 ```
 
-### category/{categoryId}
+### categories/{categoryId}
 
 Quiz categories:
 
@@ -87,7 +87,7 @@ Quiz categories:
 }
 ```
 
-### question/{questionId}
+### questions/{questionId}
 
 Quiz questions:
 
@@ -110,12 +110,12 @@ Quiz questions:
 
 For optimal query performance:
 
-1. **user collection:**
+1. **users collection:**
 
    - `friendCode` (for friend lookup)
    - `weeklyXpCurrent` DESC (for leaderboard)
 
-2. **question collection:**
+2. **questions collection:**
    - `categoryId`, `isActive` (for question selection)
 
 ## Data Access Patterns

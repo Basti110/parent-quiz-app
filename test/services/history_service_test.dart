@@ -52,7 +52,7 @@ void main() {
             // Retrieve the saved document
             final dateKey = _formatDate(weekStart);
             final doc = await fakeFirestore
-                .collection('user')
+                .collection('users')
                 .doc(userId)
                 .collection('history')
                 .doc(dateKey)
@@ -178,7 +178,7 @@ void main() {
             // Retrieve the saved document
             final dateKey = _formatDate(weekStart);
             final doc = await fakeFirestore
-                .collection('user')
+                .collection('users')
                 .doc(userId)
                 .collection('history')
                 .doc(dateKey)

@@ -23,7 +23,7 @@ class VSModeService {
     try {
       // Load all active questions for the category
       final questionsSnapshot = await _firestore
-          .collection('question')
+          .collection('questions')
           .where('categoryId', isEqualTo: categoryId)
           .where('isActive', isEqualTo: true)
           .get();
@@ -136,7 +136,7 @@ class VSModeService {
     required String userPlayerName,
   }) async {
     try {
-      final userDoc = await _firestore.collection('user').doc(userId).get();
+      final userDoc = await _firestore.collection('users').doc(userId).get();
 
       if (!userDoc.exists) {
         throw Exception('User not found');
@@ -165,7 +165,7 @@ class VSModeService {
         newDuelsLost += 1;
       }
 
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'duelsPlayed': newDuelsPlayed,
         'duelsWon': newDuelsWon,
         'duelsLost': newDuelsLost,

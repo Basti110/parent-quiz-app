@@ -58,7 +58,7 @@ class AuthService {
         duelPoints: 0,
       );
 
-      await _firestore.collection('user').doc(user.uid).set(userModel.toMap());
+      await _firestore.collection('users').doc(user.uid).set(userModel.toMap());
 
       return user;
     } on FirebaseAuthException catch (e) {
@@ -77,10 +77,45 @@ class AuthService {
       final user = userCredential.user;
       if (user == null) return null;
 
-      // Update lastActiveAt timestamp
-      await _firestore.collection('user').doc(user.uid).update({
-        'lastActiveAt': Timestamp.fromDate(DateTime.now()),
-      });
+      // Check if user document exists
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+
+      if (!userDoc.exists) {
+        // Create user document if it doesn't exist
+        final friendCode = await _generateUniqueFriendCode();
+        final now = DateTime.now();
+        final currentMonday = _getMondayOfWeek(now);
+
+        final userModel = UserModel(
+          id: user.uid,
+          displayName: user.displayName ?? email.split('@')[0],
+          email: email,
+          avatarUrl: null,
+          createdAt: now,
+          lastActiveAt: now,
+          friendCode: friendCode,
+          totalXp: 0,
+          currentLevel: 1,
+          weeklyXpCurrent: 0,
+          weeklyXpWeekStart: currentMonday,
+          streakCurrent: 0,
+          streakLongest: 0,
+          duelsPlayed: 0,
+          duelsWon: 0,
+          duelsLost: 0,
+          duelPoints: 0,
+        );
+
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(userModel.toMap());
+      } else {
+        // Update lastActiveAt timestamp
+        await _firestore.collection('users').doc(user.uid).update({
+          'lastActiveAt': Timestamp.fromDate(DateTime.now()),
+        });
+      }
 
       return user;
     } on FirebaseAuthException catch (e) {
@@ -115,7 +150,7 @@ class AuthService {
 
       // Check if code already exists
       final querySnapshot = await _firestore
-          .collection('user')
+          .collection('users')
           .where('friendCode', isEqualTo: code)
           .limit(1)
           .get();

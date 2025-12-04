@@ -1,4 +1,6 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 import '../models/question_state.dart';
 import '../models/weekly_points.dart';
@@ -12,7 +14,7 @@ class UserService {
   /// Get user data as a one-time fetch
   Future<UserModel> getUserData(String userId) async {
     try {
-      final doc = await _firestore.collection('user').doc(userId).get();
+      final doc = await _firestore.collection('users').doc(userId).get();
 
       if (!doc.exists) {
         throw Exception('User not found');
@@ -31,13 +33,76 @@ class UserService {
   }
 
   /// Get user data as a stream for real-time updates
-  Stream<UserModel> getUserStream(String userId) {
-    return _firestore.collection('user').doc(userId).snapshots().map((doc) {
+  Stream<UserModel> getUserStream(String userId) async* {
+    await for (final doc
+        in _firestore.collection('users').doc(userId).snapshots()) {
       if (!doc.exists) {
-        throw Exception('User not found');
+        // If document doesn't exist, create it with default values
+        await _createDefaultUserDocument(userId);
+        // Wait for the next snapshot which should have the created document
+        continue;
       }
-      return UserModel.fromMap(doc.data()!, userId);
-    });
+      yield UserModel.fromMap(doc.data()!, userId);
+    }
+  }
+
+  /// Create a default user document for a user that doesn't have one
+  Future<void> _createDefaultUserDocument(String userId) async {
+    try {
+      // Get user email from Firebase Auth if available
+      final auth = FirebaseAuth.instance;
+      final currentUser = auth.currentUser;
+
+      if (currentUser == null || currentUser.uid != userId) {
+        throw Exception('Cannot create user document: user not authenticated');
+      }
+
+      final email = currentUser.email ?? 'user@example.com';
+      final displayName = currentUser.displayName ?? email.split('@')[0];
+
+      final now = DateTime.now();
+      final currentMonday = _getMondayOfWeek(now);
+
+      // Generate a simple friend code (not checking for uniqueness here for simplicity)
+      final friendCode = _generateSimpleFriendCode();
+
+      final userModel = UserModel(
+        id: userId,
+        displayName: displayName,
+        email: email,
+        avatarUrl: null,
+        createdAt: now,
+        lastActiveAt: now,
+        friendCode: friendCode,
+        totalXp: 0,
+        currentLevel: 1,
+        weeklyXpCurrent: 0,
+        weeklyXpWeekStart: currentMonday,
+        streakCurrent: 0,
+        streakLongest: 0,
+        duelsPlayed: 0,
+        duelsWon: 0,
+        duelsLost: 0,
+        duelPoints: 0,
+      );
+
+      await _firestore.collection('users').doc(userId).set(userModel.toMap());
+    } catch (e) {
+      print('Error creating default user document: $e');
+      rethrow;
+    }
+  }
+
+  /// Generate a simple friend code without uniqueness check
+  String _generateSimpleFriendCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final random = Random();
+    final length = 6 + random.nextInt(3);
+
+    return List.generate(
+      length,
+      (index) => chars[random.nextInt(chars.length)],
+    ).join();
   }
 
   /// Update user's streak based on last active date
@@ -77,7 +142,7 @@ class UserService {
       }
 
       // Update user document
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'lastActiveAt': Timestamp.fromDate(now),
         'streakCurrent': newStreakCurrent,
         'streakLongest': newStreakLongest,
@@ -114,13 +179,13 @@ class UserService {
         await _saveWeeklyPointsToHistory(userId, user);
 
         // Reset weekly XP
-        await _firestore.collection('user').doc(userId).update({
+        await _firestore.collection('users').doc(userId).update({
           'weeklyXpCurrent': xpGained,
           'weeklyXpWeekStart': Timestamp.fromDate(currentMonday),
         });
       } else {
         // Same week - accumulate XP
-        await _firestore.collection('user').doc(userId).update({
+        await _firestore.collection('users').doc(userId).update({
           'weeklyXpCurrent': user.weeklyXpCurrent + xpGained,
         });
       }
@@ -156,7 +221,7 @@ class UserService {
       );
 
       await _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('history')
           .doc(dateKey)
@@ -182,7 +247,7 @@ class UserService {
   ) async {
     try {
       final docRef = _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('questionStates')
           .doc(questionId);
@@ -232,7 +297,7 @@ class UserService {
     try {
       // Get all question states for the user
       final statesSnapshot = await _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('questionStates')
           .get();
@@ -243,7 +308,7 @@ class UserService {
 
       // Get all questions to map them to categories
       final questionsSnapshot = await _firestore
-          .collection('question')
+          .collection('questions')
           .where('isActive', isEqualTo: true)
           .get();
 
@@ -281,8 +346,12 @@ class UserService {
 
       return mastery;
     } on FirebaseException catch (e) {
-      print('Firebase error calculating category mastery: ${e.code} - ${e.message}');
-      throw Exception('Failed to calculate category mastery. Please check your connection and try again.');
+      print(
+        'Firebase error calculating category mastery: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to calculate category mastery. Please check your connection and try again.',
+      );
     } catch (e) {
       print('Error calculating category mastery: $e');
       rethrow;

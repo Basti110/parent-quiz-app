@@ -16,7 +16,7 @@ class FriendsService {
   Future<UserModel?> findUserByFriendCode(String friendCode) async {
     try {
       final querySnapshot = await _firestore
-          .collection('user')
+          .collection('users')
           .where('friendCode', isEqualTo: friendCode)
           .limit(1)
           .get();
@@ -52,7 +52,7 @@ class FriendsService {
 
       // Check if friendship already exists
       final existingFriend = await _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('friends')
           .doc(friendUserId)
@@ -71,7 +71,7 @@ class FriendsService {
       );
 
       await _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('friends')
           .doc(friendUserId)
@@ -93,7 +93,7 @@ class FriendsService {
     try {
       // Get friend documents
       final friendsSnapshot = await _firestore
-          .collection('user')
+          .collection('users')
           .doc(userId)
           .collection('friends')
           .get();
@@ -109,7 +109,7 @@ class FriendsService {
 
       // Fetch all friend user documents
       final userDocs = await Future.wait(
-        friendUserIds.map((id) => _firestore.collection('user').doc(id).get()),
+        friendUserIds.map((id) => _firestore.collection('users').doc(id).get()),
       );
 
       // Convert to UserModel
@@ -134,7 +134,7 @@ class FriendsService {
   /// Requirements: 10.3
   Stream<List<UserModel>> getFriendsStream(String userId) {
     return _firestore
-        .collection('user')
+        .collection('users')
         .doc(userId)
         .collection('friends')
         .snapshots()
@@ -151,7 +151,7 @@ class FriendsService {
           // Fetch all friend user documents
           final userDocs = await Future.wait(
             friendUserIds.map(
-              (id) => _firestore.collection('user').doc(id).get(),
+              (id) => _firestore.collection('users').doc(id).get(),
             ),
           );
 

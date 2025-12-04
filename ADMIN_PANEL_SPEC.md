@@ -694,7 +694,7 @@ export async function GET(request: NextRequest) {
     const isActive = searchParams.get("isActive");
     const search = searchParams.get("search");
 
-    let query = adminDb.collection("question");
+    let query = adminDb.collection("questions");
 
     if (categoryId) {
       query = query.where("categoryId", "==", categoryId);
@@ -732,7 +732,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = questionSchema.parse(body);
 
-    const docRef = await adminDb.collection("question").add(validated);
+    const docRef = await adminDb.collection("questions").add(validated);
 
     return NextResponse.json({
       id: docRef.id,

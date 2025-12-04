@@ -42,13 +42,13 @@ Always use async/await instead of .then():
 ```dart
 // Good
 Future<User> getUser(String id) async {
-  final doc = await _firestore.collection('user').doc(id).get();
+  final doc = await _firestore.collection('users').doc(id).get();
   return User.fromMap(doc.data()!);
 }
 
 // Avoid
 Future<User> getUser(String id) {
-  return _firestore.collection('user').doc(id).get()
+  return _firestore.collection('users').doc(id).get()
     .then((doc) => User.fromMap(doc.data()!));
 }
 ```

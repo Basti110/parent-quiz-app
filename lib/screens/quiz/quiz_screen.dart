@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../models/category.dart';
 import '../../models/question.dart';
 import '../../providers/auth_providers.dart';
@@ -21,7 +20,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   Set<int> _selectedIndices = {};
   bool _isAnswered = false;
   bool _isCorrect = false;
-  bool _showExplanation = false;
   bool _isLoading = true;
 
   // Track session data
@@ -101,7 +99,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     setState(() {
       _isAnswered = true;
       _isCorrect = isCorrect;
-      _showExplanation = true;
     });
 
     // Update question state in Firestore
@@ -114,20 +111,36 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     // Track for session summary
     _correctAnswers.add(isCorrect);
     _explanationViewed.add(true); // Explanation is shown automatically
+
+    // Navigate to explanation screen
+    final isLastQuestion = _currentQuestionIndex >= _questions!.length - 1;
+    if (mounted) {
+      await Navigator.pushNamed(
+        context,
+        '/quiz-explanation',
+        arguments: {
+          'question': question,
+          'isCorrect': isCorrect,
+          'isLastQuestion': isLastQuestion,
+        },
+      );
+
+      // After returning from explanation, move to next question or finish
+      if (isLastQuestion) {
+        _finishQuiz();
+      } else {
+        _nextQuestion();
+      }
+    }
   }
 
   void _nextQuestion() {
-    if (_currentQuestionIndex < _questions!.length - 1) {
-      setState(() {
-        _currentQuestionIndex++;
-        _selectedIndices.clear();
-        _isAnswered = false;
-        _isCorrect = false;
-        _showExplanation = false;
-      });
-    } else {
-      _finishQuiz();
-    }
+    setState(() {
+      _currentQuestionIndex++;
+      _selectedIndices.clear();
+      _isAnswered = false;
+      _isCorrect = false;
+    });
   }
 
   void _finishQuiz() async {
@@ -191,6 +204,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         title: Text(
           'Question ${_currentQuestionIndex + 1}/${_questions!.length}',
         ),
+        actions: [
+          // Tip button
+          if (question.tips != null && !_isAnswered)
+            IconButton(
+              icon: const Icon(Icons.help_outline),
+              tooltip: 'Show tip',
+              onPressed: () => _showTipDialog(question.tips!),
+            ),
+        ],
       ),
       body: Column(
         children: [
@@ -232,7 +254,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Feedback and explanation
+                  // Show correct answers after submission
                   if (_isAnswered) ...[
                     Card(
                       color: _isCorrect
@@ -240,57 +262,24 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                           : Colors.red.shade50,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  _isCorrect
-                                      ? Icons.check_circle
-                                      : Icons.cancel,
-                                  color: _isCorrect ? Colors.green : Colors.red,
-                                  size: 32,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _isCorrect ? 'Correct!' : 'Incorrect',
-                                  style: Theme.of(context).textTheme.titleLarge
-                                      ?.copyWith(
-                                        color: _isCorrect
-                                            ? Colors.green
-                                            : Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                              ],
+                            Icon(
+                              _isCorrect ? Icons.check_circle : Icons.cancel,
+                              color: _isCorrect ? Colors.green : Colors.red,
+                              size: 32,
                             ),
-                            if (_showExplanation) ...[
-                              const SizedBox(height: 16),
-                              const Divider(),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Explanation:',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                question.explanation,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              if (question.sourceUrl != null) ...[
-                                const SizedBox(height: 12),
-                                TextButton.icon(
-                                  onPressed: () =>
-                                      _launchUrl(question.sourceUrl!),
-                                  icon: const Icon(Icons.open_in_new),
-                                  label: Text(
-                                    question.sourceLabel ?? 'View Source',
+                            const SizedBox(width: 8),
+                            Text(
+                              _isCorrect ? 'Correct!' : 'Incorrect',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: _isCorrect
+                                        ? Colors.green
+                                        : Colors.red,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                ),
-                              ],
-                            ],
+                            ),
                           ],
                         ),
                       ),
@@ -302,23 +291,20 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           ),
 
           // Action button
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: _isAnswered ? _nextQuestion : _submitAnswer,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                _isAnswered
-                    ? (_currentQuestionIndex < _questions!.length - 1
-                          ? 'Next Question'
-                          : 'Finish Quiz')
-                    : 'Submit Answer',
-                style: const TextStyle(fontSize: 18),
+          if (!_isAnswered)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: _submitAnswer,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  'Submit Answer',
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -414,16 +400,25 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     });
   }
 
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Could not open link')));
-      }
-    }
+  void _showTipDialog(String tip) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.lightbulb, color: Colors.amber.shade700),
+            const SizedBox(width: 8),
+            const Text('Tip'),
+          ],
+        ),
+        content: Text(tip),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
   }
 }

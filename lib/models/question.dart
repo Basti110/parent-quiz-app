@@ -5,6 +5,7 @@ class Question {
   final List<String> options;
   final List<int> correctIndices;
   final String explanation;
+  final String? tips;
   final String? sourceLabel;
   final String? sourceUrl;
   final int difficulty;
@@ -17,6 +18,7 @@ class Question {
     required this.options,
     required this.correctIndices,
     required this.explanation,
+    this.tips,
     this.sourceLabel,
     this.sourceUrl,
     required this.difficulty,
@@ -39,6 +41,7 @@ class Question {
       'options': options,
       'correctIndices': correctIndices,
       'explanation': explanation,
+      'tips': tips,
       'sourceLabel': sourceLabel,
       'sourceUrl': sourceUrl,
       'difficulty': difficulty,
@@ -54,6 +57,7 @@ class Question {
       options: List<String>.from(map['options'] as List),
       correctIndices: List<int>.from(map['correctIndices'] as List),
       explanation: map['explanation'] as String,
+      tips: map['tips'] as String?,
       sourceLabel: map['sourceLabel'] as String?,
       sourceUrl: map['sourceUrl'] as String?,
       difficulty: map['difficulty'] as int,

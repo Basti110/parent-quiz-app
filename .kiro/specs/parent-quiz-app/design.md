@@ -163,7 +163,7 @@ void updateStreak(String userId) async {
   }
 
   user.lastActiveAt = now;
-  await _firestore.collection('user').doc(userId).update(user.toMap());
+  await _firestore.collection('users').doc(userId).update(user.toMap());
 }
 ```
 
@@ -195,7 +195,7 @@ void checkAndResetWeeklyXP(String userId) async {
 
   if (weekStart.isBefore(currentMonday)) {
     // New week started, reset
-    await _firestore.collection('user').doc(userId).update({
+    await _firestore.collection('users').doc(userId).update({
       'weeklyXpCurrent': 0,
       'weeklyXpWeekStart': currentMonday,
     });
