@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/leaderboard_providers.dart';
 import '../../services/leaderboard_service.dart';
+import '../../l10n/app_localizations.dart';
 
 /// LeaderboardScreen with Global and Friends tabs
 /// Requirements: 8.5
@@ -31,21 +32,22 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final userId = ref.watch(currentUserIdProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Leaderboard'),
+        title: Text(l10n.leaderboard),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Global', icon: Icon(Icons.public)),
-            Tab(text: 'Friends', icon: Icon(Icons.group)),
+          tabs: [
+            Tab(text: l10n.global, icon: const Icon(Icons.public)),
+            Tab(text: l10n.friends, icon: const Icon(Icons.group)),
           ],
         ),
       ),
       body: userId == null
-          ? const Center(child: Text('Please log in to view leaderboard'))
+          ? Center(child: Text(l10n.pleaseLoginToViewLeaderboard))
           : TabBarView(
               controller: _tabController,
               children: [
@@ -57,6 +59,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   }
 
   Widget _buildGlobalLeaderboard(String userId) {
+    final l10n = AppLocalizations.of(context)!;
     final globalLeaderboardAsync = ref.watch(globalLeaderboardProvider);
     final userRankAsync = ref.watch(userRankProvider(userId));
 
@@ -79,9 +82,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             // Leaderboard list
             Expanded(
               child: entries.isEmpty
-                  ? const Center(
-                      child: Text('No players on the leaderboard yet'),
-                    )
+                  ? Center(child: Text(l10n.noPlayersYet))
                   : ListView.builder(
                       itemCount: entries.length,
                       itemBuilder: (context, index) {
@@ -104,13 +105,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error loading leaderboard: $error'),
+            Text(l10n.errorLoadingLeaderboard(error.toString())),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 ref.invalidate(globalLeaderboardProvider);
               },
-              child: const Text('Retry'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -119,6 +120,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   }
 
   Widget _buildFriendsLeaderboard(String userId) {
+    final l10n = AppLocalizations.of(context)!;
     final friendsLeaderboardAsync = ref.watch(
       friendsLeaderboardProvider(userId),
     );
@@ -132,19 +134,22 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               children: [
                 const Icon(Icons.group_off, size: 64, color: Colors.grey),
                 const SizedBox(height: 16),
-                const Text(
-                  'No friends yet',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  l10n.noFriendsYet,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                const Text('Add friends to see their rankings'),
+                Text(l10n.addFriendsToSeeRankings),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: () {
                     Navigator.of(context).pushNamed('/friends');
                   },
                   icon: const Icon(Icons.person_add),
-                  label: const Text('Add Friends'),
+                  label: Text(l10n.addFriendsButton),
                 ),
               ],
             ),
@@ -167,13 +172,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error loading friends leaderboard: $error'),
+            Text(l10n.errorLoadingFriendsLeaderboard(error.toString())),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 ref.invalidate(friendsLeaderboardProvider(userId));
               },
-              child: const Text('Retry'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -186,12 +191,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     List<LeaderboardEntry> entries,
     String userId,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     // Find current user's entry
     final userEntry = entries.firstWhere(
       (e) => e.userId == userId,
       orElse: () => LeaderboardEntry(
         userId: userId,
-        displayName: 'You',
+        displayName: l10n.you,
         weeklyXpCurrent: 0,
         rank: rank,
       ),
@@ -210,9 +216,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Your Rank',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                  Text(
+                    l10n.yourRank,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   Text(
                     userEntry.displayName,
@@ -227,7 +236,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Text('Weekly XP', style: TextStyle(fontSize: 12)),
+                Text(l10n.weeklyXp, style: const TextStyle(fontSize: 12)),
                 Text(
                   '${userEntry.weeklyXpCurrent}',
                   style: const TextStyle(
@@ -247,6 +256,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     LeaderboardEntry entry, {
     required bool isCurrentUser,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: _buildRankBadge(entry.rank, isCurrentUser: isCurrentUser),
       title: Text(
@@ -260,7 +270,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            '${entry.weeklyXpCurrent} XP',
+            '${entry.weeklyXpCurrent} ${l10n.xp}',
             style: TextStyle(
               fontSize: 16,
               fontWeight: isCurrentUser ? FontWeight.bold : FontWeight.normal,

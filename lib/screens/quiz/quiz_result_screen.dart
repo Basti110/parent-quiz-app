@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
+import '../../l10n/app_localizations.dart';
 
 /// QuizResultScreen displays session summary with XP earned and streak status
 /// Requirements: 5.7, 6.5
@@ -9,6 +10,7 @@ class QuizResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final correctCount = args['correctCount'] as int;
@@ -24,7 +26,7 @@ class QuizResultScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quiz Complete!'),
+        title: Text(l10n.quizComplete),
         automaticallyImplyLeading: false,
       ),
       body: userDataAsync == null
@@ -45,7 +47,7 @@ class QuizResultScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      _getResultMessage(percentage),
+                      _getResultMessage(percentage, l10n),
                       style: Theme.of(context).textTheme.headlineSmall,
                       textAlign: TextAlign.center,
                     ),
@@ -58,7 +60,7 @@ class QuizResultScreen extends ConsumerWidget {
                         child: Column(
                           children: [
                             Text(
-                              'Your Score',
+                              l10n.yourScore,
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 16),
@@ -72,7 +74,7 @@ class QuizResultScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '$percentage% Correct',
+                              l10n.percentCorrect(percentage),
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                           ],
@@ -98,14 +100,14 @@ class QuizResultScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'XP Earned',
+                                  l10n.xpEarned,
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              '+$xpEarned XP',
+                              '+$xpEarned ${l10n.xp}',
                               style: Theme.of(context).textTheme.displayMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.bold,
@@ -115,6 +117,7 @@ class QuizResultScreen extends ConsumerWidget {
                             const SizedBox(height: 16),
                             _buildXPBreakdown(
                               context,
+                              l10n,
                               correctCount,
                               totalCount,
                               xpEarned,
@@ -141,14 +144,14 @@ class QuizResultScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Current Streak',
+                                  l10n.currentStreak,
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              '${userData.streakCurrent} Days',
+                              l10n.daysCount(userData.streakCurrent),
                               style: Theme.of(context).textTheme.displaySmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.bold,
@@ -157,7 +160,7 @@ class QuizResultScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Longest: ${userData.streakLongest} days',
+                              l10n.longest(userData.streakLongest),
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ],
@@ -176,9 +179,9 @@ class QuizResultScreen extends ConsumerWidget {
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text(
-                        'Back to Home',
-                        style: TextStyle(fontSize: 18),
+                      child: Text(
+                        l10n.backToHome,
+                        style: const TextStyle(fontSize: 18),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -192,9 +195,9 @@ class QuizResultScreen extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text(
-                        'Play Again',
-                        style: TextStyle(fontSize: 18),
+                      child: Text(
+                        l10n.playAgain,
+                        style: const TextStyle(fontSize: 18),
                       ),
                     ),
                   ],
@@ -211,7 +214,7 @@ class QuizResultScreen extends ConsumerWidget {
                       color: Colors.red,
                     ),
                     const SizedBox(height: 16),
-                    Text('Error loading user data: $error'),
+                    Text(l10n.errorLoadingUserData(error.toString())),
                   ],
                 ),
               ),
@@ -219,20 +222,21 @@ class QuizResultScreen extends ConsumerWidget {
     );
   }
 
-  String _getResultMessage(int percentage) {
+  String _getResultMessage(int percentage, AppLocalizations l10n) {
     if (percentage == 100) {
-      return 'Perfect Score! 🎉';
+      return l10n.perfectScore;
     } else if (percentage >= 80) {
-      return 'Excellent Work! 🌟';
+      return l10n.excellentWork;
     } else if (percentage >= 60) {
-      return 'Good Job! 👍';
+      return l10n.goodJob;
     } else {
-      return 'Keep Learning! 📚';
+      return l10n.keepLearning;
     }
   }
 
   Widget _buildXPBreakdown(
     BuildContext context,
+    AppLocalizations l10n,
     int correctCount,
     int totalCount,
     int totalXP,
@@ -251,7 +255,7 @@ class QuizResultScreen extends ConsumerWidget {
         const Divider(),
         const SizedBox(height: 8),
         Text(
-          'XP Breakdown:',
+          l10n.xpBreakdown,
           style: Theme.of(
             context,
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
@@ -259,28 +263,32 @@ class QuizResultScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         _buildBreakdownRow(
           context,
-          'Correct answers',
+          l10n,
+          l10n.correctAnswersXp,
           '$correctCount × 10',
           correctXP,
         ),
         if (incorrectCount > 0)
           _buildBreakdownRow(
             context,
-            'Incorrect (with explanation)',
+            l10n,
+            l10n.incorrectWithExplanation,
             '$incorrectCount × 5',
             incorrectXP,
           ),
         _buildBreakdownRow(
           context,
-          'Session bonus',
-          '$totalCount questions',
+          l10n,
+          l10n.sessionBonus,
+          '$totalCount ${l10n.questions}',
           sessionBonus,
         ),
         if (perfectBonus > 0)
           _buildBreakdownRow(
             context,
-            'Perfect bonus',
-            'All correct!',
+            l10n,
+            l10n.perfectBonus,
+            l10n.allCorrect,
             perfectBonus,
           ),
       ],
@@ -289,6 +297,7 @@ class QuizResultScreen extends ConsumerWidget {
 
   Widget _buildBreakdownRow(
     BuildContext context,
+    AppLocalizations l10n,
     String label,
     String detail,
     int xp,
@@ -311,7 +320,7 @@ class QuizResultScreen extends ConsumerWidget {
             ],
           ),
           Text(
-            '+$xp XP',
+            '+$xp ${l10n.xp}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.amber.shade700,

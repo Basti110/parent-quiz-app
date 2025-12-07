@@ -88,6 +88,7 @@ class FriendsService {
   }
 
   /// Get list of friends as a one-time fetch
+  /// Property 7: Friend list ordering - returns friends sorted alphabetically by display name
   /// Requirements: 10.3
   Future<List<UserModel>> getFriends(String userId) async {
     try {
@@ -118,6 +119,9 @@ class FriendsService {
           .map((doc) => UserModel.fromMap(doc.data()!, doc.id))
           .toList();
 
+      // Sort alphabetically by display name
+      friends.sort((a, b) => a.displayName.compareTo(b.displayName));
+
       return friends;
     } on FirebaseException catch (e) {
       print('Firebase error getting friends: ${e.code} - ${e.message}');
@@ -131,6 +135,7 @@ class FriendsService {
   }
 
   /// Get list of friends as a stream for real-time updates
+  /// Property 7: Friend list ordering - returns friends sorted alphabetically by display name
   /// Requirements: 10.3
   Stream<List<UserModel>> getFriendsStream(String userId) {
     return _firestore
@@ -160,6 +165,9 @@ class FriendsService {
               .where((doc) => doc.exists)
               .map((doc) => UserModel.fromMap(doc.data()!, doc.id))
               .toList();
+
+          // Sort alphabetically by display name
+          friends.sort((a, b) => a.displayName.compareTo(b.displayName));
 
           return friends;
         });

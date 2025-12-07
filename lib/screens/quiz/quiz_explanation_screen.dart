@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/question.dart';
+import '../../l10n/app_localizations.dart';
 
 /// QuizExplanationScreen shows the explanation after answering a question
 class QuizExplanationScreen extends StatelessWidget {
@@ -8,6 +9,7 @@ class QuizExplanationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final question = args['question'] as Question;
@@ -16,7 +18,7 @@ class QuizExplanationScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isCorrect ? 'Correct!' : 'Incorrect'),
+        title: Text(isCorrect ? l10n.correct : l10n.incorrect),
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
@@ -38,7 +40,7 @@ class QuizExplanationScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      isCorrect ? 'Correct!' : 'Incorrect',
+                      isCorrect ? l10n.correct : l10n.incorrect,
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             color: isCorrect ? Colors.green : Colors.red,
@@ -53,7 +55,7 @@ class QuizExplanationScreen extends StatelessWidget {
 
             // Explanation section
             Text(
-              'Explanation',
+              l10n.explanation,
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -73,7 +75,7 @@ class QuizExplanationScreen extends StatelessWidget {
             if (question.tips != null) ...[
               const SizedBox(height: 24),
               Text(
-                'Tips',
+                l10n.tips,
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -106,7 +108,7 @@ class QuizExplanationScreen extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => _launchUrl(context, question.sourceUrl!),
                 icon: const Icon(Icons.open_in_new),
-                label: Text(question.sourceLabel ?? 'View Source'),
+                label: Text(question.sourceLabel ?? l10n.viewSource),
               ),
             ],
           ],
@@ -120,7 +122,7 @@ class QuizExplanationScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
           child: Text(
-            isLastQuestion ? 'Finish Quiz' : 'Next Question',
+            isLastQuestion ? l10n.finishQuiz : l10n.nextQuestion,
             style: const TextStyle(fontSize: 18),
           ),
         ),
@@ -129,6 +131,7 @@ class QuizExplanationScreen extends StatelessWidget {
   }
 
   Future<void> _launchUrl(BuildContext context, String url) async {
+    final l10n = AppLocalizations.of(context)!;
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -136,7 +139,7 @@ class QuizExplanationScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Could not open link')));
+        ).showSnackBar(SnackBar(content: Text(l10n.couldNotOpenLink)));
       }
     }
   }

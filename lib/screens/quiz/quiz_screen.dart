@@ -4,6 +4,7 @@ import '../../models/category.dart';
 import '../../models/question.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/quiz_providers.dart';
+import '../../l10n/app_localizations.dart';
 
 /// QuizScreen displays questions and handles user answers
 /// Requirements: 4.3, 4.4, 4.5
@@ -43,9 +44,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
     if (userId == null) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('User not authenticated')));
+        ).showSnackBar(SnackBar(content: Text(l10n.userNotAuthenticated)));
         Navigator.of(context).pop();
       }
       return;
@@ -61,11 +63,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
       if (questions.isEmpty) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No questions available for this category'),
-            ),
-          );
+          final l10n = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.noQuestionsAvailable)));
           Navigator.of(context).pop();
         }
         return;
@@ -77,9 +78,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading questions: $e')));
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorLoadingQuestions(e.toString()))),
+        );
         Navigator.of(context).pop();
       }
     }
@@ -87,9 +89,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
   void _submitAnswer() async {
     if (_selectedIndices.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Please select an answer')));
+      ).showSnackBar(SnackBar(content: Text(l10n.pleaseSelectAnswer)));
       return;
     }
 
@@ -180,18 +183,21 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error finishing quiz: $e')));
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorFinishingQuiz(e.toString()))),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_isLoading || _questions == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Quiz')),
+        appBar: AppBar(title: Text(l10n.quiz)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -202,14 +208,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Question ${_currentQuestionIndex + 1}/${_questions!.length}',
+          '${l10n.question} ${_currentQuestionIndex + 1}/${_questions!.length}',
         ),
         actions: [
           // Tip button
           if (question.tips != null && !_isAnswered)
             IconButton(
               icon: const Icon(Icons.help_outline),
-              tooltip: 'Show tip',
+              tooltip: l10n.showTip,
               onPressed: () => _showTipDialog(question.tips!),
             ),
         ],
@@ -241,8 +247,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   if (!_isAnswered)
                     Text(
                       question.isMultipleChoice
-                          ? 'Select all that apply'
-                          : 'Select one answer',
+                          ? l10n.selectAllThatApply
+                          : l10n.selectOneAnswer,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   const SizedBox(height: 8),
@@ -271,7 +277,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              _isCorrect ? 'Correct!' : 'Incorrect',
+                              _isCorrect ? l10n.correct : l10n.incorrect,
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(
                                     color: _isCorrect
@@ -299,9 +305,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'Submit Answer',
-                  style: TextStyle(fontSize: 18),
+                child: Text(
+                  l10n.submitAnswer,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
             ),
@@ -401,6 +407,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   }
 
   void _showTipDialog(String tip) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -408,14 +415,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           children: [
             Icon(Icons.lightbulb, color: Colors.amber.shade700),
             const SizedBox(width: 8),
-            const Text('Tip'),
+            Text(l10n.tip),
           ],
         ),
         content: Text(tip),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Got it'),
+            child: Text(l10n.gotIt),
           ),
         ],
       ),

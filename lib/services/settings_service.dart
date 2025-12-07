@@ -61,6 +61,69 @@ class SettingsService {
     }
   }
 
+  /// Get the dark mode preference (true for dark, false for light)
+  Future<bool> getDarkMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool('darkMode') ?? false;
+    } catch (e) {
+      // Default to light mode if there's an error
+      return false;
+    }
+  }
+
+  /// Set the dark mode preference
+  Future<void> setDarkMode(bool value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('darkMode', value);
+    } catch (e) {
+      throw 'Failed to save dark mode preference: $e';
+    }
+  }
+
+  /// Get the saved language preference
+  Future<String?> getLanguage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('language');
+    } catch (e) {
+      // Return null if there's an error, will trigger device locale detection
+      return null;
+    }
+  }
+
+  /// Set the language preference
+  Future<void> setLanguage(String languageCode) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('language', languageCode);
+    } catch (e) {
+      throw 'Failed to save language preference: $e';
+    }
+  }
+
+  /// Get the saved avatar path preference
+  Future<String?> getAvatarPath() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('avatarPath');
+    } catch (e) {
+      // Return null if there's an error, will use default avatar
+      return null;
+    }
+  }
+
+  /// Set the avatar path preference
+  Future<void> setAvatarPath(String path) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('avatarPath', path);
+    } catch (e) {
+      throw 'Failed to save avatar preference: $e';
+    }
+  }
+
   /// Logout the current user
   Future<void> logout() async {
     try {

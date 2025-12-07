@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/auth/onboarding_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
-import 'screens/home/home_screen.dart';
+import 'screens/main_navigation.dart';
 import 'screens/quiz/category_selection_screen.dart';
 import 'screens/quiz/quiz_length_screen.dart';
 import 'screens/quiz/quiz_screen.dart';
@@ -19,7 +21,9 @@ import 'screens/vs_mode/vs_mode_handoff_screen.dart';
 import 'screens/vs_mode/vs_mode_result_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'providers/auth_providers.dart';
-import 'providers/settings_providers.dart';
+import 'providers/theme_providers.dart';
+import 'providers/locale_providers.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,28 +42,29 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
+    final themeMode = ref.watch(themeProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp(
       title: 'ParentQuiz',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-        brightness: Brightness.dark,
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en'), Locale('de')],
       initialRoute: '/',
       routes: {
         '/': (context) => const AuthGate(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const HomeScreen(),
+        '/home': (context) => const MainNavigationScreen(),
         '/category-selection': (context) => const CategorySelectionScreen(),
         '/quiz-length': (context) => const QuizLengthScreen(),
         '/quiz': (context) => const QuizScreen(),
@@ -87,9 +92,9 @@ class AuthGate extends ConsumerWidget {
 
     return authState.when(
       data: (user) {
-        // If user is authenticated, show home screen
+        // If user is authenticated, show main navigation screen
         if (user != null) {
-          return const HomeScreen();
+          return const MainNavigationScreen();
         }
         // If not authenticated, show onboarding
         return const OnboardingScreen();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -11,26 +12,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingPage> _pages = [
-    OnboardingPage(
-      title: 'Welcome to ParentQuiz',
-      description:
-          'Learn evidence-based parenting through fun, bite-sized quizzes',
-      icon: Icons.family_restroom,
-    ),
-    OnboardingPage(
-      title: 'Earn XP & Level Up',
-      description:
-          'Answer questions correctly, maintain streaks, and track your progress',
-      icon: Icons.emoji_events,
-    ),
-    OnboardingPage(
-      title: 'Compete with Friends',
-      description:
-          'Add friends, compare scores on leaderboards, and challenge them in VS Mode',
-      icon: Icons.people,
-    ),
-  ];
+  List<OnboardingPage> _getPages(AppLocalizations l10n) {
+    return [
+      OnboardingPage(
+        title: l10n.welcomeToParentQuiz,
+        description: l10n.onboardingWelcomeDescription,
+        icon: Icons.family_restroom,
+      ),
+      OnboardingPage(
+        title: l10n.earnXpLevelUp,
+        description: l10n.onboardingXpDescription,
+        icon: Icons.emoji_events,
+      ),
+      OnboardingPage(
+        title: l10n.competeWithFriends,
+        description: l10n.onboardingFriendsDescription,
+        icon: Icons.people,
+      ),
+    ];
+  }
 
   @override
   void dispose() {
@@ -45,7 +45,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
+    final l10n = AppLocalizations.of(context)!;
+    final pages = _getPages(l10n);
+
+    if (_currentPage < pages.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -61,6 +64,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final pages = _getPages(l10n);
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -69,9 +75,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: _onPageChanged,
-                itemCount: _pages.length,
+                itemCount: pages.length,
                 itemBuilder: (context, index) {
-                  return _buildPage(_pages[index]);
+                  return _buildPage(pages[index]);
                 },
               ),
             ),
@@ -82,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
-                      _pages.length,
+                      pages.length,
                       (index) => _buildPageIndicator(index),
                     ),
                   ),
@@ -98,22 +104,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               curve: Curves.easeInOut,
                             );
                           },
-                          child: const Text('Back'),
+                          child: Text(l10n.back),
                         )
                       else
                         const SizedBox(width: 80),
                       ElevatedButton(
                         onPressed: _nextPage,
                         child: Text(
-                          _currentPage == _pages.length - 1
-                              ? 'Get Started'
-                              : 'Next',
+                          _currentPage == pages.length - 1
+                              ? l10n.getStarted
+                              : l10n.next,
                         ),
                       ),
-                      if (_currentPage < _pages.length - 1)
+                      if (_currentPage < pages.length - 1)
                         TextButton(
                           onPressed: _completeOnboarding,
-                          child: const Text('Skip'),
+                          child: Text(l10n.skip),
                         )
                       else
                         const SizedBox(width: 80),

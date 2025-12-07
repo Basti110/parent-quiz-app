@@ -14,6 +14,7 @@ User documents with the following fields:
 {
   'displayName': String,
   'email': String,
+  'avatarPath': String?,          // Optional local asset path (e.g., 'assets/app_images/avatars/avatar_1.png')
   'createdAt': Timestamp,
   'lastActiveAt': Timestamp,
   'friendCode': String,           // 6-8 character alphanumeric

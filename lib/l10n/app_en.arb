@@ -1,0 +1,612 @@
+{
+  "@@locale": "en",
+  "dashboard": "Dashboard",
+  "@dashboard": {
+    "description": "Label for dashboard navigation tab"
+  },
+  "vsMode": "VS Mode",
+  "@vsMode": {
+    "description": "Label for VS Mode navigation tab"
+  },
+  "leaderboard": "Leaderboard",
+  "@leaderboard": {
+    "description": "Label for leaderboard navigation tab"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Label for settings navigation tab"
+  },
+  "correctAnswers": "Correct Answers",
+  "@correctAnswers": {
+    "description": "Label for correct answers count"
+  },
+  "startRandomQuiz": "Start Random Quiz",
+  "@startRandomQuiz": {
+    "description": "Button to start a random quiz"
+  },
+  "darkMode": "Dark Mode",
+  "@darkMode": {
+    "description": "Label for dark mode toggle"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Label for language selection"
+  },
+  "changeAvatar": "Change Avatar",
+  "@changeAvatar": {
+    "description": "Label for change avatar option"
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Label for logout button"
+  },
+  "addFriend": "Add Friend",
+  "@addFriend": {
+    "description": "Button to add a friend"
+  },
+  "friendCode": "Friend Code",
+  "@friendCode": {
+    "description": "Label for friend code input"
+  },
+  "wins": "Wins",
+  "@wins": {
+    "description": "Label for number of wins"
+  },
+  "losses": "Losses",
+  "@losses": {
+    "description": "Label for number of losses"
+  },
+  "noFriends": "No friends yet. Add friends to compete!",
+  "@noFriends": {
+    "description": "Message when user has no friends"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button label"
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Add button label"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button label"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button label"
+  },
+  "register": "Register",
+  "@register": {
+    "description": "Register button label"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Email input label"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password input label"
+  },
+  "displayName": "Display Name",
+  "@displayName": {
+    "description": "Display name input label"
+  },
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "Confirm password input label"
+  },
+  "welcomeBack": "Welcome Back!",
+  "@welcomeBack": {
+    "description": "Welcome message on login screen"
+  },
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Create account header"
+  },
+  "alreadyHaveAccount": "Already have an account?",
+  "@alreadyHaveAccount": {
+    "description": "Link to login from register"
+  },
+  "dontHaveAccount": "Don't have an account?",
+  "@dontHaveAccount": {
+    "description": "Link to register from login"
+  },
+  "signUp": "Sign Up",
+  "@signUp": {
+    "description": "Sign up button label"
+  },
+  "welcome": "Welcome to Parent Quiz!",
+  "@welcome": {
+    "description": "Welcome message on onboarding"
+  },
+  "onboardingDescription": "Learn about parenting through fun quizzes and compete with friends!",
+  "@onboardingDescription": {
+    "description": "Onboarding description"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Get started button"
+  },
+  "selectCategory": "Select Category",
+  "@selectCategory": {
+    "description": "Select category screen title"
+  },
+  "selectQuizLength": "Select Quiz Length",
+  "@selectQuizLength": {
+    "description": "Select quiz length screen title"
+  },
+  "questions": "Questions",
+  "@questions": {
+    "description": "Questions label"
+  },
+  "start": "Start",
+  "@start": {
+    "description": "Start button label"
+  },
+  "question": "Question",
+  "@question": {
+    "description": "Question label"
+  },
+  "next": "Next",
+  "@next": {
+    "description": "Next button label"
+  },
+  "submit": "Submit",
+  "@submit": {
+    "description": "Submit button label"
+  },
+  "correct": "Correct!",
+  "@correct": {
+    "description": "Correct answer feedback"
+  },
+  "incorrect": "Incorrect",
+  "@incorrect": {
+    "description": "Incorrect answer feedback"
+  },
+  "explanation": "Explanation",
+  "@explanation": {
+    "description": "Explanation section label"
+  },
+  "continue_": "Continue",
+  "@continue_": {
+    "description": "Continue button label"
+  },
+  "quizResults": "Quiz Results",
+  "@quizResults": {
+    "description": "Quiz results screen title"
+  },
+  "score": "Score",
+  "@score": {
+    "description": "Score label"
+  },
+  "xpEarned": "XP Earned",
+  "@xpEarned": {
+    "description": "XP earned label"
+  },
+  "backToHome": "Back to Home",
+  "@backToHome": {
+    "description": "Back to home button"
+  },
+  "weeklyLeaderboard": "Weekly Leaderboard",
+  "@weeklyLeaderboard": {
+    "description": "Weekly leaderboard title"
+  },
+  "rank": "Rank",
+  "@rank": {
+    "description": "Rank label"
+  },
+  "player": "Player",
+  "@player": {
+    "description": "Player label"
+  },
+  "points": "Points",
+  "@points": {
+    "description": "Points label"
+  },
+  "you": "You",
+  "@you": {
+    "description": "Label for current user"
+  },
+  "friends": "Friends",
+  "@friends": {
+    "description": "Friends screen title"
+  },
+  "yourFriendCode": "Your Friend Code",
+  "@yourFriendCode": {
+    "description": "Your friend code label"
+  },
+  "enterFriendCode": "Enter Friend Code",
+  "@enterFriendCode": {
+    "description": "Enter friend code hint"
+  },
+  "vsModeSetup": "VS Mode Setup",
+  "@vsModeSetup": {
+    "description": "VS Mode setup screen title"
+  },
+  "selectOpponent": "Select Opponent",
+  "@selectOpponent": {
+    "description": "Select opponent label"
+  },
+  "selectQuestions": "Select Number of Questions",
+  "@selectQuestions": {
+    "description": "Select questions label"
+  },
+  "startDuel": "Start Duel",
+  "@startDuel": {
+    "description": "Start duel button"
+  },
+  "player1": "Player 1",
+  "@player1": {
+    "description": "Player 1 label"
+  },
+  "player2": "Player 2",
+  "@player2": {
+    "description": "Player 2 label"
+  },
+  "handoffDevice": "Hand off device to {playerName}",
+  "@handoffDevice": {
+    "description": "Handoff device message",
+    "placeholders": {
+      "playerName": {
+        "type": "String"
+      }
+    }
+  },
+  "ready": "Ready",
+  "@ready": {
+    "description": "Ready button label"
+  },
+  "vsModeResults": "VS Mode Results",
+  "@vsModeResults": {
+    "description": "VS Mode results screen title"
+  },
+  "winner": "Winner",
+  "@winner": {
+    "description": "Winner label"
+  },
+  "tie": "It's a Tie!",
+  "@tie": {
+    "description": "Tie game message"
+  },
+  "playAgain": "Play Again",
+  "@playAgain": {
+    "description": "Play again button"
+  },
+  "level": "Level",
+  "@level": {
+    "description": "Level label"
+  },
+  "streak": "Streak",
+  "@streak": {
+    "description": "Streak label"
+  },
+  "days": "days",
+  "@days": {
+    "description": "Days label"
+  },
+  "totalXP": "Total XP",
+  "@totalXP": {
+    "description": "Total XP label"
+  },
+  "selectAvatar": "Select Avatar",
+  "@selectAvatar": {
+    "description": "Select avatar screen title"
+  },
+  "confirmLogout": "Are you sure you want to logout?",
+  "@confirmLogout": {
+    "description": "Logout confirmation message"
+  },
+  "yes": "Yes",
+  "@yes": {
+    "description": "Yes button label"
+  },
+  "no": "No",
+  "@no": {
+    "description": "No button label"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Error label"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading message"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button label"
+  },
+  "tips": "Tips",
+  "@tips": {
+    "description": "Tips section label"
+  },
+  "nextQuestion": "Next Question",
+  "@nextQuestion": {
+    "description": "Next question button"
+  },
+  "finishQuiz": "Finish Quiz",
+  "@finishQuiz": {
+    "description": "Finish quiz button"
+  },
+  "parentQuiz": "ParentQuiz",
+  "@parentQuiz": {
+    "description": "App name"
+  },
+  "pleaseEnterEmail": "Please enter your email",
+  "@pleaseEnterEmail": {
+    "description": "Email validation error"
+  },
+  "pleaseEnterValidEmail": "Please enter a valid email",
+  "@pleaseEnterValidEmail": {
+    "description": "Email format validation error"
+  },
+  "pleaseEnterPassword": "Please enter your password",
+  "@pleaseEnterPassword": {
+    "description": "Password validation error"
+  },
+  "pleaseEnterName": "Please enter your name",
+  "@pleaseEnterName": {
+    "description": "Name validation error"
+  },
+  "nameTooShort": "Name must be at least 2 characters",
+  "@nameTooShort": {
+    "description": "Name length validation error"
+  },
+  "passwordTooShort": "Password must be at least 6 characters",
+  "@passwordTooShort": {
+    "description": "Password length validation error"
+  },
+  "pleaseConfirmPassword": "Please confirm your password",
+  "@pleaseConfirmPassword": {
+    "description": "Confirm password validation error"
+  },
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Password match validation error"
+  },
+  "name": "Name",
+  "@name": {
+    "description": "Name input label"
+  },
+  "welcomeToParentQuiz": "Welcome to ParentQuiz",
+  "@welcomeToParentQuiz": {
+    "description": "Onboarding welcome title"
+  },
+  "onboardingWelcomeDescription": "Learn evidence-based parenting through fun, bite-sized quizzes",
+  "@onboardingWelcomeDescription": {
+    "description": "Onboarding welcome description"
+  },
+  "earnXpLevelUp": "Earn XP & Level Up",
+  "@earnXpLevelUp": {
+    "description": "Onboarding XP title"
+  },
+  "onboardingXpDescription": "Answer questions correctly, maintain streaks, and track your progress",
+  "@onboardingXpDescription": {
+    "description": "Onboarding XP description"
+  },
+  "competeWithFriends": "Compete with Friends",
+  "@competeWithFriends": {
+    "description": "Onboarding friends title"
+  },
+  "onboardingFriendsDescription": "Add friends, compare scores on leaderboards, and challenge them in VS Mode",
+  "@onboardingFriendsDescription": {
+    "description": "Onboarding friends description"
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Back button label"
+  },
+  "skip": "Skip",
+  "@skip": {
+    "description": "Skip button label"
+  },
+  "quiz": "Quiz",
+  "@quiz": {
+    "description": "Quiz screen title"
+  },
+  "selectAllThatApply": "Select all that apply",
+  "@selectAllThatApply": {
+    "description": "Multiple choice instruction"
+  },
+  "selectOneAnswer": "Select one answer",
+  "@selectOneAnswer": {
+    "description": "Single choice instruction"
+  },
+  "pleaseSelectAnswer": "Please select an answer",
+  "@pleaseSelectAnswer": {
+    "description": "Answer selection validation"
+  },
+  "submitAnswer": "Submit Answer",
+  "@submitAnswer": {
+    "description": "Submit answer button"
+  },
+  "showTip": "Show tip",
+  "@showTip": {
+    "description": "Show tip tooltip"
+  },
+  "tip": "Tip",
+  "@tip": {
+    "description": "Tip dialog title"
+  },
+  "gotIt": "Got it",
+  "@gotIt": {
+    "description": "Got it button"
+  },
+  "userNotAuthenticated": "User not authenticated",
+  "@userNotAuthenticated": {
+    "description": "Authentication error message"
+  },
+  "noQuestionsAvailable": "No questions available for this category",
+  "@noQuestionsAvailable": {
+    "description": "No questions error message"
+  },
+  "errorLoadingQuestions": "Error loading questions: {error}",
+  "@errorLoadingQuestions": {
+    "description": "Error loading questions message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorFinishingQuiz": "Error finishing quiz: {error}",
+  "@errorFinishingQuiz": {
+    "description": "Error finishing quiz message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "quizComplete": "Quiz Complete!",
+  "@quizComplete": {
+    "description": "Quiz complete title"
+  },
+  "perfectScore": "Perfect Score! 🎉",
+  "@perfectScore": {
+    "description": "Perfect score message"
+  },
+  "excellentWork": "Excellent Work! 🌟",
+  "@excellentWork": {
+    "description": "Excellent work message"
+  },
+  "goodJob": "Good Job! 👍",
+  "@goodJob": {
+    "description": "Good job message"
+  },
+  "keepLearning": "Keep Learning! 📚",
+  "@keepLearning": {
+    "description": "Keep learning message"
+  },
+  "yourScore": "Your Score",
+  "@yourScore": {
+    "description": "Your score label"
+  },
+  "percentCorrect": "{percent}% Correct",
+  "@percentCorrect": {
+    "description": "Percent correct label",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "xpBreakdown": "XP Breakdown:",
+  "@xpBreakdown": {
+    "description": "XP breakdown label"
+  },
+  "correctAnswersXp": "Correct answers",
+  "@correctAnswersXp": {
+    "description": "Correct answers XP label"
+  },
+  "incorrectWithExplanation": "Incorrect (with explanation)",
+  "@incorrectWithExplanation": {
+    "description": "Incorrect with explanation XP label"
+  },
+  "sessionBonus": "Session bonus",
+  "@sessionBonus": {
+    "description": "Session bonus XP label"
+  },
+  "perfectBonus": "Perfect bonus",
+  "@perfectBonus": {
+    "description": "Perfect bonus XP label"
+  },
+  "allCorrect": "All correct!",
+  "@allCorrect": {
+    "description": "All correct message"
+  },
+  "currentStreak": "Current Streak",
+  "@currentStreak": {
+    "description": "Current streak label"
+  },
+  "daysCount": "{count} Days",
+  "@daysCount": {
+    "description": "Days count label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "longest": "Longest: {count} days",
+  "@longest": {
+    "description": "Longest streak label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorLoadingUserData": "Error loading user data: {error}",
+  "@errorLoadingUserData": {
+    "description": "Error loading user data message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "viewSource": "View Source",
+  "@viewSource": {
+    "description": "View source button"
+  },
+  "couldNotOpenLink": "Could not open link",
+  "@couldNotOpenLink": {
+    "description": "Could not open link error"
+  },
+  "pleaseLoginToViewLeaderboard": "Please log in to view leaderboard",
+  "@pleaseLoginToViewLeaderboard": {
+    "description": "Login required message for leaderboard"
+  },
+  "global": "Global",
+  "@global": {
+    "description": "Global leaderboard tab"
+  },
+  "noPlayersYet": "No players on the leaderboard yet",
+  "@noPlayersYet": {
+    "description": "No players message"
+  },
+  "errorLoadingLeaderboard": "Error loading leaderboard: {error}",
+  "@errorLoadingLeaderboard": {
+    "description": "Error loading leaderboard message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noFriendsYet": "No friends yet",
+  "@noFriendsYet": {
+    "description": "No friends message"
+  },
+  "addFriendsToSeeRankings": "Add friends to see their rankings",
+  "@addFriendsToSeeRankings": {
+    "description": "Add friends message"
+  },
+  "addFriendsButton": "Add Friends",
+  "@addFriendsButton": {
+    "description": "Add friends button"
+  },
+  "errorLoadingFriendsLeaderboard": "Error loading friends leaderboard: {error}",
+  "@errorLoadingFriendsLeaderboard": {
+    "description": "Error loading friends leaderboard message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "yourRank": "Your Rank",
+  "@yourRank": {
+    "description": "Your rank label"
+  },
+  "weeklyXp": "Weekly XP",
+  "@weeklyXp": {
+    "description": "Weekly XP label"
+  },
+  "xp": "XP",
+  "@xp": {
+    "description": "XP label"
+  }
+}
