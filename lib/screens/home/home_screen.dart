@@ -5,6 +5,7 @@ import '../../providers/auth_providers.dart';
 import '../../providers/quiz_providers.dart';
 import '../../widgets/category_card.dart';
 import '../../l10n/app_localizations.dart';
+import '../../theme/app_colors.dart';
 import '../quiz/quiz_length_screen.dart';
 
 /// HomeScreen (Dashboard) with header, hero image, daily goal, categories, and action button
@@ -131,7 +132,7 @@ class HomeScreen extends ConsumerWidget {
           // Level and streak
           Row(
             children: [
-              const Icon(Icons.emoji_events, color: Colors.amber, size: 24),
+              const Icon(Icons.emoji_events, color: AppColors.crown, size: 24),
               const SizedBox(width: 4),
               Text(
                 '${userData.currentLevel}',
@@ -142,7 +143,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(width: 16),
               const Icon(
                 Icons.local_fire_department,
-                color: Colors.orange,
+                color: AppColors.fire,
                 size: 24,
               ),
               const SizedBox(width: 4),
@@ -161,17 +162,17 @@ class HomeScreen extends ConsumerWidget {
                 '${userData.totalXp} XP',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.teal,
+                  color: AppColors.xp,
                 ),
               ),
               const SizedBox(width: 8),
               CircleAvatar(
                 radius: 16,
-                backgroundColor: Colors.teal.shade100,
+                backgroundColor: AppColors.primaryLightest,
                 child: Icon(
                   Icons.person,
                   size: 20,
-                  color: Colors.teal.shade600,
+                  color: AppColors.primaryDark,
                 ),
               ),
             ],
@@ -198,7 +199,7 @@ class HomeScreen extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.teal.shade600, Colors.teal.shade400],
+          colors: [AppColors.primaryDark, AppColors.primary],
         ),
       ),
       child: Stack(
@@ -234,9 +235,9 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Bereit für die nächste Lektion?',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.teal.shade100),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.primaryLightest,
+                  ),
                 ),
               ],
             ),
@@ -283,7 +284,7 @@ class HomeScreen extends ConsumerWidget {
                   Text(
                     'TAGESZIEL',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.grey.shade400,
+                      color: AppColors.textTertiary,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                     ),
@@ -304,9 +305,9 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   LinearProgressIndicator(
                     value: progressPercentage,
-                    backgroundColor: Colors.grey.shade200,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.yellow.shade600,
+                    backgroundColor: AppColors.borderLight,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.warning,
                     ),
                     minHeight: 8,
                     borderRadius: BorderRadius.circular(4),

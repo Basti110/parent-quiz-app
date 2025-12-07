@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/category.dart';
+import '../../theme/app_colors.dart';
 
 /// QuizLengthScreen allows user to select session size (5 or 10 questions)
 /// Requirements: 3.4
@@ -12,10 +13,10 @@ class QuizLengthScreen extends StatelessWidget {
     final category = ModalRoute.of(context)!.settings.arguments as Category;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.teal.shade500,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         title: const Text(
           'Quiz-Länge wählen',
@@ -34,7 +35,7 @@ class QuizLengthScreen extends StatelessWidget {
                 category.title,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
+                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -43,7 +44,7 @@ class QuizLengthScreen extends StatelessWidget {
                 'Wie viele Fragen möchtest du beantworten?',
                 style: Theme.of(
                   context,
-                ).textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600),
+                ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
@@ -83,9 +84,9 @@ class QuizLengthScreen extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 2),
+        border: Border.all(color: AppColors.border, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -111,10 +112,10 @@ class QuizLengthScreen extends StatelessWidget {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: Colors.teal.shade50,
+                  color: AppColors.primaryLightest,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, size: 32, color: Colors.teal.shade600),
+                child: Icon(icon, size: 32, color: AppColors.primaryDark),
               ),
               const SizedBox(width: 20),
               // Text content
@@ -126,14 +127,14 @@ class QuizLengthScreen extends StatelessWidget {
                       '$questionCount Fragen',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '+$xpBonus XP Bonus',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Colors.teal.shade600,
+                        color: AppColors.xp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -141,14 +142,18 @@ class QuizLengthScreen extends StatelessWidget {
                     Text(
                       '~${(questionCount * 0.5).toInt()} Minuten',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade500,
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ],
                 ),
               ),
               // Chevron
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 28),
+              Icon(
+                Icons.chevron_right,
+                color: AppColors.iconSecondary,
+                size: 28,
+              ),
             ],
           ),
         ),

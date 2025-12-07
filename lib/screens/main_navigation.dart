@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
+import '../theme/app_colors.dart';
 import 'home/home_screen.dart';
 import 'friends/friends_screen.dart';
 import 'leaderboard/leaderboard_screen.dart';
@@ -52,24 +53,36 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textSecondary,
+        selectedFontSize: 10,
+        unselectedFontSize: 10,
+        elevation: 8,
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: l10n.dashboard,
+            icon: const Icon(Icons.home, size: 28),
+            label: l10n.dashboard.toUpperCase(),
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.people),
-            label: l10n.vsMode,
+            icon: const Icon(Icons.sports_martial_arts, size: 28),
+            label: l10n.vsMode.toUpperCase(),
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.leaderboard),
-            label: l10n.leaderboard,
+            icon: const Icon(Icons.leaderboard, size: 28),
+            label: l10n.leaderboard.toUpperCase(),
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.settings),
-            label: l10n.settings,
+            icon: const Icon(Icons.person, size: 28),
+            label: l10n.settings.toUpperCase(),
           ),
         ],
       ),

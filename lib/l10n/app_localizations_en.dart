@@ -453,4 +453,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get xp => 'XP';
+
+  @override
+  String get exitQuiz => 'Exit Quiz';
+
+  @override
+  String get exitQuizConfirmation =>
+      'Are you sure you want to exit? Your progress will be lost.';
 }

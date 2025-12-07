@@ -608,5 +608,13 @@
   "xp": "XP",
   "@xp": {
     "description": "XP label"
+  },
+  "exitQuiz": "Exit Quiz",
+  "@exitQuiz": {
+    "description": "Exit quiz dialog title"
+  },
+  "exitQuizConfirmation": "Are you sure you want to exit? Your progress will be lost.",
+  "@exitQuizConfirmation": {
+    "description": "Exit quiz confirmation message"
   }
 }

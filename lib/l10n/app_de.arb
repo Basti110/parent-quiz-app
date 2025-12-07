@@ -140,5 +140,7 @@
   "errorLoadingFriendsLeaderboard": "Fehler beim Laden der Freunde-Bestenliste: {error}",
   "yourRank": "Ihr Rang",
   "weeklyXp": "Wöchentliche EP",
-  "xp": "EP"
+  "xp": "EP",
+  "exitQuiz": "Quiz beenden",
+  "exitQuizConfirmation": "Möchten Sie wirklich beenden? Ihr Fortschritt geht verloren."
 }

@@ -456,4 +456,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get xp => 'EP';
+
+  @override
+  String get exitQuiz => 'Quiz beenden';
+
+  @override
+  String get exitQuizConfirmation =>
+      'Möchten Sie wirklich beenden? Ihr Fortschritt geht verloren.';
 }
