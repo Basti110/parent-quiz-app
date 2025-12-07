@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/vs_mode_session.dart';
 import '../../models/question.dart';
+import '../../theme/app_colors.dart';
 
 /// VSModeHandoffScreen displays a transition screen between players
 /// Requirements: 9.4
@@ -26,7 +27,7 @@ class VSModeHandoffScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Player A completed icon
-              Icon(Icons.check_circle, size: 80, color: Colors.blue.shade400),
+              const Icon(Icons.check_circle, size: 80, color: AppColors.info),
               const SizedBox(height: 24),
 
               // Player A finished message
@@ -41,13 +42,13 @@ class VSModeHandoffScreen extends StatelessWidget {
 
               // Player A score
               Card(
-                color: Colors.blue.shade50,
+                color: AppColors.info.withOpacity(0.1),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star, color: Colors.blue),
+                      const Icon(Icons.star, color: AppColors.info),
                       const SizedBox(width: 8),
                       Text(
                         'Score: ${session.playerAScore}/${session.questionsPerPlayer}',
@@ -63,16 +64,19 @@ class VSModeHandoffScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(24.0),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: AppColors.success.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.shade200, width: 2),
+                  border: Border.all(
+                    color: AppColors.success.withOpacity(0.3),
+                    width: 2,
+                  ),
                 ),
                 child: Column(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.swap_horiz,
                       size: 48,
-                      color: Colors.green.shade700,
+                      color: AppColors.success,
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -86,7 +90,7 @@ class VSModeHandoffScreen extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.green.shade700,
+                            color: AppColors.success,
                           ),
                       textAlign: TextAlign.center,
                     ),
@@ -112,7 +116,7 @@ class VSModeHandoffScreen extends StatelessWidget {
                     horizontal: 48,
                     vertical: 16,
                   ),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Continue', style: TextStyle(fontSize: 18)),

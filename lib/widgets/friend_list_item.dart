@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
+import '../l10n/app_localizations.dart';
 import '../models/user_model.dart';
 import '../screens/vs_mode/vs_mode_setup_screen.dart';
-import '../l10n/app_localizations.dart';
+import '../theme/app_colors.dart';
 
 /// Widget to display a friend in a list with their stats
 /// Requirements: 3.2
@@ -25,11 +27,11 @@ class FriendListItem extends StatelessWidget {
         title: Text(friend.displayName),
         subtitle: Row(
           children: [
-            const Icon(Icons.emoji_events, size: 16, color: Colors.green),
+            const Icon(Icons.emoji_events, size: 16, color: AppColors.success),
             const SizedBox(width: 4),
             Text('${friend.duelsWon} ${l10n.wins}'),
             const SizedBox(width: 16),
-            const Icon(Icons.close, size: 16, color: Colors.red),
+            const Icon(Icons.close, size: 16, color: AppColors.error),
             const SizedBox(width: 4),
             Text('${friend.duelsLost} ${l10n.losses}'),
           ],

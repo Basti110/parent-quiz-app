@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/quiz_providers.dart';
 import '../../models/category.dart';
+import '../../theme/app_colors.dart';
 
 /// CategorySelectionScreen displays available quiz categories
 /// Requirements: 3.2, 3.3
@@ -34,7 +35,7 @@ class CategorySelectionScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
               Text('Error loading categories: $error'),
               const SizedBox(height: 16),
@@ -98,15 +99,15 @@ class CategorySelectionScreen extends ConsumerWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.amber,
+                              color: AppColors.crown,
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Text(
+                            child: Text(
                               'PREMIUM',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: AppColors.textOnPrimary,
                               ),
                             ),
                           ),

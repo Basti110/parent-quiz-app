@@ -4,6 +4,7 @@ import '../../models/vs_mode_session.dart';
 import '../../models/vs_mode_result.dart';
 import '../../services/vs_mode_service.dart';
 import '../../providers/auth_providers.dart';
+import '../../theme/app_colors.dart';
 
 /// VSModeResultScreen displays the results of a VS Mode duel
 /// Requirements: 9.5
@@ -110,7 +111,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
               score: session.playerAScore,
               totalQuestions: session.questionsPerPlayer,
               isWinner: result.outcome == VSModeOutcome.playerAWins,
-              color: Colors.blue,
+              color: AppColors.playerA,
             ),
             const SizedBox(height: 16),
             _buildPlayerScoreCard(
@@ -118,7 +119,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
               score: session.playerBScore,
               totalQuestions: session.questionsPerPlayer,
               isWinner: result.outcome == VSModeOutcome.playerBWins,
-              color: Colors.green,
+              color: AppColors.playerB,
             ),
             const SizedBox(height: 32),
 
@@ -169,7 +170,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
     final isTie = result.outcome == VSModeOutcome.tie;
 
     return Card(
-      color: isTie ? Colors.amber.shade50 : Colors.purple.shade50,
+      color: isTie ? AppColors.warningLight : AppColors.primaryLightest,
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -177,14 +178,14 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
             Icon(
               isTie ? Icons.handshake : Icons.emoji_events,
               size: 64,
-              color: isTie ? Colors.amber.shade700 : Colors.purple.shade700,
+              color: isTie ? AppColors.warning : AppColors.primary,
             ),
             const SizedBox(height: 16),
             Text(
               isTie ? "It's a Tie!" : '${result.winnerName} Wins!',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isTie ? Colors.amber.shade700 : Colors.purple.shade700,
+                color: isTie ? AppColors.warning : AppColors.primary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -201,20 +202,28 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
     required bool isWinner,
     required MaterialColor color,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark
+        ? color.shade900.withValues(alpha: 0.3)
+        : color.shade50;
+    final iconColor = isDark ? color.shade300 : color.shade700;
+    final textColor = isDark ? color.shade300 : color.shade700;
+    final borderColor = isWinner
+        ? (isDark ? color.shade400 : color.shade700)
+        : (isDark ? color.shade700 : color.shade200);
+
     return Card(
-      color: color.shade50,
+      color: cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isWinner ? color.shade700 : color.shade200,
-          width: isWinner ? 3 : 1,
-        ),
+        side: BorderSide(color: borderColor, width: isWinner ? 3 : 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Row(
           children: [
-            Icon(Icons.person, size: 40, color: color.shade700),
+            Icon(Icons.person, size: 40, color: iconColor),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -230,9 +239,9 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                       ),
                       if (isWinner) ...[
                         const SizedBox(width: 8),
-                        Icon(
+                        const Icon(
                           Icons.emoji_events,
-                          color: Colors.amber.shade700,
+                          color: AppColors.crown,
                           size: 24,
                         ),
                       ],
@@ -250,7 +259,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
               '$score',
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: color.shade700,
+                color: textColor,
               ),
             ),
           ],
@@ -290,12 +299,12 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
           }
 
           return Card(
-            color: Colors.orange.shade50,
+            color: AppColors.warningLight,
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Row(
                 children: [
-                  Icon(Icons.stars, size: 40, color: Colors.orange.shade700),
+                  const Icon(Icons.stars, size: 40, color: AppColors.accent),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -319,7 +328,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                       '+$xpEarned',
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.orange.shade700,
+                        color: AppColors.accent,
                       ),
                     ),
                 ],
@@ -333,12 +342,12 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
     }
 
     return Card(
-      color: Colors.orange.shade50,
+      color: AppColors.warningLight,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Row(
           children: [
-            Icon(Icons.stars, size: 40, color: Colors.orange.shade700),
+            const Icon(Icons.stars, size: 40, color: AppColors.accent),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -360,7 +369,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                 '+$xpEarned',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.orange.shade700,
+                  color: AppColors.accent,
                 ),
               ),
           ],

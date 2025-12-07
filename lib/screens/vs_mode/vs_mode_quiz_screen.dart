@@ -6,6 +6,7 @@ import '../../models/question.dart';
 import '../../models/vs_mode_session.dart';
 import '../../services/vs_mode_service.dart';
 import '../../providers/quiz_providers.dart';
+import '../../theme/app_colors.dart';
 
 /// VSModeQuizScreen displays questions for pass-and-play VS Mode
 /// Requirements: 9.3
@@ -193,16 +194,16 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
             color: _currentPlayer == 'playerA'
-                ? Colors.blue.shade100
-                : Colors.green.shade100,
+                ? AppColors.info.withOpacity(0.1)
+                : AppColors.success.withOpacity(0.1),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.person,
                   color: _currentPlayer == 'playerA'
-                      ? Colors.blue.shade700
-                      : Colors.green.shade700,
+                      ? AppColors.info
+                      : AppColors.success,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -210,8 +211,8 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: _currentPlayer == 'playerA'
-                        ? Colors.blue.shade700
-                        : Colors.green.shade700,
+                        ? AppColors.info
+                        : AppColors.success,
                   ),
                 ),
               ],
@@ -260,8 +261,8 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
                   if (_isAnswered) ...[
                     Card(
                       color: _isCorrect
-                          ? Colors.green.shade50
-                          : Colors.red.shade50,
+                          ? AppColors.successLight
+                          : AppColors.errorLight,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -273,7 +274,9 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
                                   _isCorrect
                                       ? Icons.check_circle
                                       : Icons.cancel,
-                                  color: _isCorrect ? Colors.green : Colors.red,
+                                  color: _isCorrect
+                                      ? AppColors.success
+                                      : AppColors.error,
                                   size: 32,
                                 ),
                                 const SizedBox(width: 8),
@@ -282,8 +285,8 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
                                   style: Theme.of(context).textTheme.titleLarge
                                       ?.copyWith(
                                         color: _isCorrect
-                                            ? Colors.green
-                                            : Colors.red,
+                                            ? AppColors.success
+                                            : AppColors.error,
                                         fontWeight: FontWeight.bold,
                                       ),
                                 ),
@@ -354,17 +357,19 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
   Widget _buildAnswerOption(Question question, int index) {
     final isSelected = _selectedIndices.contains(index);
     final isCorrectOption = question.correctIndices.contains(index);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     Color? backgroundColor;
     Color? borderColor;
 
     if (_isAnswered) {
       if (isCorrectOption) {
-        backgroundColor = Colors.green.shade50;
-        borderColor = Colors.green;
+        backgroundColor = AppColors.successLight;
+        borderColor = AppColors.success;
       } else if (isSelected && !isCorrectOption) {
-        backgroundColor = Colors.red.shade50;
-        borderColor = Colors.red;
+        backgroundColor = AppColors.errorLight;
+        borderColor = AppColors.error;
       }
     }
 
@@ -374,7 +379,9 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: borderColor ?? Colors.grey.shade300,
+          color:
+              borderColor ??
+              (isDark ? AppColors.border.withOpacity(0.3) : AppColors.border),
           width: borderColor != null ? 2 : 1,
         ),
       ),
@@ -415,9 +422,9 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
 
               // Correct/incorrect indicator
               if (_isAnswered && isCorrectOption)
-                const Icon(Icons.check, color: Colors.green),
+                const Icon(Icons.check, color: AppColors.success),
               if (_isAnswered && isSelected && !isCorrectOption)
-                const Icon(Icons.close, color: Colors.red),
+                const Icon(Icons.close, color: AppColors.error),
             ],
           ),
         ),

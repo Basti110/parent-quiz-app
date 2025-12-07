@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
-import '../theme/app_colors.dart';
 import 'home/home_screen.dart';
 import 'friends/friends_screen.dart';
 import 'leaderboard/leaderboard_screen.dart';
@@ -46,23 +45,23 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final bottomNavTheme = Theme.of(context).bottomNavigationBarTheme;
 
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
+        type: bottomNavTheme.type ?? BottomNavigationBarType.fixed,
+        backgroundColor: bottomNavTheme.backgroundColor,
+        selectedItemColor: bottomNavTheme.selectedItemColor,
+        unselectedItemColor: bottomNavTheme.unselectedItemColor,
         selectedFontSize: 10,
         unselectedFontSize: 10,
-        elevation: 8,
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
-        ),
+        elevation: bottomNavTheme.elevation ?? 8,
+        selectedLabelStyle:
+            bottomNavTheme.selectedLabelStyle?.copyWith(letterSpacing: 0.5) ??
+            const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
         unselectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.bold,
           letterSpacing: 0.5,

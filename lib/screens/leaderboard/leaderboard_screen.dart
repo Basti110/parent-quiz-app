@@ -1,319 +1,207 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/auth_providers.dart';
-import '../../providers/leaderboard_providers.dart';
-import '../../services/leaderboard_service.dart';
+
 import '../../l10n/app_localizations.dart';
+import '../../providers/auth_providers.dart';
+import '../../theme/app_colors.dart';
 
-/// LeaderboardScreen with Global and Friends tabs
-/// Requirements: 8.5
-class LeaderboardScreen extends ConsumerStatefulWidget {
-  const LeaderboardScreen({super.key});
+// Temporary hardcoded data model for duel stats
+class DuelStats {
+  final String userId;
+  final String displayName;
+  final String avatarInitials;
+  final int wins;
+  final int losses;
+  final int ties;
+  final bool isCurrentUser;
 
-  @override
-  ConsumerState<LeaderboardScreen> createState() => _LeaderboardScreenState();
+  DuelStats({
+    required this.userId,
+    required this.displayName,
+    required this.avatarInitials,
+    required this.wins,
+    required this.losses,
+    required this.ties,
+    this.isCurrentUser = false,
+  });
+
+  int get totalGames => wins + losses + ties;
 }
 
-class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+/// LeaderboardScreen showing friends' duel statistics
+/// Requirements: 8.5
+class LeaderboardScreen extends ConsumerWidget {
+  const LeaderboardScreen({super.key});
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+  // Hardcoded example data
+  List<DuelStats> _getHardcodedStats(String currentUserId) {
+    return [
+      DuelStats(
+        userId: 'user1',
+        displayName: 'Maria A.',
+        avatarInitials: 'MA',
+        wins: 15,
+        losses: 3,
+        ties: 2,
+      ),
+      DuelStats(
+        userId: currentUserId,
+        displayName: 'You',
+        avatarInitials: 'ME',
+        wins: 8,
+        losses: 5,
+        ties: 1,
+        isCurrentUser: true,
+      ),
+      DuelStats(
+        userId: 'user3',
+        displayName: 'Thomas K.',
+        avatarInitials: 'TK',
+        wins: 7,
+        losses: 6,
+        ties: 3,
+      ),
+      DuelStats(
+        userId: 'user4',
+        displayName: 'Sarah M.',
+        avatarInitials: 'SM',
+        wins: 5,
+        losses: 8,
+        ties: 0,
+      ),
+    ];
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final userId = ref.watch(currentUserIdProvider);
 
+    if (userId == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.leaderboard)),
+        body: Center(child: Text(l10n.pleaseLoginToViewLeaderboard)),
+      );
+    }
+
+    final stats = _getHardcodedStats(userId);
+    // Sort by wins (descending)
+    stats.sort((a, b) => b.wins.compareTo(a.wins));
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.leaderboard),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: l10n.global, icon: const Icon(Icons.public)),
-            Tab(text: l10n.friends, icon: const Icon(Icons.group)),
-          ],
-        ),
+        title: const Text('THIS WEEK\'S LEADERBOARD'),
+        centerTitle: false,
       ),
-      body: userId == null
-          ? Center(child: Text(l10n.pleaseLoginToViewLeaderboard))
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildGlobalLeaderboard(userId),
-                _buildFriendsLeaderboard(userId),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildGlobalLeaderboard(String userId) {
-    final l10n = AppLocalizations.of(context)!;
-    final globalLeaderboardAsync = ref.watch(globalLeaderboardProvider);
-    final userRankAsync = ref.watch(userRankProvider(userId));
-
-    return globalLeaderboardAsync.when(
-      data: (entries) {
-        return Column(
-          children: [
-            // Current user's rank card
-            userRankAsync.when(
-              data: (rank) => rank != null
-                  ? _buildUserRankCard(rank, entries, userId)
-                  : const SizedBox.shrink(),
-              loading: () => const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: CircularProgressIndicator(),
-              ),
-              error: (error, stack) => const SizedBox.shrink(),
-            ),
-            const Divider(),
-            // Leaderboard list
-            Expanded(
-              child: entries.isEmpty
-                  ? Center(child: Text(l10n.noPlayersYet))
-                  : ListView.builder(
-                      itemCount: entries.length,
-                      itemBuilder: (context, index) {
-                        final entry = entries[index];
-                        final isCurrentUser = entry.userId == userId;
-                        return _buildLeaderboardTile(
-                          entry,
-                          isCurrentUser: isCurrentUser,
-                        );
-                      },
-                    ),
-            ),
-          ],
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(l10n.errorLoadingLeaderboard(error.toString())),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                ref.invalidate(globalLeaderboardProvider);
-              },
-              child: Text(l10n.retry),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFriendsLeaderboard(String userId) {
-    final l10n = AppLocalizations.of(context)!;
-    final friendsLeaderboardAsync = ref.watch(
-      friendsLeaderboardProvider(userId),
-    );
-
-    return friendsLeaderboardAsync.when(
-      data: (entries) {
-        if (entries.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.group_off, size: 64, color: Colors.grey),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.noFriendsYet,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(l10n.addFriendsToSeeRankings),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed('/friends');
-                  },
-                  icon: const Icon(Icons.person_add),
-                  label: Text(l10n.addFriendsButton),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ListView.builder(
-          itemCount: entries.length,
-          itemBuilder: (context, index) {
-            final entry = entries[index];
-            final isCurrentUser = entry.userId == userId;
-            return _buildLeaderboardTile(entry, isCurrentUser: isCurrentUser);
-          },
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(l10n.errorLoadingFriendsLeaderboard(error.toString())),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                ref.invalidate(friendsLeaderboardProvider(userId));
-              },
-              child: Text(l10n.retry),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUserRankCard(
-    int rank,
-    List<LeaderboardEntry> entries,
-    String userId,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    // Find current user's entry
-    final userEntry = entries.firstWhere(
-      (e) => e.userId == userId,
-      orElse: () => LeaderboardEntry(
-        userId: userId,
-        displayName: l10n.you,
-        weeklyXpCurrent: 0,
-        rank: rank,
-      ),
-    );
-
-    return Card(
-      margin: const EdgeInsets.all(16.0),
-      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            _buildRankBadge(userEntry.rank, isCurrentUser: true),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.yourRank,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    userEntry.displayName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(l10n.weeklyXp, style: const TextStyle(fontSize: 12)),
-                Text(
-                  '${userEntry.weeklyXpCurrent}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: stats.length,
+        itemBuilder: (context, index) {
+          final stat = stats[index];
+          return _buildLeaderboardTile(context, stat, rank: index + 1);
+        },
       ),
     );
   }
 
   Widget _buildLeaderboardTile(
-    LeaderboardEntry entry, {
-    required bool isCurrentUser,
+    BuildContext context,
+    DuelStats stat, {
+    required int rank,
   }) {
-    final l10n = AppLocalizations.of(context)!;
-    return ListTile(
-      leading: _buildRankBadge(entry.rank, isCurrentUser: isCurrentUser),
-      title: Text(
-        entry.displayName,
-        style: TextStyle(
-          fontWeight: isCurrentUser ? FontWeight.bold : FontWeight.normal,
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Assign avatar colors based on rank
+    final avatarColor = _getAvatarColorForRank(rank);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: stat.isCurrentUser
+            ? AppColors.primary.withValues(alpha: 0.1)
+            : theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: stat.isCurrentUser
+              ? AppColors.primary
+              : (isDark ? AppColors.border : AppColors.borderLight),
+          width: stat.isCurrentUser ? 2 : 1,
         ),
       ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Row(
         children: [
+          // Rank number
+          SizedBox(
+            width: 40,
+            child: Text(
+              '$rank',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: stat.isCurrentUser
+                    ? AppColors.primary
+                    : AppColors.textTertiary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Avatar
+          CircleAvatar(
+            backgroundColor: avatarColor,
+            radius: 24,
+            child: Text(
+              stat.avatarInitials,
+              style: const TextStyle(
+                color: AppColors.textOnPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Name
+          Expanded(
+            child: Text(
+              stat.displayName,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: stat.isCurrentUser
+                    ? FontWeight.bold
+                    : FontWeight.w600,
+                color: stat.isCurrentUser
+                    ? AppColors.primary
+                    : theme.textTheme.bodyLarge?.color,
+              ),
+            ),
+          ),
+          // Stats
           Text(
-            '${entry.weeklyXpCurrent} ${l10n.xp}',
+            '${stat.wins}W / ${stat.losses}L / ${stat.ties}T',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: isCurrentUser ? FontWeight.bold : FontWeight.normal,
+              fontWeight: FontWeight.w600,
+              color: stat.isCurrentUser
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
             ),
           ),
         ],
       ),
-      tileColor: isCurrentUser
-          ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
-          : null,
     );
   }
 
-  Widget _buildRankBadge(int rank, {required bool isCurrentUser}) {
-    Color badgeColor;
-    IconData? icon;
-
-    if (rank == 1) {
-      badgeColor = Colors.amber;
-      icon = Icons.emoji_events;
-    } else if (rank == 2) {
-      badgeColor = Colors.grey.shade400;
-      icon = Icons.emoji_events;
-    } else if (rank == 3) {
-      badgeColor = Colors.brown.shade300;
-      icon = Icons.emoji_events;
-    } else {
-      badgeColor = isCurrentUser
-          ? Theme.of(context).primaryColor
-          : Colors.grey.shade300;
+  Color _getAvatarColorForRank(int rank) {
+    switch (rank) {
+      case 1:
+        return AppColors.warning;
+      case 2:
+        return AppColors.info;
+      case 3:
+        return AppColors.success;
+      default:
+        return AppColors.primary;
     }
-
-    return CircleAvatar(
-      backgroundColor: badgeColor,
-      child: icon != null
-          ? Icon(icon, color: Colors.white, size: 20)
-          : Text(
-              '$rank',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-    );
   }
 }

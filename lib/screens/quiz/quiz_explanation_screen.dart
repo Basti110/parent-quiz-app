@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../models/question.dart';
 import '../../l10n/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 /// QuizExplanationScreen shows the explanation after answering a question
 class QuizExplanationScreen extends StatelessWidget {
@@ -18,22 +19,20 @@ class QuizExplanationScreen extends StatelessWidget {
     final isLastQuestion = args['isLastQuestion'] as bool;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: isCorrect
-            ? const Color(0xFFDCFCE7)
-            : const Color(0xFFFEE2E2),
+            ? AppColors.successLight
+            : AppColors.errorLight,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Color(0xFF6B7280)),
+          icon: Icon(Icons.close, color: AppColors.textSecondary),
           onPressed: () => _showExitConfirmation(context),
         ),
         title: Text(
           isCorrect ? l10n.correct : l10n.incorrect,
           style: TextStyle(
-            color: isCorrect
-                ? const Color(0xFF059669)
-                : const Color(0xFFDC2626),
+            color: isCorrect ? AppColors.success : AppColors.error,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -51,22 +50,26 @@ class QuizExplanationScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: MarkdownBody(
                       data: question.text,
                       styleSheet: MarkdownStyleSheet(
-                        p: const TextStyle(
+                        p: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.normal,
-                          color: Color(0xFF1F2937),
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                           height: 1.4,
                         ),
-                        strong: const TextStyle(
+                        strong: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -77,21 +80,25 @@ class QuizExplanationScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20.0),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: MarkdownBody(
                       data: question.explanation,
                       styleSheet: MarkdownStyleSheet(
-                        p: const TextStyle(
+                        p: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF374151),
+                          color:
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              AppColors.iconPrimary,
                           height: 1.5,
                         ),
-                        strong: const TextStyle(
+                        strong: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF374151),
+                          color:
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              AppColors.iconPrimary,
                         ),
                       ),
                     ),
@@ -103,12 +110,9 @@ class QuizExplanationScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(20.0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFFBEB),
+                        color: AppColors.warningLight,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFFFBBF24),
-                          width: 1,
-                        ),
+                        border: Border.all(color: AppColors.crown, width: 1),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,23 +122,23 @@ class QuizExplanationScreen extends StatelessWidget {
                               Container(
                                 width: 40,
                                 height: 40,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFFBBF24),
+                                decoration: BoxDecoration(
+                                  color: AppColors.crown,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.lightbulb,
-                                  color: Colors.white,
+                                  color: AppColors.textOnPrimary,
                                   size: 24,
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              const Text(
+                              Text(
                                 'ELTERN-TIPP',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF92400E),
+                                  color: AppColors.warning,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -144,15 +148,15 @@ class QuizExplanationScreen extends StatelessWidget {
                           MarkdownBody(
                             data: question.tips!,
                             styleSheet: MarkdownStyleSheet(
-                              p: const TextStyle(
+                              p: TextStyle(
                                 fontSize: 16,
-                                color: Color(0xFF78350F),
+                                color: AppColors.warning,
                                 height: 1.5,
                               ),
-                              strong: const TextStyle(
+                              strong: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF78350F),
+                                color: AppColors.warning,
                               ),
                             ),
                           ),
@@ -167,12 +171,9 @@ class QuizExplanationScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(20.0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        color: AppColors.info.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFF60A5FA),
-                          width: 1,
-                        ),
+                        border: Border.all(color: AppColors.info, width: 1),
                       ),
                       child: InkWell(
                         onTap: () => _launchUrl(context, question.sourceUrl!),
@@ -181,13 +182,13 @@ class QuizExplanationScreen extends StatelessWidget {
                             Container(
                               width: 40,
                               height: 40,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF3B82F6),
+                              decoration: BoxDecoration(
+                                color: AppColors.info,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.science,
-                                color: Colors.white,
+                                color: AppColors.textOnPrimary,
                                 size: 24,
                               ),
                             ),
@@ -196,29 +197,29 @@ class QuizExplanationScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Wissenschaftliche Quelle',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1E3A8A),
+                                      color: AppColors.info,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     question.sourceLabel ?? l10n.viewSource,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
-                                      color: Color(0xFF1D4ED8),
+                                      color: AppColors.info,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const Icon(
+                            Icon(
                               Icons.open_in_new,
-                              color: Color(0xFF1D4ED8),
+                              color: AppColors.info,
                               size: 20,
                             ),
                           ],
@@ -234,13 +235,13 @@ class QuizExplanationScreen extends StatelessWidget {
           // Bottom button
           Container(
             padding: const EdgeInsets.all(20.0),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
               boxShadow: [
                 BoxShadow(
-                  color: Color(0x0A000000),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
-                  offset: Offset(0, -2),
+                  offset: const Offset(0, -2),
                 ),
               ],
             ),
@@ -250,8 +251,8 @@ class QuizExplanationScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1F2937),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.textPrimary,
+                    foregroundColor: AppColors.textOnPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -290,8 +291,8 @@ class QuizExplanationScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.textOnPrimary,
             ),
             child: Text(l10n.yes),
           ),

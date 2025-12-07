@@ -6,6 +6,7 @@ import '../../models/question.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/quiz_providers.dart';
 import '../../l10n/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 /// QuizScreen displays questions and handles user answers
 /// Requirements: 4.3, 4.4, 4.5
@@ -204,12 +205,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     final progress = (_currentQuestionIndex + 1) / _questions!.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Color(0xFF6B7280)),
+          icon: Icon(Icons.close, color: AppColors.textSecondary),
           onPressed: () => _showExitConfirmation(context),
         ),
         title: Row(
@@ -217,16 +218,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           children: [
             Text(
               '${l10n.question} ${_currentQuestionIndex + 1}',
-              style: const TextStyle(
-                color: Color(0xFF9CA3AF),
+              style: TextStyle(
+                color: AppColors.textTertiary,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Text(
               ' / ${_questions!.length}',
-              style: const TextStyle(
-                color: Color(0xFF9CA3AF),
+              style: TextStyle(
+                color: AppColors.textTertiary,
                 fontSize: 14,
                 fontWeight: FontWeight.normal,
               ),
@@ -240,8 +241,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           // Progress bar
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: const Color(0xFFE5E7EB),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF14B8A6)),
+            backgroundColor: AppColors.border,
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
             minHeight: 4,
           ),
 
@@ -255,22 +256,26 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   Container(
                     padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: MarkdownBody(
                       data: question.text,
                       styleSheet: MarkdownStyleSheet(
-                        p: const TextStyle(
+                        p: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.normal,
-                          color: Color(0xFF1F2937),
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                           height: 1.4,
                         ),
-                        strong: const TextStyle(
+                        strong: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -293,13 +298,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           if (!_isAnswered)
             Container(
               padding: const EdgeInsets.all(20.0),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0x0A000000),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
-                    offset: Offset(0, -2),
+                    offset: const Offset(0, -2),
                   ),
                 ],
               ),
@@ -309,10 +314,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   child: ElevatedButton(
                     onPressed: _selectedIndices.isEmpty ? null : _submitAnswer,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1F2937),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFFE5E7EB),
-                      disabledForegroundColor: const Color(0xFF9CA3AF),
+                      backgroundColor: AppColors.textPrimary,
+                      foregroundColor: AppColors.textOnPrimary,
+                      disabledBackgroundColor: AppColors.border,
+                      disabledForegroundColor: AppColors.textTertiary,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -340,24 +345,25 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     final isSelected = _selectedIndices.contains(index);
     final isCorrectOption = question.correctIndices.contains(index);
 
-    Color backgroundColor = Colors.white;
-    Color borderColor = const Color(0xFFE5E7EB);
-    Color textColor = const Color(0xFF1F2937);
+    Color backgroundColor = Theme.of(context).cardColor;
+    Color borderColor = AppColors.border;
+    Color textColor =
+        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
 
     if (_isAnswered) {
       if (isCorrectOption) {
-        backgroundColor = const Color(0xFFDCFCE7); // Green-100
-        borderColor = const Color(0xFF22C55E); // Green-500
-        textColor = const Color(0xFF166534); // Green-800
+        backgroundColor = AppColors.successLight;
+        borderColor = AppColors.success;
+        textColor = AppColors.success;
       } else if (isSelected && !isCorrectOption) {
-        backgroundColor = const Color(0xFFFFE4E6); // Rose-100
-        borderColor = const Color(0xFFE11D48); // Rose-600
-        textColor = const Color(0xFF9F1239); // Rose-800
+        backgroundColor = AppColors.errorLight;
+        borderColor = AppColors.error;
+        textColor = AppColors.error;
       }
     } else if (isSelected) {
-      backgroundColor = const Color(0xFFCCFBF1); // Teal-100
-      borderColor = const Color(0xFF0D9488); // Teal-600
-      textColor = const Color(0xFF0F766E); // Teal-700
+      backgroundColor = AppColors.primaryLightest;
+      borderColor = AppColors.primaryDark;
+      textColor = AppColors.primaryDarker;
     }
 
     return InkWell(
@@ -379,10 +385,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? borderColor : const Color(0xFFD1D5DB),
+                  color: isSelected ? borderColor : AppColors.borderLight,
                   width: 2,
                 ),
-                color: isSelected ? backgroundColor : Colors.white,
+                color: isSelected
+                    ? backgroundColor
+                    : Theme.of(context).cardColor,
               ),
               child: isSelected
                   ? Center(
@@ -413,13 +421,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
             // Correct/incorrect indicator
             if (_isAnswered && isCorrectOption)
-              const Icon(
-                Icons.check_circle,
-                color: Color(0xFF22C55E),
-                size: 24,
-              ),
+              Icon(Icons.check_circle, color: AppColors.success, size: 24),
             if (_isAnswered && isSelected && !isCorrectOption)
-              const Icon(Icons.cancel, color: Color(0xFFE11D48), size: 24),
+              Icon(Icons.cancel, color: AppColors.error, size: 24),
           ],
         ),
       ),
@@ -457,8 +461,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.textOnPrimary,
             ),
             child: Text(l10n.yes),
           ),

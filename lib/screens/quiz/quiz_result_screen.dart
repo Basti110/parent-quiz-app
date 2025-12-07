@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
 import '../../l10n/app_localizations.dart';
+import '../../theme/app_colors.dart';
 
 /// QuizResultScreen displays session summary with XP earned and streak status
 /// Requirements: 5.7, 6.5
@@ -43,7 +44,9 @@ class QuizResultScreen extends ConsumerWidget {
                     Icon(
                       percentage >= 70 ? Icons.celebration : Icons.emoji_events,
                       size: 100,
-                      color: percentage >= 70 ? Colors.green : Colors.orange,
+                      color: percentage >= 70
+                          ? AppColors.success
+                          : AppColors.warning,
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -85,7 +88,7 @@ class QuizResultScreen extends ConsumerWidget {
 
                     // XP earned card
                     Card(
-                      color: Colors.amber.shade50,
+                      color: AppColors.warningLight,
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
                         child: Column(
@@ -96,7 +99,7 @@ class QuizResultScreen extends ConsumerWidget {
                                 Icon(
                                   Icons.emoji_events,
                                   size: 32,
-                                  color: Colors.amber.shade700,
+                                  color: AppColors.warning,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -111,7 +114,7 @@ class QuizResultScreen extends ConsumerWidget {
                               style: Theme.of(context).textTheme.displayMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.amber.shade700,
+                                    color: AppColors.warning,
                                   ),
                             ),
                             const SizedBox(height: 16),
@@ -140,7 +143,7 @@ class QuizResultScreen extends ConsumerWidget {
                                 Icon(
                                   Icons.local_fire_department,
                                   size: 32,
-                                  color: Colors.orange.shade700,
+                                  color: AppColors.fire,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -155,7 +158,7 @@ class QuizResultScreen extends ConsumerWidget {
                               style: Theme.of(context).textTheme.displaySmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.orange.shade700,
+                                    color: AppColors.fire,
                                   ),
                             ),
                             const SizedBox(height: 8),
@@ -208,11 +211,7 @@ class QuizResultScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: Colors.red,
-                    ),
+                    Icon(Icons.error_outline, size: 48, color: AppColors.error),
                     const SizedBox(height: 16),
                     Text(l10n.errorLoadingUserData(error.toString())),
                   ],
@@ -315,7 +314,7 @@ class QuizResultScreen extends ConsumerWidget {
                 detail,
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -323,7 +322,7 @@ class QuizResultScreen extends ConsumerWidget {
             '+$xp ${l10n.xp}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.amber.shade700,
+              color: AppColors.warning,
             ),
           ),
         ],

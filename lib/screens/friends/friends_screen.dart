@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../models/user_model.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/friends_providers.dart';
-import '../../models/user_model.dart';
+import '../../theme/app_colors.dart';
 
 /// FriendsScreen displaying friend code and friends list
 /// Requirements: 10.1, 10.5
@@ -46,7 +48,7 @@ class FriendsScreen extends ConsumerWidget {
                         const Icon(
                           Icons.error_outline,
                           size: 48,
-                          color: Colors.red,
+                          color: AppColors.error,
                         ),
                         const SizedBox(height: 16),
                         Text('Error loading friends: $error'),
@@ -70,7 +72,7 @@ class FriendsScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
               Text('Error loading user data: $error'),
             ],
@@ -86,6 +88,8 @@ class FriendsScreen extends ConsumerWidget {
   }
 
   Widget _buildFriendCodeSection(BuildContext context, UserModel userData) {
+    final theme = Theme.of(context);
+
     return Card(
       margin: const EdgeInsets.all(16.0),
       child: Padding(
@@ -93,12 +97,13 @@ class FriendsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Your Friend Code',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey,
+                color:
+                    theme.textTheme.bodySmall?.color ?? AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
@@ -107,8 +112,7 @@ class FriendsScreen extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     userData.friendCode,
-                    style: const TextStyle(
-                      fontSize: 32,
+                    style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 4,
                     ),
@@ -130,9 +134,13 @@ class FriendsScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Share this code with friends so they can add you',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 12,
+                color:
+                    theme.textTheme.bodySmall?.color ?? AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -141,21 +149,32 @@ class FriendsScreen extends ConsumerWidget {
   }
 
   Widget _buildFriendsList(BuildContext context, List<UserModel> friends) {
+    final theme = Theme.of(context);
+
     if (friends.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.group_off, size: 64, color: Colors.grey),
+            Icon(
+              Icons.group_off,
+              size: 64,
+              color: theme.iconTheme.color ?? AppColors.iconSecondary,
+            ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No friends yet',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Add friends using their friend code',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(
+                color:
+                    theme.textTheme.bodySmall?.color ?? AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -174,13 +193,13 @@ class FriendsScreen extends ConsumerWidget {
   Widget _buildFriendTile(UserModel friend) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.primary,
         child: Text(
           friend.displayName.isNotEmpty
               ? friend.displayName[0].toUpperCase()
               : '?',
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.textOnPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -196,7 +215,7 @@ class FriendsScreen extends ConsumerWidget {
         children: [
           const Text(
             'Weekly XP',
-            style: TextStyle(fontSize: 11, color: Colors.grey),
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
           ),
           Text(
             '${friend.weeklyXpCurrent}',
@@ -244,6 +263,8 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AlertDialog(
       title: const Text('Add Friend'),
       content: Form(
@@ -252,9 +273,13 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Enter your friend\'s code to add them',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 14,
+                color:
+                    theme.textTheme.bodySmall?.color ?? AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -282,18 +307,18 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
+                  color: AppColors.errorLight,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade200),
+                  border: Border.all(color: AppColors.error),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline, color: Colors.red.shade700),
+                    const Icon(Icons.error_outline, color: AppColors.error),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(color: Colors.red.shade700),
+                        style: const TextStyle(color: AppColors.error),
                       ),
                     ),
                   ],
@@ -361,7 +386,7 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${friendUser.displayName} added as friend!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }

@@ -117,6 +117,49 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
+  /// Build avatar widget
+  Widget _buildAvatar(BuildContext context, dynamic userData, bool isDark) {
+    final avatarPath = userData.avatarPath ?? userData.avatarUrl;
+
+    if (avatarPath != null && avatarPath.isNotEmpty) {
+      return CircleAvatar(
+        radius: 16,
+        backgroundColor: isDark
+            ? AppColors.primaryDark
+            : AppColors.primaryLightest,
+        child: ClipOval(
+          child: Image.asset(
+            avatarPath,
+            width: 32,
+            height: 32,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              // Fallback to icon if image fails to load
+              return Icon(
+                Icons.person,
+                size: 20,
+                color: isDark ? AppColors.primaryLight : AppColors.primaryDark,
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    // Default avatar icon
+    return CircleAvatar(
+      radius: 16,
+      backgroundColor: isDark
+          ? AppColors.primaryDark
+          : AppColors.primaryLightest,
+      child: Icon(
+        Icons.person,
+        size: 20,
+        color: isDark ? AppColors.primaryLight : AppColors.primaryDark,
+      ),
+    );
+  }
+
   /// Build top bar with level/streak and XP
   /// Requirements: 2.1
   Widget _buildTopBar(
@@ -124,6 +167,8 @@ class HomeScreen extends ConsumerWidget {
     dynamic userData,
     AppLocalizations l10n,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -136,9 +181,10 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(width: 4),
               Text(
                 '${userData.currentLevel}',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.titleMedium?.color,
+                ),
               ),
               const SizedBox(width: 16),
               const Icon(
@@ -149,9 +195,10 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(width: 4),
               Text(
                 '${userData.streakCurrent}',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.titleMedium?.color,
+                ),
               ),
             ],
           ),
@@ -162,19 +209,11 @@ class HomeScreen extends ConsumerWidget {
                 '${userData.totalXp} XP',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.xp,
+                  color: isDark ? AppColors.primaryLight : AppColors.primary,
                 ),
               ),
               const SizedBox(width: 8),
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: AppColors.primaryLightest,
-                child: Icon(
-                  Icons.person,
-                  size: 20,
-                  color: AppColors.primaryDark,
-                ),
-              ),
+              _buildAvatar(context, userData, isDark),
             ],
           ),
         ],
@@ -189,6 +228,8 @@ class HomeScreen extends ConsumerWidget {
     dynamic userData,
     AppLocalizations l10n,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       height: 200,
       decoration: BoxDecoration(
@@ -199,7 +240,10 @@ class HomeScreen extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.primaryDark, AppColors.primary],
+          colors: [
+            isDark ? AppColors.backgroundDark : AppColors.primaryDark,
+            isDark ? AppColors.surfaceDark : AppColors.primary,
+          ],
         ),
       ),
       child: Stack(
@@ -211,8 +255,8 @@ class HomeScreen extends ConsumerWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.0),
-                  Colors.black.withValues(alpha: 0.6),
+                  Colors.black.withValues(alpha: isDark ? 0.3 : 0.0),
+                  Colors.black.withValues(alpha: isDark ? 0.7 : 0.6),
                 ],
               ),
             ),
@@ -236,7 +280,9 @@ class HomeScreen extends ConsumerWidget {
                 Text(
                   'Bereit für die nächste Lektion?',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.primaryLightest,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.9)
+                        : AppColors.primaryLightest,
                   ),
                 ),
               ],
@@ -258,6 +304,7 @@ class HomeScreen extends ConsumerWidget {
     final dailyGoal = 50;
     final dailyProgress = userData.weeklyXpCurrent % dailyGoal;
     final progressPercentage = dailyProgress / dailyGoal;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Transform.translate(
       offset: const Offset(0, -24),
@@ -265,11 +312,13 @@ class HomeScreen extends ConsumerWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color:
+              Theme.of(context).cardTheme.color ??
+              (isDark ? AppColors.surfaceDark : AppColors.surface),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -294,6 +343,7 @@ class HomeScreen extends ConsumerWidget {
                     '$dailyProgress / $dailyGoal XP',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: Theme.of(context).textTheme.titleLarge?.color,
                     ),
                   ),
                 ],
@@ -305,7 +355,9 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   LinearProgressIndicator(
                     value: progressPercentage,
-                    backgroundColor: AppColors.borderLight,
+                    backgroundColor: isDark
+                        ? AppColors.textSecondary.withValues(alpha: 0.3)
+                        : AppColors.borderLight,
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.warning,
                     ),
@@ -328,13 +380,23 @@ class HomeScreen extends ConsumerWidget {
     AppLocalizations l10n,
     AsyncValue<List<dynamic>> categoriesAsync,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ElevatedButton(
       onPressed: categoriesAsync.hasValue && categoriesAsync.value!.isNotEmpty
           ? () {
-              // Pick a random category for the quiz
+              // Filter out premium categories and pick a random one
               final categories = categoriesAsync.value!;
+              final nonPremiumCategories = categories
+                  .where((category) => category.isPremium != true)
+                  .toList();
+
+              if (nonPremiumCategories.isEmpty) return;
+
               final randomCategory =
-                  categories[Random().nextInt(categories.length)];
+                  nonPremiumCategories[Random().nextInt(
+                    nonPremiumCategories.length,
+                  )];
 
               // Navigate to quiz length screen with random category
               Navigator.of(context).push(
@@ -346,7 +408,7 @@ class HomeScreen extends ConsumerWidget {
             }
           : null,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.teal.shade500,
+        backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -380,18 +442,24 @@ class HomeScreen extends ConsumerWidget {
             ? ref.watch(userDataProvider(userId))
             : null;
 
+        // Filter out premium categories
+        final nonPremiumCategories = categories
+            .where((category) => category.isPremium != true)
+            .toList();
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Kategorien',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.titleLarge?.color,
+              ),
             ),
             const SizedBox(height: 16),
-            // Display categories in a column (one per row)
-            ...categories.map((category) {
+            // Display non-premium categories in a column (one per row)
+            ...nonPremiumCategories.map((category) {
               final progress = userDataAsync?.value?.getCategoryProgress(
                 category.id,
               );

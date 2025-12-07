@@ -158,6 +158,24 @@ class UserService {
     }
   }
 
+  /// Update user's avatar path
+  /// Property 1: Avatar selection persistence
+  Future<void> updateAvatarPath(String userId, String avatarPath) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'avatarPath': avatarPath,
+      });
+    } on FirebaseException catch (e) {
+      print('Firebase error updating avatar path: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to update avatar. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error updating avatar path: $e');
+      rethrow;
+    }
+  }
+
   /// Calculate user level based on total XP (100 XP per level)
   /// Property 18: Level calculation - currentLevel = floor(totalXp / 100) + 1
   int calculateLevel(int totalXp) {

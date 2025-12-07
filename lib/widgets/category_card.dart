@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import '../models/category.dart';
 import '../models/category_progress.dart';
 import '../screens/quiz/quiz_length_screen.dart';
+import '../theme/app_colors.dart';
 
 /// CategoryCard displays a quiz category with its icon, title, and progress bar.
 /// Implements icon fallback to default.png when category-specific icon is missing.
-/// Requirements: 2.3, 2.4
+/// Requirements: 2.3, 2.4, 2.5, 3.1, 3.5, 4.3
 class CategoryCard extends StatelessWidget {
   final Category category;
   final CategoryProgress? progress;
@@ -25,11 +26,17 @@ class CategoryCard extends StatelessWidget {
         ? questionsAnswered / totalQuestions
         : 0.0;
 
+    // Get theme-aware colors
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark
+        ? AppColors.textSecondary.withValues(alpha: 0.3)
+        : AppColors.border;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200, width: 2),
+        side: BorderSide(color: borderColor, width: 2),
       ),
       child: InkWell(
         onTap: () {
@@ -97,7 +104,6 @@ class CategoryCard extends StatelessWidget {
                       category.title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -108,7 +114,9 @@ class CategoryCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: progressPercentage,
-                        backgroundColor: Colors.grey.shade200,
+                        backgroundColor: isDark
+                            ? AppColors.textSecondary.withValues(alpha: 0.3)
+                            : AppColors.borderLight,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           _getCategoryColor(category.iconName),
                         ),
@@ -120,7 +128,13 @@ class CategoryCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               // Chevron icon
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 24),
+              Icon(
+                Icons.chevron_right,
+                color:
+                    Theme.of(context).iconTheme.color ??
+                    AppColors.iconSecondary,
+                size: 24,
+              ),
             ],
           ),
         ),
@@ -128,19 +142,19 @@ class CategoryCard extends StatelessWidget {
     );
   }
 
-  /// Get color based on category icon name
+  /// Get color based on category icon name using AppColors constants
   Color _getCategoryColor(String iconName) {
     switch (iconName.toLowerCase()) {
       case 'sleep':
-        return Colors.indigo;
+        return AppColors.categorySleep;
       case 'nutrition':
-        return Colors.orange;
+        return AppColors.categoryNutrition;
       case 'health':
-        return Colors.green;
+        return AppColors.categoryHealth;
       case 'play':
-        return Colors.blue;
+        return AppColors.categoryPlay;
       default:
-        return Colors.teal;
+        return AppColors.categoryDefault;
     }
   }
 }

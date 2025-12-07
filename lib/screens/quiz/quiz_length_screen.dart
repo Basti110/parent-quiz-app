@@ -127,7 +127,9 @@ class QuizLengthScreen extends StatelessWidget {
                       '$questionCount Fragen',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.titleLarge?.color ??
+                            AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),

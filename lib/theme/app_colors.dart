@@ -30,6 +30,9 @@ class AppColors {
   static const Color textSecondary = Color(0xFF6b7280); // Grey-500
   static const Color textTertiary = Color(0xFF9ca3af); // Grey-400
   static const Color textOnPrimary = Colors.white;
+  static const Color textSecondaryDark = Color(
+    0xFFb0b0b0,
+  ); // Light grey for dark mode secondary text
 
   // Border colors
   static const Color border = Color(0xFFe5e7eb); // Grey-200
@@ -59,4 +62,13 @@ class AppColors {
   static const Color crown = Color(0xFFfbbf24); // Amber-400
   static const Color fire = Color(0xFFf97316); // Orange-500
   static const Color xp = Color(0xFF14b8a6); // Teal-500
+
+  // Progress indicator colors
+  static const Color progressTrackDark = Color(
+    0xFF334155,
+  ); // Slate-700 for dark mode progress track
+
+  // VS Mode player colors (MaterialColor for shade access)
+  static const MaterialColor playerA = Colors.blue;
+  static const MaterialColor playerB = Colors.green;
 }

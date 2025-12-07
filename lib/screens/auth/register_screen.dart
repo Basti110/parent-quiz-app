@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
 import '../../l10n/app_localizations.dart';
+import '../settings/avatar_selection_screen.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -40,19 +41,30 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     try {
       final authService = ref.read(authServiceProvider);
-      await authService.registerWithEmail(
+      final user = await authService.registerWithEmail(
         _nameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text,
       );
 
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+      if (mounted && user != null) {
+        // Navigate to avatar selection screen with registration flow
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => AvatarSelectionScreen(
+              isRegistrationFlow: true,
+              userId: user.uid,
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     } finally {

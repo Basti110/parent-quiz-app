@@ -4,6 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/friends_providers.dart';
 import '../../widgets/friend_list_item.dart';
+import '../../theme/app_colors.dart';
 
 /// VS Mode Friends Screen displaying friends list for VS Mode
 /// Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6
@@ -42,11 +43,18 @@ class VSModeFriendsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.group_off, size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.group_off,
+                    size: 64,
+                    color: Theme.of(context).disabledColor,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     l10n.noFriends,
-                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).disabledColor,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -66,7 +74,7 @@ class VSModeFriendsScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
               Text('${l10n.error}: $error'),
               const SizedBox(height: 16),
@@ -141,18 +149,18 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                color: AppColors.errorLight,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.shade200),
+                border: Border.all(color: AppColors.error.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.error_outline, color: Colors.red.shade700),
+                  const Icon(Icons.error_outline, color: AppColors.error),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _errorMessage!,
-                      style: TextStyle(color: Colors.red.shade700),
+                      style: const TextStyle(color: AppColors.error),
                     ),
                   ),
                 ],
@@ -225,7 +233,7 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${friendUser.displayName} added as friend!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }

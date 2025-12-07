@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/category.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/quiz_providers.dart';
+import '../../theme/app_colors.dart';
 
 /// VSModeSetupScreen allows users to configure a pass-and-play duel
 /// Requirements: 9.1, 9.2
@@ -186,14 +187,20 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
 
   Widget _buildCategoryCard(Category category) {
     final isSelected = _selectedCategory?.id == category.id;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      color: isSelected ? Colors.blue.shade50 : null,
+      color: isSelected
+          ? (isDark ? AppColors.primaryDarker : AppColors.primaryLightest)
+          : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: isSelected ? Colors.blue : Colors.grey.shade300,
+          color: isSelected
+              ? AppColors.primary
+              : (isDark ? AppColors.border.withOpacity(0.3) : AppColors.border),
           width: isSelected ? 2 : 1,
         ),
       ),
@@ -209,9 +216,12 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
           child: Row(
             children: [
               if (isSelected)
-                const Icon(Icons.check_circle, color: Colors.blue)
+                const Icon(Icons.check_circle, color: AppColors.primary)
               else
-                const Icon(Icons.radio_button_unchecked, color: Colors.grey),
+                Icon(
+                  Icons.radio_button_unchecked,
+                  color: theme.iconTheme.color,
+                ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -240,13 +250,19 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
 
   Widget _buildQuizLengthOption(int count) {
     final isSelected = _questionsPerPlayer == count;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Card(
-      color: isSelected ? Colors.blue.shade50 : null,
+      color: isSelected
+          ? (isDark ? AppColors.primaryDarker : AppColors.primaryLightest)
+          : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: isSelected ? Colors.blue : Colors.grey.shade300,
+          color: isSelected
+              ? AppColors.primary
+              : (isDark ? AppColors.border.withOpacity(0.3) : AppColors.border),
           width: isSelected ? 2 : 1,
         ),
       ),
@@ -265,7 +281,7 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
                 '$count',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.blue : null,
+                  color: isSelected ? AppColors.primary : null,
                 ),
               ),
               const SizedBox(height: 4),
