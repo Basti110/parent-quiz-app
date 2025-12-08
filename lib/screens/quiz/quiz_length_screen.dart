@@ -11,12 +11,10 @@ class QuizLengthScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Get category from navigation arguments
     final category = ModalRoute.of(context)!.settings.arguments as Category;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         title: const Text(
           'Quiz-Länge wählen',
@@ -35,16 +33,17 @@ class QuizLengthScreen extends StatelessWidget {
                 category.title,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 'Wie viele Fragen möchtest du beantworten?',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: isDarkMode
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
@@ -56,6 +55,7 @@ class QuizLengthScreen extends StatelessWidget {
                 xpBonus: 10,
                 category: category,
                 icon: Icons.flash_on,
+                isDarkMode: isDarkMode,
               ),
               const SizedBox(height: 16),
 
@@ -66,6 +66,7 @@ class QuizLengthScreen extends StatelessWidget {
                 xpBonus: 25,
                 category: category,
                 icon: Icons.emoji_events,
+                isDarkMode: isDarkMode,
               ),
               const Spacer(),
             ],
@@ -81,15 +82,32 @@ class QuizLengthScreen extends StatelessWidget {
     required int xpBonus,
     required Category category,
     required IconData icon,
+    required bool isDarkMode,
   }) {
+    final borderColor = isDarkMode
+        ? AppColors.textSecondary.withValues(alpha: 0.2)
+        : AppColors.border;
+    final shadowColor = isDarkMode
+        ? Colors.black.withValues(alpha: 0.3)
+        : Colors.black.withValues(alpha: 0.05);
+    final iconBgColor = isDarkMode
+        ? AppColors.primaryDark.withValues(alpha: 0.2)
+        : AppColors.primaryLightest;
+    final iconColor = isDarkMode
+        ? AppColors.primaryLight
+        : AppColors.primaryDark;
+    final chevronColor = isDarkMode
+        ? AppColors.textSecondaryDark
+        : AppColors.iconSecondary;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border, width: 2),
+        border: Border.all(color: borderColor, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: shadowColor,
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -112,10 +130,10 @@ class QuizLengthScreen extends StatelessWidget {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLightest,
+                  color: iconBgColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, size: 32, color: AppColors.primaryDark),
+                child: Icon(icon, size: 32, color: iconColor),
               ),
               const SizedBox(width: 20),
               // Text content
@@ -127,9 +145,6 @@ class QuizLengthScreen extends StatelessWidget {
                       '$questionCount Fragen',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color:
-                            Theme.of(context).textTheme.titleLarge?.color ??
-                            AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -144,18 +159,16 @@ class QuizLengthScreen extends StatelessWidget {
                     Text(
                       '~${(questionCount * 0.5).toInt()} Minuten',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textTertiary,
+                        color: isDarkMode
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textTertiary,
                       ),
                     ),
                   ],
                 ),
               ),
               // Chevron
-              Icon(
-                Icons.chevron_right,
-                color: AppColors.iconSecondary,
-                size: 28,
-              ),
+              Icon(Icons.chevron_right, color: chevronColor, size: 28),
             ],
           ),
         ),

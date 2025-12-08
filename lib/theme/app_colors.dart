@@ -42,14 +42,32 @@ class AppColors {
   static const Color iconPrimary = Color(0xFF374151); // Grey-700
   static const Color iconSecondary = Color(0xFF9ca3af); // Grey-400
 
-  // Success/Error colors
-  static const Color success = Color(0xFF10b981); // Green-500
-  static const Color successLight = Color(0xFFdcfce7); // Green-100
+  // Success/Error colors (Tailwind palette)
+  static const Color success = Color(0xFF10b981); // Emerald-500
+  static const Color successLightest = Color(0xFFecfdf5); // Emerald-50
+  static const Color successLight = Color(0xFFa7f3d0); // Emerald-200
+  static const Color successDark = Color(0xFF047857); // Emerald-700
+  static const Color successDarkest = Color(0xFF064e3b); // Emerald-900
+
   static const Color error = Color(0xFFef4444); // Red-500
-  static const Color errorLight = Color(0xFFfee2e2); // Red-100
+  static const Color errorLightest = Color(0xFFfef2f2); // Red-50
+  static const Color errorLight = Color(0xFFfecaca); // Red-200
+  static const Color errorDark = Color(0xFFb91c1c); // Red-700
+  static const Color errorDarkest = Color(0xFF7f1d1d); // Red-900
+
   static const Color warning = Color(0xFFf59e0b); // Amber-500
-  static const Color warningLight = Color(0xFFfef3c7); // Amber-100
+  static const Color warningLightest = Color(0xFFfffbeb); // Amber-50
+  static const Color warningLight = Color(0xFFfde68a); // Amber-200
+  static const Color warningMedium = Color(0xFFfbbf24); // Amber-400
+  static const Color warningDark = Color(0xFFb45309); // Amber-700
+  static const Color warningDarkest = Color(0xFF78350f); // Amber-900
+
   static const Color info = Color(0xFF3b82f6); // Blue-500
+
+  // Additional palette colors
+  static const Color teal50 = Color(0xFFf0fdfa); // Teal-50
+  static const Color pink50 = Color(0xFFfdf2f8); // Pink-50
+  static const Color yellow50 = Color(0xFFfefce8); // Yellow-50
 
   // Category colors
   static const Color categorySleep = Color(0xFF6366f1); // Indigo-500
@@ -62,6 +80,7 @@ class AppColors {
   static const Color crown = Color(0xFFfbbf24); // Amber-400
   static const Color fire = Color(0xFFf97316); // Orange-500
   static const Color xp = Color(0xFF14b8a6); // Teal-500
+  static const Color cyan500 = Color(0xFF06b6d4); // Cyan-500 for gradients
 
   // Progress indicator colors
   static const Color progressTrackDark = Color(

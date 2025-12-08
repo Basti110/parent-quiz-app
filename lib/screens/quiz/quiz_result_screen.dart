@@ -4,7 +4,7 @@ import '../../providers/auth_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 
-/// QuizResultScreen displays session summary with XP earned and streak status
+/// QuizResultScreen displays session summary
 /// Requirements: 5.7, 6.5
 class QuizResultScreen extends ConsumerWidget {
   const QuizResultScreen({super.key});
@@ -16,7 +16,6 @@ class QuizResultScreen extends ConsumerWidget {
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final correctCount = args['correctCount'] as int;
     final totalCount = args['totalCount'] as int;
-    final xpEarned = args['xpEarned'] as int;
 
     final userId = ref.watch(currentUserIdProvider);
     final userDataAsync = userId != null
@@ -24,6 +23,7 @@ class QuizResultScreen extends ConsumerWidget {
         : null;
 
     final percentage = (correctCount / totalCount * 100).round();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,140 +34,182 @@ class QuizResultScreen extends ConsumerWidget {
           ? const Center(child: CircularProgressIndicator())
           : userDataAsync.when(
               data: (userData) => SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
 
-                    // Success icon and message
-                    Icon(
-                      percentage >= 70 ? Icons.celebration : Icons.emoji_events,
-                      size: 100,
-                      color: percentage >= 70
-                          ? AppColors.success
-                          : AppColors.warning,
+                    // Trophy/Cup image
+                    Center(
+                      child: Image.asset(
+                        'assets/app_images/cup.png',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
+
+                    // Result message
                     Text(
                       _getResultMessage(percentage, l10n),
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
 
                     // Score card
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              l10n.yourScore,
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              '$correctCount / $totalCount',
-                              style: Theme.of(context).textTheme.displayLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.percentCorrect(percentage),
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ],
+                    Container(
+                      padding: const EdgeInsets.all(28.0),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: isDarkMode
+                              ? AppColors.textSecondary.withValues(alpha: 0.2)
+                              : AppColors.borderLight,
+                          width: 1,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: isDarkMode ? 0.3 : 0.05,
+                            ),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // XP earned card
-                    Card(
-                      color: AppColors.warningLight,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.emoji_events,
-                                  size: 32,
-                                  color: AppColors.warning,
+                      child: Column(
+                        children: [
+                          Text(
+                            l10n.yourScore,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  color: isDarkMode
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondary,
                                 ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  l10n.xpEarned,
-                                  style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            '$correctCount / $totalCount',
+                            style: Theme.of(context).textTheme.displayLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: isDarkMode
+                                      ? AppColors.primaryLight
+                                      : AppColors.primary,
                                 ),
-                              ],
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 8,
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              '+$xpEarned ${l10n.xp}',
-                              style: Theme.of(context).textTheme.displayMedium
+                            decoration: BoxDecoration(
+                              color: _getPercentageColor(
+                                percentage,
+                                isDarkMode,
+                              ).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              l10n.percentCorrect(percentage),
+                              style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.warning,
+                                    color: _getPercentageColor(
+                                      percentage,
+                                      isDarkMode,
+                                    ),
+                                    fontWeight: FontWeight.w600,
                                   ),
                             ),
-                            const SizedBox(height: 16),
-                            _buildXPBreakdown(
-                              context,
-                              l10n,
-                              correctCount,
-                              totalCount,
-                              xpEarned,
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16),
 
                     // Streak status card
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                    Container(
+                      padding: const EdgeInsets.all(24.0),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: isDarkMode
+                              ? AppColors.textSecondary.withValues(alpha: 0.2)
+                              : AppColors.borderLight,
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: isDarkMode ? 0.3 : 0.05,
+                            ),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: AppColors.fire.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.local_fire_department,
+                              size: 32,
+                              color: AppColors.fire,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.local_fire_department,
-                                  size: 32,
-                                  color: AppColors.fire,
-                                ),
-                                const SizedBox(width: 8),
                                 Text(
                                   l10n.currentStreak,
-                                  style: Theme.of(context).textTheme.titleLarge,
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        color: isDarkMode
+                                            ? AppColors.textSecondaryDark
+                                            : AppColors.textSecondary,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  l10n.daysCount(userData.streakCurrent),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.fire,
+                                      ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  l10n.longest(userData.streakLongest),
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: isDarkMode
+                                            ? AppColors.textSecondaryDark
+                                            : AppColors.textTertiary,
+                                      ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              l10n.daysCount(userData.streakCurrent),
-                              style: Theme.of(context).textTheme.displaySmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.fire,
-                                  ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.longest(userData.streakLongest),
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -180,11 +222,17 @@ class QuizResultScreen extends ConsumerWidget {
                         ).pushNamedAndRemoveUntil('/home', (route) => false);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        backgroundColor: isDarkMode
+                            ? AppColors.primaryDark
+                            : AppColors.primary,
                       ),
                       child: Text(
                         l10n.backToHome,
-                        style: const TextStyle(fontSize: 18),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -196,11 +244,20 @@ class QuizResultScreen extends ConsumerWidget {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        side: BorderSide(
+                          color: isDarkMode
+                              ? AppColors.primaryLight
+                              : AppColors.primary,
+                          width: 2,
+                        ),
                       ),
                       child: Text(
                         l10n.playAgain,
-                        style: const TextStyle(fontSize: 18),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -221,6 +278,16 @@ class QuizResultScreen extends ConsumerWidget {
     );
   }
 
+  Color _getPercentageColor(int percentage, bool isDarkMode) {
+    if (percentage >= 80) {
+      return AppColors.success;
+    } else if (percentage >= 60) {
+      return AppColors.warning;
+    } else {
+      return AppColors.error;
+    }
+  }
+
   String _getResultMessage(int percentage, AppLocalizations l10n) {
     if (percentage == 100) {
       return l10n.perfectScore;
@@ -231,102 +298,5 @@ class QuizResultScreen extends ConsumerWidget {
     } else {
       return l10n.keepLearning;
     }
-  }
-
-  Widget _buildXPBreakdown(
-    BuildContext context,
-    AppLocalizations l10n,
-    int correctCount,
-    int totalCount,
-    int totalXP,
-  ) {
-    final incorrectCount = totalCount - correctCount;
-
-    // Calculate approximate breakdown
-    final correctXP = correctCount * 10;
-    final incorrectXP = incorrectCount * 5; // Assuming explanation viewed
-    final sessionBonus = totalCount == 5 ? 10 : 25;
-    final perfectBonus = correctCount == totalCount ? 10 : 0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Divider(),
-        const SizedBox(height: 8),
-        Text(
-          l10n.xpBreakdown,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        _buildBreakdownRow(
-          context,
-          l10n,
-          l10n.correctAnswersXp,
-          '$correctCount × 10',
-          correctXP,
-        ),
-        if (incorrectCount > 0)
-          _buildBreakdownRow(
-            context,
-            l10n,
-            l10n.incorrectWithExplanation,
-            '$incorrectCount × 5',
-            incorrectXP,
-          ),
-        _buildBreakdownRow(
-          context,
-          l10n,
-          l10n.sessionBonus,
-          '$totalCount ${l10n.questions}',
-          sessionBonus,
-        ),
-        if (perfectBonus > 0)
-          _buildBreakdownRow(
-            context,
-            l10n,
-            l10n.perfectBonus,
-            l10n.allCorrect,
-            perfectBonus,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildBreakdownRow(
-    BuildContext context,
-    AppLocalizations l10n,
-    String label,
-    String detail,
-    int xp,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.bodyMedium),
-              Text(
-                detail,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-              ),
-            ],
-          ),
-          Text(
-            '+$xp ${l10n.xp}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.warning,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

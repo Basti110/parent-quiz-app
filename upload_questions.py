@@ -482,10 +482,20 @@ def upload_categories(db):
     print("Uploading categories...")
     category_ref = db.collection('categories')
 
+    # Count questions per category
+    category_counts = {}
+    for question in QUESTIONS:
+        cat_id = question['categoryId']
+        category_counts[cat_id] = category_counts.get(cat_id, 0) + 1
+
     for category in CATEGORIES:
+        # Add totalQuestions field
+        category_data = category.copy()
+        category_data['totalQuestions'] = category_counts.get(category['id'], 0)
+
         doc_ref = category_ref.document(category['id'])
-        doc_ref.set(category)
-        print(f"  ✓ Uploaded category: {category['title']}")
+        doc_ref.set(category_data)
+        print(f"  ✓ Uploaded category: {category['title']} ({category_data['totalQuestions']} questions)")
 
     print(f"Successfully uploaded {len(CATEGORIES)} categories.\n")
 

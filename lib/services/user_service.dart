@@ -309,6 +309,71 @@ class UserService {
     }
   }
 
+  /// Update category progress after completing a quiz session
+  Future<void> updateCategoryProgress(
+    String userId,
+    String categoryId,
+    int questionsAnswered,
+  ) async {
+    try {
+      final user = await getUserData(userId);
+
+      // Get current progress for this category
+      final currentProgress = user.categoryProgress[categoryId];
+      final currentQuestionsAnswered = currentProgress?.questionsAnswered ?? 0;
+
+      // Count mastered questions in this category
+      final statesSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('questionStates')
+          .get();
+
+      // Get all questions for this category
+      final questionsSnapshot = await _firestore
+          .collection('questions')
+          .where('categoryId', isEqualTo: categoryId)
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      final categoryQuestionIds = questionsSnapshot.docs
+          .map((doc) => doc.id)
+          .toSet();
+
+      // Count mastered questions
+      int masteredCount = 0;
+      for (final stateDoc in statesSnapshot.docs) {
+        if (categoryQuestionIds.contains(stateDoc.id)) {
+          final state = QuestionState.fromMap(stateDoc.data());
+          if (state.mastered) {
+            masteredCount++;
+          }
+        }
+      }
+
+      // Update category progress in user document
+      final updatedProgress = {
+        'questionsAnswered': currentQuestionsAnswered + questionsAnswered,
+        'questionsMastered': masteredCount,
+        'lastUpdated': Timestamp.fromDate(DateTime.now()),
+      };
+
+      await _firestore.collection('users').doc(userId).update({
+        'categoryProgress.$categoryId': updatedProgress,
+      });
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error updating category progress: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to update category progress. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error updating category progress: $e');
+      rethrow;
+    }
+  }
+
   /// Get category mastery percentage
   /// Property 20: Category mastery calculation
   Future<Map<String, double>> getCategoryMastery(String userId) async {

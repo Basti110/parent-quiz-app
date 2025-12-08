@@ -200,6 +200,29 @@ class QuizService {
     }
   }
 
+  /// Count total active questions for a category
+  /// Requirements: 3.2
+  Future<int> getQuestionCountForCategory(String categoryId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('questions')
+          .where('categoryId', isEqualTo: categoryId)
+          .where('isActive', isEqualTo: true)
+          .count()
+          .get();
+
+      return snapshot.count ?? 0;
+    } on FirebaseException catch (e) {
+      print('Firebase error counting questions: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to count questions. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error counting questions: $e');
+      throw Exception('Failed to count questions. Please try again.');
+    }
+  }
+
   /// Get a single question by ID
   /// Used for VS Mode to load specific questions
   Future<Question?> getQuestionById(String questionId) async {

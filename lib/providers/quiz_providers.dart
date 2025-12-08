@@ -14,3 +14,13 @@ final categoriesProvider = FutureProvider<List<Category>>((ref) {
   final quizService = ref.watch(quizServiceProvider);
   return quizService.getCategories();
 });
+
+/// Provider for counting questions in a category
+/// Requirements: 3.2
+final questionCountProvider = FutureProvider.family<int, String>((
+  ref,
+  categoryId,
+) {
+  final quizService = ref.watch(quizServiceProvider);
+  return quizService.getQuestionCountForCategory(categoryId);
+});

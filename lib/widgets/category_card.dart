@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/category.dart';
 import '../models/category_progress.dart';
+import '../providers/quiz_providers.dart';
 import '../screens/quiz/quiz_length_screen.dart';
 import '../theme/app_colors.dart';
 
 /// CategoryCard displays a quiz category with its icon, title, and progress bar.
 /// Implements icon fallback to default.png when category-specific icon is missing.
 /// Requirements: 2.3, 2.4, 2.5, 3.1, 3.5, 4.3
-class CategoryCard extends StatelessWidget {
+class CategoryCard extends ConsumerWidget {
   final Category category;
   final CategoryProgress? progress;
 
   const CategoryCard({super.key, required this.category, this.progress});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Construct icon path with fallback to default.png
     final iconPath = 'assets/app_images/categories/${category.iconName}.png';
     const defaultIconPath = 'assets/app_images/categories/default.png';
 
+    // Watch question count for this category
+    final questionCountAsync = ref.watch(questionCountProvider(category.id));
+
     // Calculate progress percentage
     final questionsAnswered = progress?.questionsAnswered ?? 0;
-    final totalQuestions = category.totalQuestions;
-    final progressPercentage = totalQuestions > 0
-        ? questionsAnswered / totalQuestions
-        : 0.0;
 
     // Get theme-aware colors
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -108,19 +109,72 @@ class CategoryCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
-                    // Progress bar
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: progressPercentage,
-                        backgroundColor: isDark
-                            ? AppColors.textSecondary.withValues(alpha: 0.3)
-                            : AppColors.borderLight,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          _getCategoryColor(category.iconName),
-                        ),
-                        minHeight: 6,
+                    const SizedBox(height: 4),
+                    // Progress text and bar
+                    questionCountAsync.when(
+                      data: (totalQuestions) {
+                        final progressPercentage = totalQuestions > 0
+                            ? questionsAnswered / totalQuestions
+                            : 0.0;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$questionsAnswered / $totalQuestions Fragen',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
+                            ),
+                            const SizedBox(height: 4),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: progressPercentage,
+                                backgroundColor: isDark
+                                    ? AppColors.textSecondary.withValues(
+                                        alpha: 0.3,
+                                      )
+                                    : AppColors.borderLight,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  _getCategoryColor(category.iconName),
+                                ),
+                                minHeight: 6,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                      loading: () => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$questionsAnswered / -- Fragen',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                          const SizedBox(height: 4),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: 0,
+                              backgroundColor: isDark
+                                  ? AppColors.textSecondary.withValues(
+                                      alpha: 0.3,
+                                    )
+                                  : AppColors.borderLight,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                _getCategoryColor(category.iconName),
+                              ),
+                              minHeight: 6,
+                            ),
+                          ),
+                        ],
+                      ),
+                      error: (error, stack) => Text(
+                        'Error loading count',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: AppColors.error),
                       ),
                     ),
                   ],

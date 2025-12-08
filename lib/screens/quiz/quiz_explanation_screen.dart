@@ -17,23 +17,64 @@ class QuizExplanationScreen extends StatelessWidget {
     final question = args['question'] as Question;
     final isCorrect = args['isCorrect'] as bool;
     final isLastQuestion = args['isLastQuestion'] as bool;
+    final selectedIndices = args['selectedIndices'] as List<int>;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: isCorrect
-            ? AppColors.successLight
-            : AppColors.errorLight,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close, color: AppColors.textSecondary),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: (isDarkMode ? Colors.white : Colors.black).withValues(
+                alpha: 0.1,
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.close,
+              color: isDarkMode
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondary,
+              size: 20,
+            ),
+          ),
           onPressed: () => _showExitConfirmation(context),
         ),
-        title: Text(
-          isCorrect ? l10n.correct : l10n.incorrect,
-          style: TextStyle(
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
             color: isCorrect ? AppColors.success : AppColors.error,
-            fontWeight: FontWeight.w600,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: (isCorrect ? AppColors.success : AppColors.error)
+                    .withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isCorrect ? Icons.check_circle : Icons.cancel,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                isCorrect ? l10n.correct : l10n.incorrect,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
         centerTitle: true,
@@ -46,61 +87,303 @@ class QuizExplanationScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Question card
+                  // Question section
                   Container(
                     padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: MarkdownBody(
-                      data: question.text,
-                      styleSheet: MarkdownStyleSheet(
-                        p: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.normal,
-                          color:
-                              Theme.of(context).textTheme.bodyLarge?.color ??
-                              AppColors.textPrimary,
-                          height: 1.4,
-                        ),
-                        strong: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              Theme.of(context).textTheme.bodyLarge?.color ??
-                              AppColors.textPrimary,
-                        ),
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: isDarkMode
+                            ? AppColors.textSecondary.withValues(alpha: 0.2)
+                            : AppColors.borderLight,
+                        width: 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: isDarkMode ? 0.3 : 0.05,
+                          ),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'FRAGE',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkMode
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        MarkdownBody(
+                          data: question.text,
+                          styleSheet: MarkdownStyleSheet(
+                            p: TextStyle(
+                              fontSize: 17,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color,
+                              height: 1.5,
+                            ),
+                            strong: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  // Explanation section
+                  // Correct answer section
                   Container(
                     padding: const EdgeInsets.all(20.0),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: MarkdownBody(
-                      data: question.explanation,
-                      styleSheet: MarkdownStyleSheet(
-                        p: TextStyle(
-                          fontSize: 16,
-                          color:
-                              Theme.of(context).textTheme.bodyMedium?.color ??
-                              AppColors.iconPrimary,
-                          height: 1.5,
-                        ),
-                        strong: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              Theme.of(context).textTheme.bodyMedium?.color ??
-                              AppColors.iconPrimary,
-                        ),
+                      gradient: LinearGradient(
+                        colors: isDarkMode
+                            ? [
+                                AppColors.success.withValues(alpha: 0.2),
+                                AppColors.success.withValues(alpha: 0.15),
+                              ]
+                            : [AppColors.successLightest, AppColors.teal50],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: AppColors.successLight,
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.success.withValues(
+                            alpha: isDarkMode ? 0.2 : 0.1,
+                          ),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check_circle,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'RICHTIGE ANTWORT',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDarkMode
+                                      ? AppColors.successLight
+                                      : AppColors.successDark,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ...question.correctIndices.map((index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text(
+                                    question.options[index],
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: isDarkMode
+                                          ? AppColors.successLight
+                                          : AppColors.successDarkest,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Wrong answer section (if incorrect)
+                  if (!isCorrect) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(20.0),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDarkMode
+                              ? [
+                                  AppColors.error.withValues(alpha: 0.2),
+                                  AppColors.error.withValues(alpha: 0.15),
+                                ]
+                              : [AppColors.errorLightest, AppColors.pink50],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: AppColors.errorLight,
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.error.withValues(
+                              alpha: isDarkMode ? 0.2 : 0.1,
+                            ),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.error,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.cancel,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'DEINE ANTWORT',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDarkMode
+                                        ? AppColors.errorLight
+                                        : AppColors.errorDark,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ...selectedIndices
+                                    .where(
+                                      (index) => !question.correctIndices
+                                          .contains(index),
+                                    )
+                                    .map((index) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 4.0,
+                                        ),
+                                        child: Text(
+                                          question.options[index],
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            color: isDarkMode
+                                                ? AppColors.errorLight
+                                                : AppColors.errorDarkest,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+
+                  // Explanation section
+                  Container(
+                    padding: const EdgeInsets.all(24.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: isDarkMode
+                            ? AppColors.textSecondary.withValues(alpha: 0.2)
+                            : AppColors.borderLight,
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: isDarkMode ? 0.3 : 0.05,
+                          ),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'ERKLÄRUNG',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkMode
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        MarkdownBody(
+                          data: question.explanation,
+                          styleSheet: MarkdownStyleSheet(
+                            p: TextStyle(
+                              fontSize: 15,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color,
+                              height: 1.6,
+                            ),
+                            strong: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
@@ -110,54 +393,73 @@ class QuizExplanationScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(20.0),
                       decoration: BoxDecoration(
-                        color: AppColors.warningLight,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.crown, width: 1),
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: AppColors.warningMedium,
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: isDarkMode ? 0.3 : 0.05,
+                            ),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: Column(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AppColors.crown,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.lightbulb,
-                                  color: AppColors.textOnPrimary,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'ELTERN-TIPP',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.warning,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.warningMedium,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.lightbulb,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          MarkdownBody(
-                            data: question.tips!,
-                            styleSheet: MarkdownStyleSheet(
-                              p: TextStyle(
-                                fontSize: 16,
-                                color: AppColors.warning,
-                                height: 1.5,
-                              ),
-                              strong: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.warning,
-                              ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ELTERN-TIPP',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.warningMedium,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                MarkdownBody(
+                                  data: question.tips!,
+                                  styleSheet: MarkdownStyleSheet(
+                                    p: TextStyle(
+                                      fontSize: 15,
+                                      color: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color,
+                                      height: 1.6,
+                                    ),
+                                    strong: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -168,65 +470,50 @@ class QuizExplanationScreen extends StatelessWidget {
                   // Source link (if available)
                   if (question.sourceUrl != null) ...[
                     const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(20.0),
-                      decoration: BoxDecoration(
-                        color: AppColors.info.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.info, width: 1),
-                      ),
-                      child: InkWell(
-                        onTap: () => _launchUrl(context, question.sourceUrl!),
+                    InkWell(
+                      onTap: () => _launchUrl(context, question.sourceUrl!),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: AppColors.info.withValues(
+                            alpha: isDarkMode ? 0.2 : 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.info.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
                         child: Row(
                           children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: AppColors.info,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.science,
-                                color: AppColors.textOnPrimary,
-                                size: 24,
-                              ),
+                            Icon(
+                              Icons.science_outlined,
+                              color: AppColors.info,
+                              size: 20,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Wissenschaftliche Quelle',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.info,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    question.sourceLabel ?? l10n.viewSource,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.info,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                question.sourceLabel ?? 'Quelle ansehen',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.info,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                             Icon(
                               Icons.open_in_new,
                               color: AppColors.info,
-                              size: 20,
+                              size: 16,
                             ),
                           ],
                         ),
                       ),
                     ),
                   ],
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -236,10 +523,12 @@ class QuizExplanationScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20.0),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: Colors.black.withValues(
+                    alpha: isDarkMode ? 0.2 : 0.04,
+                  ),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -251,18 +540,20 @@ class QuizExplanationScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.textPrimary,
+                    backgroundColor: isDarkMode
+                        ? AppColors.primaryDark
+                        : AppColors.textPrimary,
                     foregroundColor: AppColors.textOnPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: const EdgeInsets.symmetric(vertical: 20),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 0,
                   ),
                   child: Text(
                     isLastQuestion ? l10n.finishQuiz.toUpperCase() : 'WEITER',
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.0,
                     ),
