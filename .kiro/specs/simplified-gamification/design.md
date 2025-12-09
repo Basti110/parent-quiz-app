@@ -176,6 +176,52 @@ enum DuelStatus {
 }
 ```
 
+#### New FriendModel
+
+```dart
+class FriendModel {
+  final String friendUserId;
+  final String status;
+  final DateTime createdAt;
+  final String createdBy;
+
+  // Head-to-head duel statistics
+  final int myWins;
+  final int theirWins;
+  final int ties;
+  final int totalDuels;
+
+  FriendModel({
+    required this.friendUserId,
+    required this.status,
+    required this.createdAt,
+    required this.createdBy,
+    this.myWins = 0,
+    this.theirWins = 0,
+    this.ties = 0,
+    this.totalDuels = 0,
+  });
+
+  Map<String, dynamic> toMap() { /* ... */ }
+  factory FriendModel.fromMap(Map<String, dynamic> map) { /* ... */ }
+
+  /// Returns formatted head-to-head record (e.g., "5-3-1")
+  String getRecordString() {
+    return '$myWins-$theirWins-$ties';
+  }
+
+  /// Returns true if user is leading in head-to-head
+  bool isLeading() {
+    return myWins > theirWins;
+  }
+
+  /// Returns true if tied in head-to-head
+  bool isTied() {
+    return myWins == theirWins;
+  }
+}
+```
+
 ### Service Layer
 
 #### Updated UserService
@@ -242,6 +288,7 @@ class DuelService {
   // Helper methods
   Future<List<String>> _generateDuelQuestions();
   Future<void> _updateDuelStatistics(String winnerId, String loserId, bool isTie);
+  Future<void> _updateHeadToHeadStats(String userId, String friendId, bool userWon, bool isTie);
 }
 ```
 
@@ -325,6 +372,23 @@ class SettingsService {
   'opponentAnswers': Map<String, bool>,    // questionId -> isCorrect (calculated after each answer)
   'opponentScore': int,                    // Incremented after each correct answer
   'opponentCompletedAt': Timestamp?,
+}
+```
+
+#### users/{userId}/friends/{friendUserId}
+
+```dart
+{
+  'friendUserId': String,
+  'status': String,                    // 'accepted' for MVP
+  'createdAt': Timestamp,
+  'createdBy': String,                 // userId who initiated
+
+  // Head-to-head duel statistics
+  'myWins': int,                       // How many times I beat this friend
+  'theirWins': int,                    // How many times they beat me
+  'ties': int,                         // How many ties between us
+  'totalDuels': int,                   // Total duels completed between us
 }
 ```
 
@@ -571,6 +635,20 @@ _For any_ set of users, the leaderboard should rank them in descending order by 
 **Property 24: Zero points display**
 _For any_ user with 0 streak points, they should still appear on the leaderboard with a rank
 **Validates: Requirements 7.5**
+
+### Head-to-Head Statistics Properties
+
+**Property 25: Head-to-head record accuracy**
+_For any_ two friends who have completed N duels together, the sum of myWins + theirWins + ties should equal N (totalDuels)
+**Validates: Requirements 15a.2**
+
+**Property 26: Head-to-head symmetry**
+_For any_ two friends A and B, friend A's myWins should equal friend B's theirWins, and vice versa
+**Validates: Requirements 15a.2**
+
+**Property 27: Head-to-head initialization**
+_For any_ newly created friendship, all head-to-head statistics (myWins, theirWins, ties, totalDuels) should be initialized to 0
+**Validates: Requirements 15a.5**
 
 ## Error Handling
 
@@ -899,26 +977,17 @@ class VSModeSession {
   final Map<String, bool> playerAAnswers;
   final Map<String, bool> playerBAnswers;
 
-  // New fields for timing
-  final DateTime? playerAStartTime;
-  final DateTime? playerAEndTime;
-  final DateTime? playerBStartTime;
-  final DateTime? playerBEndTime;
+  // New fields for timing (only counts question time, not explanation time)
+  final int playerAElapsedSeconds;  // Accumulated time spent on questions only
+  final int playerBElapsedSeconds;  // Accumulated time spent on questions only
 
   // New fields for explanation tracking
   final Map<String, bool> playerAExplanationsViewed;
   final Map<String, bool> playerBExplanationsViewed;
 
   // Computed properties
-  int? get playerATimeSeconds {
-    if (playerAStartTime == null || playerAEndTime == null) return null;
-    return playerAEndTime!.difference(playerAStartTime!).inSeconds;
-  }
-
-  int? get playerBTimeSeconds {
-    if (playerBStartTime == null || playerBEndTime == null) return null;
-    return playerBEndTime!.difference(playerBStartTime!).inSeconds;
-  }
+  int? get playerATimeSeconds => playerAElapsedSeconds;
+  int? get playerBTimeSeconds => playerBElapsedSeconds;
 }
 ```
 
@@ -949,15 +1018,15 @@ class VSModeResult {
 #### New Methods
 
 ```dart
-/// Record when a player starts their question sequence
-VSModeSession recordPlayerStart({
+/// Record when a player starts viewing a question (timer starts/resumes)
+VSModeSession recordQuestionStart({
   required VSModeSession session,
   required String playerId,
   required DateTime startTime,
 });
 
-/// Record when a player completes their question sequence
-VSModeSession recordPlayerEnd({
+/// Record when a player submits an answer (timer pauses)
+VSModeSession recordQuestionEnd({
   required VSModeSession session,
   required String playerId,
   required DateTime endTime,
@@ -1033,22 +1102,32 @@ VSModeResult calculateResult(VSModeSession session) {
 **State Changes**:
 
 - Remove `_showExplanation` flag (explanation will be separate screen)
-- Add `_playerStartTime: DateTime?` field
+- Add `_questionStartTime: DateTime?` field (tracks current question start time)
 - Add `_explanationsViewed: Set<String>` field
 
 **Flow Changes**:
 
 ```dart
+@override
+void initState() {
+  super.initState();
+  // Start timer when first question is displayed
+  _questionStartTime = DateTime.now();
+  _session = vsModeService.recordQuestionStart(
+    session: _session!,
+    playerId: _currentPlayer,
+    startTime: _questionStartTime!,
+  );
+}
+
 void _submitAnswer() {
-  // Record start time on first question
-  if (_currentQuestionIndex == 0 && _playerStartTime == null) {
-    _playerStartTime = DateTime.now();
-    _session = vsModeService.recordPlayerStart(
-      session: _session!,
-      playerId: _currentPlayer,
-      startTime: _playerStartTime!,
-    );
-  }
+  // Stop timer when answer is submitted
+  final questionEndTime = DateTime.now();
+  _session = vsModeService.recordQuestionEnd(
+    session: _session!,
+    playerId: _currentPlayer,
+    endTime: questionEndTime,
+  );
 
   // Validate and record answer
   final isCorrect = question.isCorrectAnswer(_selectedIndices.toList());
@@ -1059,7 +1138,7 @@ void _submitAnswer() {
     isCorrect: isCorrect,
   );
 
-  // Navigate to explanation screen
+  // Navigate to explanation screen (timer is paused)
   Navigator.pushNamed(
     context,
     '/quiz-explanation',
@@ -1088,15 +1167,22 @@ void _submitAnswer() {
   });
 }
 
-void _finishPlayerTurn() {
-  // Record end time
-  final endTime = DateTime.now();
-  _session = vsModeService.recordPlayerEnd(
-    session: _session!,
-    playerId: _currentPlayer,
-    endTime: endTime,
-  );
+void _nextQuestion() {
+  setState(() {
+    _currentQuestionIndex++;
+    _selectedIndices.clear();
+    // Restart timer for next question
+    _questionStartTime = DateTime.now();
+    _session = vsModeService.recordQuestionStart(
+      session: _session!,
+      playerId: _currentPlayer,
+      startTime: _questionStartTime!,
+    );
+  });
+}
 
+void _finishPlayerTurn() {
+  // Timer already stopped when last answer was submitted
   // Navigate to handoff or results
   if (_currentPlayer == 'playerA') {
     Navigator.pushReplacementNamed(
@@ -1194,8 +1280,8 @@ _For any_ player with both start and end timestamps in VS Mode, the completion t
 _For any_ completed VS Mode session, both players' completion times should be stored and retrievable.
 **Validates: Requirements 18.4, 21.4**
 
-**Property 37: VS Mode Continuous Timing**
-_For any_ player's question sequence in VS Mode, the elapsed time should include time spent viewing explanations (timing is continuous from first question start to last question completion).
+**Property 37: VS Mode Question-Only Timing**
+_For any_ player's question sequence in VS Mode, the elapsed time should only include time spent viewing and answering questions, excluding time spent on explanation screens.
 **Validates: Requirements 18.5**
 
 **Property 38: VS Mode Score-First Winner Determination**
@@ -1234,13 +1320,17 @@ _For any_ VS Mode session where a player has not completed their questions, thei
 _For any_ completion time calculation in VS Mode, fractional seconds should be rounded to the nearest whole second for display and comparison.
 **Validates: Requirements 22.2**
 
-**Property 47: VS Mode Timing Continuity Across App Lifecycle**
-_For any_ player's question sequence in VS Mode, backgrounding and foregrounding the app should not affect the total elapsed time (timing continues regardless of app state).
-**Validates: Requirements 22.3, 22.4**
+**Property 47: VS Mode Timing Pause During Explanations**
+_For any_ player viewing an explanation screen in VS Mode, the elapsed time should not increase while the explanation is displayed.
+**Validates: Requirements 22.3**
 
-**Property 48: VS Mode Timestamp Validation**
-_For any_ completed player session in VS Mode, the end timestamp should be after the start timestamp.
-**Validates: Requirements 22.5**
+**Property 48: VS Mode Elapsed Time Accumulation**
+_For any_ player answering N questions in VS Mode, the total elapsed time should equal the sum of time spent on each individual question screen.
+**Validates: Requirements 22.5, 22.2**
+
+**Property 48b: VS Mode Explanation Time Exclusion**
+_For any_ player who spends T seconds total on explanation screens in VS Mode, the completion time should not include any of those T seconds.
+**Validates: Requirements 18.5, 22.3**
 
 **Property 49: VS Mode Backward Compatibility**
 _For any_ old VS Mode session without time data, the system should handle it gracefully without errors and display results using score-only comparison.
@@ -1278,17 +1368,17 @@ _For any_ VS Mode session where both players have completed their questions, the
 
 #### Timing Errors
 
-**Scenario**: Player's end time is before start time (clock skew or manipulation)
+**Scenario**: Negative elapsed time calculated for a question (clock skew)
 **Handling**:
 
-- Validate timestamps before calculating duration
-- If invalid, log error and set completion time to null
-- Fall back to score-only comparison
+- Validate that question end time is after start time
+- If invalid, log error and skip that question's duration (don't add to total)
+- Continue with remaining questions
 
-**Scenario**: Missing timestamps for completed session
+**Scenario**: Missing elapsed time for completed session
 **Handling**:
 
-- Check for null timestamps before calculating duration
+- Check for null or zero elapsed time before comparison
 - Display "--:--" for missing times in UI
 - Use score-only comparison for winner determination
 
@@ -1314,9 +1404,9 @@ _For any_ VS Mode session where both players have completed their questions, the
 
 1. **Time Calculation Tests**
 
-   - Test completion time calculation with various start/end times
+   - Test elapsed time accumulation across multiple questions
    - Test time formatting for edge cases (0 seconds, 59 seconds, 60 seconds, etc.)
-   - Test timestamp validation (end before start, null values, etc.)
+   - Test that explanation viewing time is not included in elapsed time
 
 2. **Winner Determination Tests**
 
@@ -1335,8 +1425,8 @@ _For any_ VS Mode session where both players have completed their questions, the
 
 1. **Property 35: VS Mode Completion Time Calculation**
 
-   - Generate random start/end timestamps
-   - Verify calculated time equals difference in seconds
+   - Generate random question durations for N questions
+   - Verify total elapsed time equals sum of individual question durations
 
 2. **Property 38: VS Mode Score-First Winner Determination**
 
@@ -1358,17 +1448,22 @@ _For any_ VS Mode session where both players have completed their questions, the
    - Generate random session data
    - Verify all stored times are >= 0
 
-6. **Property 48: VS Mode Timestamp Validation**
+6. **Property 48: VS Mode Elapsed Time Accumulation**
 
-   - Generate random valid sessions
-   - Verify end timestamp > start timestamp
+   - Generate random question durations
+   - Verify total equals sum of parts
 
-7. **Property 49: VS Mode Backward Compatibility**
+7. **Property 48b: VS Mode Explanation Time Exclusion**
+
+   - Generate random question and explanation durations
+   - Verify elapsed time only includes question durations
+
+8. **Property 49: VS Mode Backward Compatibility**
 
    - Generate sessions with and without time data
    - Verify all handle gracefully without errors
 
-8. **Property 51-53: VS Mode XP Calculation**
+9. **Property 51-53: VS Mode XP Calculation**
    - Generate random answer patterns
    - Verify XP matches expected values for each scenario
 
@@ -1386,26 +1481,45 @@ The existing `QuizExplanationScreen` will be modified to support VS Mode with an
 
 ```dart
 // In VSModeQuizScreen state
-DateTime? _playerStartTime;
+DateTime? _questionStartTime;
 
-// On first question submission
-if (_currentQuestionIndex == 0 && _playerStartTime == null) {
-  _playerStartTime = DateTime.now();
-  _session = vsModeService.recordPlayerStart(
+// When question screen is displayed (initState or after returning from explanation)
+@override
+void initState() {
+  super.initState();
+  _questionStartTime = DateTime.now();
+  _session = vsModeService.recordQuestionStart(
     session: _session!,
     playerId: _currentPlayer,
-    startTime: _playerStartTime!,
+    startTime: _questionStartTime!,
   );
 }
 
-// On last question completion
-if (_currentQuestionIndex >= _currentPlayerQuestionIds.length - 1) {
-  final endTime = DateTime.now();
-  _session = vsModeService.recordPlayerEnd(
+// When answer is submitted (before navigating to explanation)
+void _submitAnswer() {
+  final questionEndTime = DateTime.now();
+  _session = vsModeService.recordQuestionEnd(
     session: _session!,
     playerId: _currentPlayer,
-    endTime: endTime,
+    endTime: questionEndTime,
   );
+  
+  // Timer is now paused during explanation screen
+  // ... navigate to explanation ...
+}
+
+// When moving to next question (after explanation)
+void _nextQuestion() {
+  setState(() {
+    _currentQuestionIndex++;
+    // Restart timer for next question
+    _questionStartTime = DateTime.now();
+    _session = vsModeService.recordQuestionStart(
+      session: _session!,
+      playerId: _currentPlayer,
+      startTime: _questionStartTime!,
+    );
+  });
 }
 ```
 

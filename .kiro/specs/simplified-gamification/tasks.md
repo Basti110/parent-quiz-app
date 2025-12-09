@@ -4,6 +4,8 @@
 
 This implementation plan covers the transition from XP-based gamification to a streak-based system, plus the addition of asynchronous duels and VS Mode improvements (explanations + time-based tiebreaker).
 
+**Key VS Mode Timing Approach**: Time is tracked only during question answering, NOT during explanation viewing. The timer starts when a question is displayed, pauses when an answer is submitted, and resumes when the next question is displayed. This ensures fair competition based on answering speed rather than how quickly players skip through educational content.
+
 ## Task List
 
 - [ ] 1. Update data models for simplified gamification
@@ -24,10 +26,10 @@ This implementation plan covers the transition from XP-based gamification to a s
 
 - [ ] 1.3 Update VSModeSession model for time tracking and explanations
 
-  - Add: playerAStartTime, playerAEndTime, playerBStartTime, playerBEndTime
+  - Add: playerAElapsedSeconds, playerBElapsedSeconds (accumulated time, questions only)
   - Add: playerAExplanationsViewed, playerBExplanationsViewed (Map<String, bool>)
-  - Add computed properties: playerATimeSeconds, playerBTimeSeconds
-  - _Requirements: 18.1, 18.2, 18.3, 21.1, 21.2_
+  - Add computed properties: playerATimeSeconds, playerBTimeSeconds (return elapsed seconds)
+  - _Requirements: 18.1, 18.2, 18.3, 18.5, 21.1, 21.2_
 
 - [ ] 1.4 Update VSModeResult model for time-based tiebreaker
 
@@ -35,6 +37,15 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Add method: formatTime(int? seconds) for MM:SS formatting
   - Update outcome calculation to consider time when scores are equal
   - _Requirements: 19.1, 19.2, 19.5, 20.2_
+
+- [ ] 1.5 Create FriendModel for head-to-head statistics
+
+  - Fields: friendUserId, status, createdAt, createdBy
+  - Fields: myWins, theirWins, ties, totalDuels (all default to 0)
+  - Method: getRecordString() returns formatted record (e.g., "5-3-1")
+  - Method: isLeading() returns true if myWins > theirWins
+  - Method: isTied() returns true if myWins == theirWins
+  - _Requirements: 15a.1, 15a.5_
 
 - [ ] 2. Update UserService for streak-based system
 - [ ] 2.1 Implement daily goal management methods
@@ -90,7 +101,8 @@ This implementation plan covers the transition from XP-based gamification to a s
   - submitAnswer(duelId, userId, questionIndex, questionId, isCorrect)
   - Increment score if correct, store answer in map
   - completeDuel(duelId, userId) - mark completion timestamp
-  - _Requirements: 12.2, 12.3, 12.4, 13.2_
+  - When both players complete, call \_updateHeadToHeadStats for both users
+  - _Requirements: 12.2, 12.3, 12.4, 13.2, 15a.2_
 
 - [ ] 3.3 Implement duel query methods
 
@@ -104,30 +116,41 @@ This implementation plan covers the transition from XP-based gamification to a s
 
   - \_generateDuelQuestions() - select 5 random active questions
   - \_updateDuelStatistics(winnerId, loserId, isTie) - update user stats
-  - _Requirements: 11.5, 13.4_
+  - \_updateHeadToHeadStats(userId, friendId, userWon, isTie) - update friendship documents for both users
+  - _Requirements: 11.5, 13.4, 15a.2_
 
-- [ ]\* 3.5 Write property test for duel question consistency
+- [ ] 3.5 Write property test for duel question consistency
 
   - **Property 18: Duel question consistency**
   - **Validates: Requirements 11.5**
 
-- [ ]\* 3.6 Write property test for duel score calculation
+- [ ] 3.6 Write property test for duel score calculation
 
   - **Property 19: Duel score calculation**
   - **Validates: Requirements 13.2**
 
-- [ ]\* 3.7 Write property test for duel winner determination
+- [ ] 3.7 Write property test for duel winner determination
 
   - **Property 20: Duel winner determination**
   - **Validates: Requirements 13.4**
 
+- [ ]\* 3.8 Write property test for head-to-head record accuracy
+
+  - **Property 25: Head-to-head record accuracy**
+  - **Validates: Requirements 15a.2**
+
+- [ ]\* 3.9 Write property test for head-to-head symmetry
+
+  - **Property 26: Head-to-head symmetry**
+  - **Validates: Requirements 15a.2**
+
 - [ ] 4. Update VSModeService for time tracking and explanations
 - [ ] 4.1 Implement time tracking methods
 
-  - recordPlayerStart(session, playerId, startTime)
-  - recordPlayerEnd(session, playerId, endTime)
-  - recordExplanationViewed(session, playerId, questionId)
-  - _Requirements: 18.1, 18.2, 17.4_
+  - recordQuestionStart(session, playerId, startTime) - called when question displayed
+  - recordQuestionEnd(session, playerId, endTime) - called when answer submitted, accumulates elapsed time
+  - recordExplanationViewed(session, playerId, questionId) - tracks explanation views
+  - _Requirements: 18.1, 18.2, 18.5, 17.4, 22.2, 22.3_
 
 - [ ] 4.2 Update calculateResult for time-based tiebreaker
 
@@ -144,10 +167,15 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Apply session bonuses (completion + perfect)
   - _Requirements: 25.1, 25.2, 25.3, 25.4_
 
-- [ ]\* 4.4 Write property test for VS Mode time calculation
+- [ ] 4.4 Write property test for VS Mode time calculation
 
   - **Property 35: VS Mode Completion Time Calculation**
   - **Validates: Requirements 18.3**
+
+- [ ] 4.4b Write property test for VS Mode explanation time exclusion
+
+  - **Property 48b: VS Mode Explanation Time Exclusion**
+  - **Validates: Requirements 18.5, 22.3**
 
 - [ ]\* 4.5 Write property test for VS Mode score-first winner determination
 
@@ -164,10 +192,10 @@ This implementation plan covers the transition from XP-based gamification to a s
   - **Property 42: VS Mode Time Formatting**
   - **Validates: Requirements 20.2**
 
-- [ ]\* 4.8 Write property test for VS Mode timestamp validation
+- [ ]\* 4.8 Write property test for VS Mode elapsed time accumulation
 
-  - **Property 48: VS Mode Timestamp Validation**
-  - **Validates: Requirements 22.5**
+  - **Property 48: VS Mode Elapsed Time Accumulation**
+  - **Validates: Requirements 22.5, 22.2**
 
 - [ ] 5. Update home screen for daily progress
 - [ ] 5.1 Replace XP display with daily progress
@@ -199,6 +227,13 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Show user's rank
   - Handle users with 0 points
   - _Requirements: 7.5_
+
+- [ ] 6.3 Display head-to-head statistics for friends
+
+  - For each friend on leaderboard, show head-to-head record (e.g., "5-3-1")
+  - Indicate if user is leading, tied, or trailing
+  - Format as "vs You: X-Y-Z" where X=their wins, Y=their losses, Z=ties
+  - _Requirements: 15a.3, 15a.4_
 
 - [ ] 7. Update settings screen for daily goal
 - [ ] 7.1 Add daily goal adjustment control
@@ -235,6 +270,13 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Show badge on friends with pending challenges
   - Display pending challenge count
   - _Requirements: 10.4, 10.5, 14.1_
+
+- [ ] 8.4 Display head-to-head statistics on friends screen
+
+  - Show win-loss-tie record for each friend
+  - Display "You: X, Them: Y" format
+  - Show total duels completed
+  - _Requirements: 15a.3, 15a.4_
 
 - [ ] 9. Create duel screens
 - [ ] 9.1 Create duel challenge acceptance screen
@@ -280,19 +322,23 @@ This implementation plan covers the transition from XP-based gamification to a s
 
 - [ ] 10.2 Implement time tracking in VS Mode
 
-  - Add \_playerStartTime field
-  - Record start time on first question
-  - Record end time on last question
-  - Call VSModeService.recordPlayerStart/End
-  - _Requirements: 18.1, 18.2, 22.1, 22.3, 22.4_
+  - Add \_questionStartTime field (tracks current question start)
+  - Record start time when question is displayed (initState and after explanation)
+  - Record end time when answer is submitted (before explanation)
+  - Call VSModeService.recordQuestionStart when question displays
+  - Call VSModeService.recordQuestionEnd when answer submitted
+  - Timer pauses during explanation screens
+  - _Requirements: 18.1, 18.2, 18.5, 22.1, 22.2, 22.3_
 
 - [ ] 10.3 Navigate to explanation screen after each answer
 
+  - Stop timer before navigating to explanation
   - Pass isVSMode: true flag
   - Pass question, isCorrect, isLastQuestion
   - Handle return from explanation
   - Track explanation views
-  - _Requirements: 16.4, 16.5, 17.4_
+  - Restart timer when next question displays
+  - _Requirements: 16.4, 16.5, 17.4, 18.5, 22.3_
 
 - [ ] 10.4 Update navigation flow
 

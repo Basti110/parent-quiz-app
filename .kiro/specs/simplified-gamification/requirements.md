@@ -17,6 +17,7 @@ This specification defines a simplified gamification system for the parent quiz 
 - **Challenger**: The user who initiates a duel
 - **Opponent**: The user who receives and accepts a duel challenge
 - **Duel Status**: The current state of a duel (pending, accepted, in-progress, completed)
+- **Head-to-Head Record**: Win-loss-tie statistics between two specific friends (e.g., "5-3-1" means 5 wins, 3 losses, 1 tie)
 
 ## Requirements
 
@@ -200,6 +201,18 @@ This specification defines a simplified gamification system for the parent quiz 
 4. WHEN a user has multiple active duels THEN the System SHALL display all pending and in-progress duels
 5. WHEN a duel is completed by both participants THEN the System SHALL archive the duel after 7 days
 
+### Requirement 15a: Head-to-Head Duel Statistics
+
+**User Story:** As a user, I want to see my win-loss record against each friend, so that I can track my competitive performance with specific friends.
+
+#### Acceptance Criteria
+
+1. WHEN storing friendship data THEN the System SHALL include head-to-head duel statistics (myWins, theirWins, ties, totalDuels)
+2. WHEN a duel is completed THEN the System SHALL update both users' friendship documents with the result
+3. WHEN displaying a friend on the leaderboard THEN the System SHALL show the head-to-head record (e.g., "5-3-1")
+4. WHEN displaying a friend's profile THEN the System SHALL show how many times I won against them and how many times they won against me
+5. WHEN initializing a new friendship THEN the System SHALL set all head-to-head statistics to 0
+
 ### Requirement 16: VS Mode Explanation Screens
 
 **User Story:** As a VS Mode player, I want to see explanations after answering each question, so that I can learn from my answers just like in solo mode.
@@ -226,15 +239,15 @@ This specification defines a simplified gamification system for the parent quiz 
 
 ### Requirement 18: VS Mode Completion Time Tracking
 
-**User Story:** As a VS Mode player, I want my completion time to be tracked, so that ties can be resolved fairly based on speed.
+**User Story:** As a VS Mode player, I want my completion time to be tracked only during question answering, so that ties can be resolved fairly based on answering speed rather than explanation reading speed.
 
 #### Acceptance Criteria
 
-1. WHEN a player starts their first question THEN the System SHALL record the start timestamp
-2. WHEN a player completes their last question THEN the System SHALL record the end timestamp
+1. WHEN a player's first question is displayed THEN the System SHALL record the start timestamp
+2. WHEN a player submits an answer to their last question THEN the System SHALL record the end timestamp
 3. WHEN both timestamps are recorded THEN the System SHALL calculate the total completion time in seconds
 4. WHEN storing VS Mode results THEN the System SHALL save the completion time for each player
-5. WHILE a player is answering questions THEN the System SHALL continue timing even during explanation screen viewing
+5. WHILE a player is viewing explanation screens THEN the System SHALL NOT include that time in the completion time calculation
 
 ### Requirement 19: VS Mode Time-Based Tiebreaker
 
@@ -274,15 +287,15 @@ This specification defines a simplified gamification system for the parent quiz 
 
 ### Requirement 22: VS Mode Timer Accuracy
 
-**User Story:** As a VS Mode player, I want the timer to accurately reflect my performance, so that tiebreakers are fair.
+**User Story:** As a VS Mode player, I want the timer to accurately reflect my question-answering performance, so that tiebreakers are fair.
 
 #### Acceptance Criteria
 
 1. WHEN timing a player's session THEN the System SHALL use high-precision timestamps (millisecond accuracy)
-2. WHEN calculating completion time THEN the System SHALL round to the nearest second for display and comparison
-3. WHEN a player pauses or backgrounds the app THEN the System SHALL continue timing to prevent gaming the system
-4. WHEN a player returns to the app mid-session THEN the System SHALL resume from where they left off with continuous timing
-5. WHEN storing time data THEN the System SHALL validate that end timestamp is after start timestamp
+2. WHEN calculating completion time THEN the System SHALL accumulate only the time spent on question screens, excluding explanation screens
+3. WHEN a player views an explanation THEN the System SHALL pause the timer until the next question is displayed
+4. WHEN a player returns to a question screen THEN the System SHALL resume timing
+5. WHEN storing time data THEN the System SHALL accumulate elapsed seconds across all questions for each player
 
 ### Requirement 23: VS Mode Client-Side Implementation
 
