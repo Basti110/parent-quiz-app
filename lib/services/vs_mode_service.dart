@@ -77,6 +77,73 @@ class VSModeService {
     }
   }
 
+  /// Record when a player starts viewing a question (timer starts/resumes)
+  /// Requirements: 18.1, 18.2, 18.5, 22.2, 22.3
+  VSModeSession recordQuestionStart({
+    required VSModeSession session,
+    required String playerId,
+    required DateTime startTime,
+  }) {
+    // Store the start time in session state for later calculation
+    // This method is called when a question is displayed
+    // The actual elapsed time is calculated in recordQuestionEnd
+    return session;
+  }
+
+  /// Record when a player submits an answer (timer pauses)
+  /// Accumulates elapsed time for the question
+  /// Requirements: 18.1, 18.2, 18.5, 17.4, 22.2, 22.3
+  VSModeSession recordQuestionEnd({
+    required VSModeSession session,
+    required String playerId,
+    required DateTime endTime,
+    required DateTime startTime,
+  }) {
+    // Calculate elapsed time for this question
+    final elapsedSeconds = endTime.difference(startTime).inSeconds;
+    
+    // Validate that end time is after start time (handle clock skew)
+    if (elapsedSeconds < 0) {
+      print('Warning: Negative elapsed time detected. Skipping this question duration.');
+      return session;
+    }
+    
+    // Accumulate elapsed time for the player
+    if (playerId == 'playerA') {
+      final newElapsedSeconds = session.playerAElapsedSeconds + elapsedSeconds;
+      return session.copyWith(playerAElapsedSeconds: newElapsedSeconds);
+    } else if (playerId == 'playerB') {
+      final newElapsedSeconds = session.playerBElapsedSeconds + elapsedSeconds;
+      return session.copyWith(playerBElapsedSeconds: newElapsedSeconds);
+    } else {
+      throw ArgumentError(
+        'Invalid playerId: $playerId. Must be "playerA" or "playerB"',
+      );
+    }
+  }
+
+  /// Record that a player viewed an explanation
+  /// Requirements: 17.4, 22.2, 22.3
+  VSModeSession recordExplanationViewed({
+    required VSModeSession session,
+    required String playerId,
+    required String questionId,
+  }) {
+    if (playerId == 'playerA') {
+      final updatedViewed = Map<String, bool>.from(session.playerAExplanationsViewed);
+      updatedViewed[questionId] = true;
+      return session.copyWith(playerAExplanationsViewed: updatedViewed);
+    } else if (playerId == 'playerB') {
+      final updatedViewed = Map<String, bool>.from(session.playerBExplanationsViewed);
+      updatedViewed[questionId] = true;
+      return session.copyWith(playerBExplanationsViewed: updatedViewed);
+    } else {
+      throw ArgumentError(
+        'Invalid playerId: $playerId. Must be "playerA" or "playerB"',
+      );
+    }
+  }
+
   /// Submit an answer for a player during VS Mode
   /// Requirements: 9.3
   VSModeSession submitPlayerAnswer({
@@ -100,28 +167,68 @@ class VSModeService {
     }
   }
 
+  /// Calculate XP for a player based on their answers and explanation views
+  /// Requirements: 25.1, 25.2, 25.3, 25.4
+  int calculatePlayerXP({
+    required Map<String, bool> answers,
+    required Map<String, bool> explanationsViewed,
+    required int questionsPerPlayer,
+  }) {
+    int xp = 0;
+    
+    // Calculate XP per question
+    for (final entry in answers.entries) {
+      final questionId = entry.key;
+      final isCorrect = entry.value;
+      
+      if (isCorrect) {
+        // Correct answer: +10 XP
+        xp += 10;
+      } else {
+        // Incorrect answer
+        final viewedExplanation = explanationsViewed[questionId] ?? false;
+        if (viewedExplanation) {
+          // Incorrect + explanation viewed: +5 XP
+          xp += 5;
+        } else {
+          // Incorrect without explanation: +2 XP
+          xp += 2;
+        }
+      }
+    }
+    
+    // Apply session bonuses
+    final questionsAnswered = answers.length;
+    if (questionsAnswered == questionsPerPlayer) {
+      // Session completion bonus
+      if (questionsPerPlayer == 5) {
+        xp += 10;
+      } else if (questionsPerPlayer == 10) {
+        xp += 25;
+      }
+      
+      // Perfect score bonus
+      final correctCount = answers.values.where((correct) => correct).length;
+      if (correctCount == questionsPerPlayer) {
+        xp += 10;
+      }
+    }
+    
+    return xp;
+  }
+
   /// Calculate the result of a VS Mode duel
   /// Property 24: Duel winner determination
-  /// Requirements: 9.5
+  /// Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 24.1, 24.2, 24.3
   VSModeResult calculateResult(VSModeSession session) {
-    final playerAScore = session.playerAScore;
-    final playerBScore = session.playerBScore;
-
-    VSModeOutcome outcome;
-    if (playerAScore > playerBScore) {
-      outcome = VSModeOutcome.playerAWins;
-    } else if (playerBScore > playerAScore) {
-      outcome = VSModeOutcome.playerBWins;
-    } else {
-      outcome = VSModeOutcome.tie;
-    }
-
-    return VSModeResult(
+    // Use the factory constructor that handles time-based tiebreaker
+    return VSModeResult.fromSession(
       playerAName: session.playerAName,
       playerBName: session.playerBName,
-      playerAScore: playerAScore,
-      playerBScore: playerBScore,
-      outcome: outcome,
+      playerAScore: session.playerAScore,
+      playerBScore: session.playerBScore,
+      playerATimeSeconds: session.playerATimeSeconds,
+      playerBTimeSeconds: session.playerBTimeSeconds,
     );
   }
 

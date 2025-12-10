@@ -2,93 +2,136 @@
 inclusion: always
 ---
 
-# XP and Gamification Rules
+# Simplified Gamification Rules
 
-## XP Calculation
+## Daily Goal System
 
-### Per-Question XP
+### Daily Goal Management
 
-- **Correct answer**: +10 XP
-- **Incorrect + explanation viewed**: +5 XP
-- **Incorrect without explanation**: +2 XP
+- **Default daily goal**: 10 questions per day
+- **Adjustable range**: 1-50 questions per day
+- **Progress tracking**: Questions answered today vs. daily goal
+- **Reset timing**: Daily progress resets at midnight (user's local timezone)
 
-### Session Bonuses
+### Daily Progress Display
 
-- **5-question session completion**: +10 XP bonus
-- **10-question session completion**: +25 XP bonus
-- **Perfect session (all correct)**: +10 XP bonus (in addition to session bonus)
-
-### Example Calculations
-
-**5-question session, 4 correct, 1 incorrect (explanation viewed):**
-
-- 4 × 10 = 40 XP (correct answers)
-- 1 × 5 = 5 XP (incorrect with explanation)
-- 10 XP (session bonus)
-- **Total: 55 XP**
-
-**10-question session, all correct:**
-
-- 10 × 10 = 100 XP (correct answers)
-- 25 XP (session bonus)
-- 10 XP (perfect bonus)
-- **Total: 135 XP**
-
-## Level System
-
-- **Level calculation**: `floor(totalXp / 100) + 1`
-- **Level 1**: 0-99 XP
-- **Level 2**: 100-199 XP
-- **Level 3**: 200-299 XP
-- And so on...
+- Show progress as "X/Y questions" (e.g., "7/10 questions")
+- Visual progress bar showing completion percentage
+- Checkmark indicator when daily goal is met
+- Celebration animation on goal completion
 
 ## Streak System
 
 ### Streak Rules
 
-1. Complete at least one quiz session per calendar day
-2. Consecutive days increment `streakCurrent`
-3. Missing a day resets `streakCurrent` to 1 (not 0)
-4. `streakLongest` tracks the highest streak ever achieved
+1. **Streak start**: Meet daily goal for the first time → streak = 1
+2. **Streak continuation**: Meet daily goal on consecutive days → increment by 1
+3. **Streak reset**: Fail to meet daily goal for a calendar day → reset to 0
+4. **Longest streak**: Track highest streak ever achieved
+5. **Timezone**: Use user's local timezone for day calculations
 
 ### Streak Logic
 
 ```dart
 if (isSameDay(now, lastActiveAt)) {
-  // Same day, no change
-} else if (isYesterday(lastActiveAt, now)) {
-  // Consecutive day
+  // Same day, no change to streak
+} else if (isYesterday(lastActiveAt, now) && metDailyGoalYesterday) {
+  // Consecutive day with goal met
   streakCurrent++;
   if (streakCurrent > streakLongest) {
     streakLongest = streakCurrent;
   }
 } else {
-  // Streak broken
-  streakCurrent = 1;
+  // Streak broken (missed a day or didn't meet goal)
+  streakCurrent = 0;
 }
 ```
 
-## Weekly Leaderboard
+## Streak Points System
 
-- **Week definition**: Monday to Sunday
-- **Reset timing**: Every Monday at 00:00
-- **Tracking**: `weeklyXpCurrent` accumulates XP for current week
-- **History**: Previous week's data saved to `history` subcollection
+### Streak Points Calculation
 
-## Question Mastery
+- **Days 1-2**: 0 streak points (building momentum)
+- **Day 3**: Award 3 streak points
+- **Day 4+**: Award 3 streak points per additional consecutive day
+- **Total accumulation**: Streak points never decrease, only increase
+- **Leaderboard ranking**: Users ranked by total streak points
+
+### Example Calculations
+
+**7-day streak:**
+- Days 1-2: 0 points
+- Day 3: +3 points
+- Day 4: +3 points  
+- Day 5: +3 points
+- Day 6: +3 points
+- Day 7: +3 points
+- **Total: 15 streak points**
+
+## Question Statistics
+
+### Progress Tracking
+
+- **Total questions answered**: Lifetime count of all questions attempted
+- **Total correct answers**: Lifetime count of correctly answered questions
+- **Total mastered questions**: Count of questions answered correctly 3+ times
+
+### Question Mastery
 
 - **Mastery threshold**: Answer correctly 3+ times
 - **Tracking**: `correctCount` in `questionStates` subcollection
 - **Status**: `mastered` field set to `true` when threshold reached
 - **Category mastery**: Percentage of mastered questions in category
 
-## VS Mode (Duel) Points
+## Leaderboard System
 
-- **Win**: +3 duel points, increment `duelsWon` and `duelsPlayed`
-- **Tie**: +1 duel point, increment `duelsPlayed`
-- **Loss**: +0 duel points, increment `duelsLost` and `duelsPlayed`
+### Ranking Logic
 
-Note: Only the logged-in user's stats are updated in pass-and-play mode.
+- **Primary ranking**: Total streak points (descending)
+- **Secondary display**: Current streak length
+- **User rank**: Show current user's position
+- **Zero points**: Users with 0 points still appear on leaderboard
+
+### Head-to-Head Statistics
+
+- **Friend records**: Show win-loss-tie record against each friend (e.g., "5-3-1")
+- **Display format**: "vs You: X-Y-Z" where X=their wins, Y=their losses, Z=ties
+- **Leading indicator**: Show if user is leading, tied, or trailing
+
+## Asynchronous Duel System
+
+### Duel Mechanics
+
+- **Challenge creation**: Tap friend's avatar to initiate duel
+- **Question count**: 5 questions per duel
+- **Question consistency**: Both participants get identical questions in same order
+- **Asynchronous play**: Complete at your own pace
+- **Score tracking**: Increment score for each correct answer
+
+### Duel Statistics
+
+- **Duel completion**: Track total duels completed
+- **Win tracking**: Track wins against all opponents
+- **Head-to-head**: Maintain win-loss-tie record per friend
+- **Symmetric updates**: Both users' friendship documents updated with results
+
+## VS Mode (Pass-and-Play) Enhancements
+
+### Time-Based Tiebreaker
+
+- **Time tracking**: Only during question answering (not explanations)
+- **Timer start**: When question is displayed
+- **Timer pause**: When answer is submitted, during explanations
+- **Timer resume**: When next question is displayed
+- **Tiebreaker**: If scores equal, faster completion time wins
+
+### XP Calculation (VS Mode only)
+
+- **Correct answer**: +10 XP
+- **Incorrect + explanation viewed**: +5 XP
+- **Incorrect without explanation**: +2 XP
+- **Session bonuses**: Same as solo mode
+- **Update scope**: Only logged-in user's stats updated
 
 ## Question Selection Algorithm
 

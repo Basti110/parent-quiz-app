@@ -8,13 +8,37 @@ import '../../providers/theme_providers.dart';
 import '../../theme/app_colors.dart';
 import 'avatar_selection_screen.dart';
 
+/// State notifier for managing daily goal in settings
+class DailyGoalNotifier extends StateNotifier<int> {
+  DailyGoalNotifier(super.initialValue);
+
+  void updateGoal(int newGoal) {
+    if (newGoal >= 5 && newGoal <= 30) {
+      state = newGoal;
+    }
+  }
+}
+
+/// Provider for daily goal state
+final dailyGoalProvider =
+    StateNotifierProvider.autoDispose<DailyGoalNotifier, int>((ref) {
+  return DailyGoalNotifier(10); // Default value
+});
+
 /// SettingsScreen for managing account and appearance preferences
-/// Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6
-class SettingsScreen extends ConsumerWidget {
+/// Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 9.1, 9.2, 9.3, 9.4, 9.5
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool _isSaving = false;
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
     final locale = ref.watch(localeProvider);
     final l10n = AppLocalizations.of(context)!;
@@ -112,6 +136,33 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox.shrink(),
 
           const SizedBox(height: 24),
+
+          // Daily Goal Section
+          if (currentUserAsync != null)
+            currentUserAsync.when(
+              data: (user) {
+                // Initialize daily goal provider with user's current goal
+                // Ensure it's within valid range (5-30) and rounded to nearest 5
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  final validGoal = (user.dailyGoal.clamp(5, 30) / 5).round() * 5;
+                  ref.read(dailyGoalProvider.notifier).updateGoal(validGoal);
+                });
+                return _buildDailyGoalSection(context, ref, l10n, theme, isDark, user.dailyGoal, currentUserId!);
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            )
+          else
+            const SizedBox.shrink(),
+
+          if (currentUserAsync != null)
+            currentUserAsync.when(
+              data: (_) => const SizedBox(height: 24),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            )
+          else
+            const SizedBox.shrink(),
 
           // Section Header
           Padding(
@@ -245,6 +296,257 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  /// Build daily goal adjustment section
+  /// Requirements: 9.1, 9.2, 9.3
+  Widget _buildDailyGoalSection(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ThemeData theme,
+    bool isDark,
+    int currentGoal,
+    String userId,
+  ) {
+    final dailyGoal = ref.watch(dailyGoalProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text(
+            l10n.dailyGoal.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: theme.textTheme.bodyMedium?.color?.withValues(
+                alpha: 0.5,
+              ),
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+
+        // Daily Goal Card
+        Container(
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? AppColors.surfaceDark : AppColors.border,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    (isDark
+                            ? AppColors.backgroundDark
+                            : AppColors.textPrimary)
+                        .withValues(alpha: isDark ? 0.2 : 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.dailyGoalDescription,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.textTheme.bodyMedium?.color?.withValues(
+                    alpha: 0.7,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Current value display
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.questionsPerDay,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: theme.textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$dailyGoal',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Slider
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: AppColors.primary,
+                  inactiveTrackColor: AppColors.primary.withValues(alpha: 0.2),
+                  thumbColor: AppColors.primary,
+                  overlayColor: AppColors.primary.withValues(alpha: 0.2),
+                  trackHeight: 4,
+                ),
+                child: Slider(
+                  value: dailyGoal.toDouble().clamp(5.0, 30.0),
+                  min: 5,
+                  max: 30,
+                  divisions: 5,
+                  onChanged: (value) {
+                    // Round to nearest 5
+                    final roundedValue = (value / 5).round() * 5;
+                    ref
+                        .read(dailyGoalProvider.notifier)
+                        .updateGoal(roundedValue);
+                  },
+                ),
+              ),
+
+              // Min/Max labels
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '5',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.textTheme.bodyMedium?.color?.withValues(
+                        alpha: 0.5,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '30',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.textTheme.bodyMedium?.color?.withValues(
+                        alpha: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Save button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isSaving || dailyGoal == currentGoal
+                      ? null
+                      : () => _saveDailyGoal(context, ref, l10n, userId, dailyGoal),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.textOnPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
+                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.textOnPrimary,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          l10n.save,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Save daily goal to Firebase
+  /// Requirements: 9.4, 9.5
+  Future<void> _saveDailyGoal(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    String userId,
+    int newGoal,
+  ) async {
+    // Validate before saving
+    if (newGoal < 5 || newGoal > 30 || newGoal % 5 != 0) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.invalidDailyGoal),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final userService = ref.read(userServiceProvider);
+      await userService.updateDailyGoal(userId, newGoal);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.dailyGoalUpdated),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.error}: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   String _formatDate(DateTime? date) {

@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../models/friend.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_providers.dart';
+import '../../providers/duel_providers.dart';
 import '../../providers/friends_providers.dart';
 import '../../theme/app_colors.dart';
 
-/// FriendsScreen displaying friend code and friends list
-/// Requirements: 10.1, 10.5
+/// FriendsScreen displaying friend code and friends list with duel challenges
+/// Requirements: 10.1, 10.2, 10.4, 10.5, 15a.3, 15a.4
 class FriendsScreen extends ConsumerWidget {
   const FriendsScreen({super.key});
 
@@ -24,7 +26,7 @@ class FriendsScreen extends ConsumerWidget {
     }
 
     final userDataAsync = ref.watch(userDataProvider(userId));
-    final friendsListAsync = ref.watch(friendsListProvider(userId));
+    final friendsWithDataAsync = ref.watch(friendsWithDataProvider(userId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Friends')),
@@ -37,8 +39,13 @@ class FriendsScreen extends ConsumerWidget {
               const Divider(),
               // Friends list section
               Expanded(
-                child: friendsListAsync.when(
-                  data: (friends) => _buildFriendsList(context, friends),
+                child: friendsWithDataAsync.when(
+                  data: (friendsWithData) => _buildFriendsList(
+                    context,
+                    ref,
+                    userId,
+                    friendsWithData,
+                  ),
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(
@@ -55,7 +62,7 @@ class FriendsScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
-                            ref.invalidate(friendsListProvider(userId));
+                            ref.invalidate(friendsWithDataProvider(userId));
                           },
                           child: const Text('Retry'),
                         ),
@@ -148,10 +155,15 @@ class FriendsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFriendsList(BuildContext context, List<UserModel> friends) {
+  Widget _buildFriendsList(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    List<(UserModel, Friend)> friendsWithData,
+  ) {
     final theme = Theme.of(context);
 
-    if (friends.isEmpty) {
+    if (friendsWithData.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -182,48 +194,656 @@ class FriendsScreen extends ConsumerWidget {
     }
 
     return ListView.builder(
-      itemCount: friends.length,
+      itemCount: friendsWithData.length,
       itemBuilder: (context, index) {
-        final friend = friends[index];
-        return _buildFriendTile(friend);
+        final (friend, friendship) = friendsWithData[index];
+        return _buildFriendTile(context, ref, userId, friend, friendship);
       },
     );
   }
 
-  Widget _buildFriendTile(UserModel friend) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: AppColors.primary,
-        child: Text(
-          friend.displayName.isNotEmpty
-              ? friend.displayName[0].toUpperCase()
-              : '?',
-          style: const TextStyle(
-            color: AppColors.textOnPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      title: Text(
-        friend.displayName,
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
-      subtitle: Text('Level ${friend.currentLevel} • ${friend.totalXp} XP'),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
+  Widget _buildFriendTile(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    UserModel friend,
+    Friend friendship,
+  ) {
+    final hasIncomingChallenge = friendship.hasIncomingChallenge(userId);
+    final hasOutgoingChallenge = friendship.hasOutgoingChallenge(userId);
+    final isAcceptedDuel = friendship.openChallenge?.isAccepted ?? false;
+    final isPendingChallenge = friendship.openChallenge?.isPending ?? false;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
         children: [
-          const Text(
-            'Weekly XP',
-            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-          ),
-          Text(
-            '${friend.weeklyXpCurrent}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          // Challenge notification banner
+          if (hasIncomingChallenge && isPendingChallenge)
+            // Pending challenge - show accept/decline buttons
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.sports_mma,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${friend.displayName} challenged you to a duel!',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _handleChallengeResponse(
+                      context,
+                      ref,
+                      friendship.openChallenge!.duelId,
+                      userId,
+                      true,
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    ),
+                    child: const Text('Accept'),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: () => _handleChallengeResponse(
+                      context,
+                      ref,
+                      friendship.openChallenge!.duelId,
+                      userId,
+                      false,
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    ),
+                    child: const Text('Decline'),
+                  ),
+                ],
+              ),
+            )
+          else if (isAcceptedDuel)
+            // Accepted duel - show status based on completion (real-time)
+            Consumer(
+              builder: (context, ref, child) {
+                final duelAsync = ref.watch(duelStreamProvider(friendship.openChallenge!.duelId));
+                
+                return duelAsync.when(
+                  data: (duel) {
+                    final isChallenger = duel.challengerId == userId;
+                    final userCompleted = isChallenger 
+                        ? duel.challengerCompletedAt != null
+                        : duel.opponentCompletedAt != null;
+                    final opponentCompleted = isChallenger
+                        ? duel.opponentCompletedAt != null
+                        : duel.challengerCompletedAt != null;
+
+                    if (userCompleted) {
+                  if (opponentCompleted) {
+                    // Both completed - show "View Results" button
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.emoji_events,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Duel with ${friend.displayName} completed!',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => _viewDuelResults(
+                              context,
+                              friendship.openChallenge!.duelId,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'View Results',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    // User completed, waiting for opponent
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: AppColors.warning,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.hourglass_empty,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Waiting for ${friend.displayName} to complete',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                } else {
+                  // User can start the duel
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      color: AppColors.success,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.play_circle_outline,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Duel with ${friend.displayName} is ready!',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => _startAcceptedDuel(
+                            context,
+                            friendship.openChallenge!.duelId,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.success,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Start Duel',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                    }
+                  },
+                  loading: () => Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      color: AppColors.success,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                    ),
+                    child: const Center(
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  error: (error, stack) => Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      color: AppColors.error,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Error loading duel status',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          // Main friend tile content
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                // Avatar - tappable to initiate duel challenge
+                // Requirements: 10.1, 10.2
+                Stack(
+                  children: [
+                    GestureDetector(
+                      onTap: isPendingChallenge 
+                          ? null 
+                          : () => _showDuelChallengeDialog(
+                              context,
+                              ref,
+                              userId,
+                              friend,
+                            ),
+                      child: CircleAvatar(
+                        radius: 32,
+                        backgroundImage: friend.avatarPath != null
+                            ? AssetImage(friend.avatarPath!)
+                            : null,
+                        backgroundColor: AppColors.primary,
+                        child: friend.avatarPath == null
+                            ? Text(
+                                friend.displayName.isNotEmpty
+                                    ? friend.displayName[0].toUpperCase()
+                                    : '?',
+                                style: const TextStyle(
+                                  color: AppColors.textOnPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                    // Challenge status indicator
+                    if (hasOutgoingChallenge)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: AppColors.warning,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.schedule,
+                            color: Colors.white,
+                            size: 12,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                // Friend info and stats
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        friend.displayName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Display streak points instead of XP
+                      Text(
+                        'Streak: ${friend.streakCurrent} days • ${friend.streakPoints} pts',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Head-to-head statistics
+                      // Requirements: 15a.3, 15a.4
+                      Text(
+                        'vs You: ${friendship.getRecordString()} (${friendship.totalDuels} duels)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: friendship.isLeading()
+                              ? AppColors.success
+                              : friendship.isTied()
+                                  ? AppColors.textSecondary
+                                  : AppColors.error,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      // Challenge status text
+                      if (isAcceptedDuel)
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final duelAsync = ref.watch(duelStreamProvider(friendship.openChallenge!.duelId));
+                            
+                            return duelAsync.when(
+                              data: (duel) {
+                                final isChallenger = duel.challengerId == userId;
+                                final userCompleted = isChallenger 
+                                    ? duel.challengerCompletedAt != null
+                                    : duel.opponentCompletedAt != null;
+                                final opponentCompleted = isChallenger
+                                    ? duel.opponentCompletedAt != null
+                                    : duel.challengerCompletedAt != null;
+                                
+                                if (userCompleted && opponentCompleted) {
+                                  return const Text(
+                                    'Duel completed - tap banner to view results',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  );
+                                } else if (userCompleted) {
+                                  return const Text(
+                                    'Waiting for opponent to complete',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.warning,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  );
+                                } else {
+                                  return const Text(
+                                    'Duel ready - tap banner to start',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.success,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  );
+                                }
+                              },
+                              loading: () => const SizedBox.shrink(),
+                              error: (error, stack) => const SizedBox.shrink(),
+                            );
+                          },
+                        )
+                      else if (hasIncomingChallenge && isPendingChallenge)
+                        const Text(
+                          'Tap banner to accept or decline',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      else if (hasOutgoingChallenge && isPendingChallenge)
+                        const Text(
+                          'Challenge sent - waiting for response',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.warning,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // Challenge/Start/Results button
+                if (isAcceptedDuel)
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final duelAsync = ref.watch(duelStreamProvider(friendship.openChallenge!.duelId));
+                      
+                      return duelAsync.when(
+                        data: (duel) {
+                          final isChallenger = duel.challengerId == userId;
+                          final userCompleted = isChallenger 
+                              ? duel.challengerCompletedAt != null
+                              : duel.opponentCompletedAt != null;
+                          final opponentCompleted = isChallenger
+                              ? duel.opponentCompletedAt != null
+                              : duel.challengerCompletedAt != null;
+                          
+                          if (userCompleted && opponentCompleted) {
+                            return IconButton(
+                              icon: const Icon(Icons.emoji_events),
+                              color: AppColors.primary,
+                              tooltip: 'View results',
+                              onPressed: () => _viewDuelResults(context, friendship.openChallenge!.duelId),
+                            );
+                          } else if (userCompleted) {
+                            return IconButton(
+                              icon: const Icon(Icons.hourglass_empty),
+                              color: AppColors.warning,
+                              tooltip: 'Waiting for opponent',
+                              onPressed: null,
+                            );
+                          } else {
+                            return IconButton(
+                              icon: const Icon(Icons.play_arrow),
+                              color: AppColors.success,
+                              tooltip: 'Start duel',
+                              onPressed: () => _startAcceptedDuel(context, friendship.openChallenge!.duelId),
+                            );
+                          }
+                        },
+                        loading: () => IconButton(
+                          icon: const Icon(Icons.hourglass_empty),
+                          color: AppColors.textSecondary,
+                          onPressed: null,
+                        ),
+                        error: (error, stack) => IconButton(
+                          icon: const Icon(Icons.error_outline),
+                          color: AppColors.error,
+                          onPressed: null,
+                        ),
+                      );
+                    },
+                  )
+                else
+                  IconButton(
+                    icon: const Icon(Icons.sports_mma),
+                    color: isPendingChallenge ? AppColors.textSecondary : AppColors.primary,
+                    tooltip: isPendingChallenge ? 'Challenge pending' : 'Challenge to duel',
+                    onPressed: isPendingChallenge ? null : () => _showDuelChallengeDialog(
+                      context,
+                      ref,
+                      userId,
+                      friend,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  /// Handle accepting or declining a duel challenge
+  /// Requirements: 11.2, 11.3
+  Future<void> _handleChallengeResponse(
+    BuildContext context,
+    WidgetRef ref,
+    String duelId,
+    String userId,
+    bool accept,
+  ) async {
+    try {
+      final duelService = ref.read(duelServiceProvider);
+      
+      if (accept) {
+        await duelService.acceptDuel(duelId, userId);
+        
+        if (context.mounted) {
+          // Navigate directly to duel question screen since challenge is already accepted
+          Navigator.pushNamed(
+            context,
+            '/duel-question',
+            arguments: {'duelId': duelId},
+          );
+        }
+      } else {
+        await duelService.declineDuel(duelId, userId);
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Challenge declined'),
+              backgroundColor: AppColors.textSecondary,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to ${accept ? 'accept' : 'decline'} challenge: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Start an already accepted duel
+  /// Requirements: 12.1
+  void _startAcceptedDuel(BuildContext context, String duelId) {
+    Navigator.pushNamed(
+      context,
+      '/duel-question',
+      arguments: {'duelId': duelId},
+    );
+  }
+
+  /// View duel results when both users have completed
+  /// Requirements: 13.1
+  void _viewDuelResults(BuildContext context, String duelId) {
+    Navigator.pushNamed(
+      context,
+      '/duel-result',
+      arguments: {'duelId': duelId},
+    );
+  }
+
+  /// Show duel challenge confirmation dialog or active duel notification
+  /// Requirements: 10.2, 10.3
+  Future<void> _showDuelChallengeDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    UserModel friend,
+  ) async {
+    // Show challenge dialog directly - the createDuel method will validate
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Challenge to Duel'),
+        content: Text(
+          'Challenge ${friend.displayName} to a 5-question duel?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _createDuelChallenge(context, ref, userId, friend);
+            },
+            child: const Text('Challenge'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Create a duel challenge
+  /// Requirements: 10.2, 10.3
+  Future<void> _createDuelChallenge(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    UserModel friend,
+  ) async {
+    try {
+      final duelService = ref.read(duelServiceProvider);
+      await duelService.createDuel(userId, friend.id);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Duel challenge sent to ${friend.displayName}!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create duel: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   void _showAddFriendDialog(

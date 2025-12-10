@@ -19,6 +19,9 @@ import 'screens/vs_mode/vs_mode_setup_screen.dart';
 import 'screens/vs_mode/vs_mode_quiz_screen.dart';
 import 'screens/vs_mode/vs_mode_handoff_screen.dart';
 import 'screens/vs_mode/vs_mode_result_screen.dart';
+import 'screens/duel/duel_challenge_screen.dart';
+import 'screens/duel/duel_question_screen.dart';
+import 'screens/duel/duel_result_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'providers/auth_providers.dart';
 import 'providers/theme_providers.dart';
@@ -76,6 +79,9 @@ class MainApp extends ConsumerWidget {
         '/vs-mode-quiz': (context) => const VSModeQuizScreen(),
         '/vs-mode-handoff': (context) => const VSModeHandoffScreen(),
         '/vs-mode-result': (context) => const VSModeResultScreen(),
+        '/duel-challenge': (context) => const DuelChallengeScreen(),
+        '/duel-question': (context) => const DuelQuestionScreen(),
+        '/duel-result': (context) => const DuelResultScreen(),
         '/settings': (context) => const SettingsScreen(),
       },
     );

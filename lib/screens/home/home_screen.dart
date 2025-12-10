@@ -9,12 +9,53 @@ import '../../theme/app_colors.dart';
 import '../quiz/quiz_length_screen.dart';
 
 /// HomeScreen (Dashboard) with header, hero image, daily goal, categories, and action button
-/// Requirements: 2.1, 2.2, 2.5, 2.6, 2.7
-class HomeScreen extends ConsumerWidget {
+/// Requirements: 2.1, 2.2, 2.5, 2.6, 2.7, 5.1, 5.2, 5.3, 5.4
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _celebrationController;
+  late Animation<double> _scaleAnimation;
+  bool _hasShownCelebration = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _celebrationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _celebrationController,
+        curve: Curves.elasticOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _celebrationController.dispose();
+    super.dispose();
+  }
+
+  void _checkAndShowCelebration(bool isGoalMet) {
+    if (isGoalMet && !_hasShownCelebration) {
+      _hasShownCelebration = true;
+      _celebrationController.forward();
+    } else if (!isGoalMet) {
+      _hasShownCelebration = false;
+      _celebrationController.reset();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
     final l10n = AppLocalizations.of(context)!;
 
@@ -30,64 +71,72 @@ class HomeScreen extends ConsumerWidget {
       body: userDataAsync == null
           ? const Center(child: CircularProgressIndicator())
           : userDataAsync.when(
-              data: (userData) => SafeArea(
-                child: Column(
-                  children: [
-                    // Top bar with level/streak and XP
-                    _buildTopBar(context, userData, l10n),
+              data: (userData) {
+                // Check if goal is met and trigger celebration
+                final isGoalMet = userData.questionsAnsweredToday >= userData.dailyGoal;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _checkAndShowCelebration(isGoalMet);
+                });
 
-                    // Scrollable content
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Hero section with dashboard image and greeting
-                            _buildHeroSection(context, userData, l10n),
+                return SafeArea(
+                  child: Column(
+                    children: [
+                      // Top bar with level/streak and XP
+                      _buildTopBar(context, userData, l10n),
 
-                            // Daily goal card (overlapping hero)
-                            _buildDailyGoalCard(context, userData, l10n),
+                      // Scrollable content
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Hero section with dashboard image and greeting
+                              _buildHeroSection(context, userData, l10n),
 
-                            // Main content area
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // "Start Learning" button
-                                  _buildStartLearningButton(
-                                    context,
-                                    l10n,
-                                    categoriesAsync,
-                                  ),
+                              // Daily goal card (overlapping hero)
+                              _buildDailyGoalCard(context, userData, l10n),
 
-                                  const SizedBox(height: 24),
-
-                                  // Categories section
-                                  categoriesAsync.when(
-                                    data: (categories) =>
-                                        _buildCategoriesSection(
-                                          context,
-                                          categories,
-                                          l10n,
-                                        ),
-                                    loading: () => const Center(
-                                      child: CircularProgressIndicator(),
+                              // Main content area
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    // "Start Learning" button
+                                    _buildStartLearningButton(
+                                      context,
+                                      l10n,
+                                      categoriesAsync,
                                     ),
-                                    error: (error, stack) => Center(
-                                      child: Text('${l10n.error}: $error'),
+
+                                    const SizedBox(height: 24),
+
+                                    // Categories section
+                                    categoriesAsync.when(
+                                      data: (categories) =>
+                                          _buildCategoriesSection(
+                                            context,
+                                            categories,
+                                            l10n,
+                                          ),
+                                      loading: () => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                      error: (error, stack) => Center(
+                                        child: Text('${l10n.error}: $error'),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                    ],
+                  ),
+                );
+              },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stack) => Center(
                 child: Column(
@@ -160,8 +209,8 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  /// Build top bar with level/streak and XP
-  /// Requirements: 2.1
+  /// Build top bar with streak and streak points
+  /// Requirements: 5.1, 5.2, 5.3, 5.4
   Widget _buildTopBar(
     BuildContext context,
     dynamic userData,
@@ -174,19 +223,9 @@ class HomeScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Level and streak
+          // Streak and streak points
           Row(
             children: [
-              const Icon(Icons.emoji_events, color: AppColors.crown, size: 24),
-              const SizedBox(width: 4),
-              Text(
-                '${userData.currentLevel}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.titleMedium?.color,
-                ),
-              ),
-              const SizedBox(width: 16),
               const Icon(
                 Icons.local_fire_department,
                 color: AppColors.fire,
@@ -200,22 +239,20 @@ class HomeScreen extends ConsumerWidget {
                   color: Theme.of(context).textTheme.titleMedium?.color,
                 ),
               ),
-            ],
-          ),
-          // XP and profile
-          Row(
-            children: [
+              const SizedBox(width: 16),
+              const Icon(Icons.stars, color: AppColors.warning, size: 24),
+              const SizedBox(width: 4),
               Text(
-                '${userData.totalXp} XP',
+                '${userData.streakPoints}',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.primaryLight : AppColors.primary,
+                  color: Theme.of(context).textTheme.titleMedium?.color,
                 ),
               ),
-              const SizedBox(width: 8),
-              _buildAvatar(context, userData, isDark),
             ],
           ),
+          // Profile avatar
+          _buildAvatar(context, userData, isDark),
         ],
       ),
     );
@@ -294,16 +331,17 @@ class HomeScreen extends ConsumerWidget {
   }
 
   /// Build daily goal card (overlapping hero section)
-  /// Requirements: 2.1
+  /// Requirements: 5.1, 5.2, 5.3, 5.4
   Widget _buildDailyGoalCard(
     BuildContext context,
     dynamic userData,
     AppLocalizations l10n,
   ) {
-    // Calculate daily progress (example: 20/50 XP)
-    final dailyGoal = 50;
-    final dailyProgress = userData.weeklyXpCurrent % dailyGoal;
-    final progressPercentage = dailyProgress / dailyGoal;
+    // Get daily progress from user data
+    final dailyGoal = userData.dailyGoal;
+    final questionsAnswered = userData.questionsAnsweredToday;
+    final progressPercentage = questionsAnswered / dailyGoal;
+    final isGoalMet = questionsAnswered >= dailyGoal;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Transform.translate(
@@ -339,12 +377,27 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    '$dailyProgress / $dailyGoal XP',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).textTheme.titleLarge?.color,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        '$questionsAnswered / $dailyGoal Fragen',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).textTheme.titleLarge?.color,
+                        ),
+                      ),
+                      if (isGoalMet) ...[
+                        const SizedBox(width: 8),
+                        ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: const Icon(
+                            Icons.check_circle,
+                            color: AppColors.success,
+                            size: 24,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
@@ -354,12 +407,12 @@ class HomeScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   LinearProgressIndicator(
-                    value: progressPercentage,
+                    value: progressPercentage.clamp(0.0, 1.0),
                     backgroundColor: isDark
                         ? AppColors.textSecondary.withValues(alpha: 0.3)
                         : AppColors.borderLight,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.warning,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isGoalMet ? AppColors.success : AppColors.warning,
                     ),
                     minHeight: 8,
                     borderRadius: BorderRadius.circular(4),

@@ -616,5 +616,25 @@
   "exitQuizConfirmation": "Are you sure you want to exit? Your progress will be lost.",
   "@exitQuizConfirmation": {
     "description": "Exit quiz confirmation message"
+  },
+  "dailyGoal": "Daily Goal",
+  "@dailyGoal": {
+    "description": "Daily goal label"
+  },
+  "questionsPerDay": "Questions per day",
+  "@questionsPerDay": {
+    "description": "Questions per day label"
+  },
+  "dailyGoalDescription": "Set how many questions you want to answer each day",
+  "@dailyGoalDescription": {
+    "description": "Daily goal description"
+  },
+  "dailyGoalUpdated": "Daily goal updated successfully",
+  "@dailyGoalUpdated": {
+    "description": "Daily goal updated success message"
+  },
+  "invalidDailyGoal": "Daily goal must be between 1 and 50",
+  "@invalidDailyGoal": {
+    "description": "Invalid daily goal error message"
   }
 }

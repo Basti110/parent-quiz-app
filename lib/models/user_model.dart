@@ -10,17 +10,30 @@ class UserModel {
   final DateTime createdAt;
   final DateTime lastActiveAt;
   final String friendCode;
-  final int totalXp;
-  final int currentLevel;
-  final int weeklyXpCurrent;
-  final DateTime weeklyXpWeekStart;
+  
+  // Streak tracking
   final int streakCurrent;
   final int streakLongest;
-  final int duelsPlayed;
+  final int streakPoints;
+  
+  // Daily goal system
+  final int dailyGoal;
+  final int questionsAnsweredToday;
+  final DateTime lastDailyReset;
+  
+  // Question statistics
+  final int totalQuestionsAnswered;
+  final int totalCorrectAnswers;
+  final int totalMasteredQuestions;
+  
+  // Duel statistics (simplified)
+  final int duelsCompleted;
   final int duelsWon;
-  final int duelsLost;
-  final int duelPoints;
+  
   final Map<String, CategoryProgress> categoryProgress;
+
+  /// Calculate duels lost from completed and won
+  int get duelsLost => duelsCompleted - duelsWon;
 
   UserModel({
     required this.id,
@@ -31,16 +44,17 @@ class UserModel {
     required this.createdAt,
     required this.lastActiveAt,
     required this.friendCode,
-    required this.totalXp,
-    required this.currentLevel,
-    required this.weeklyXpCurrent,
-    required this.weeklyXpWeekStart,
     required this.streakCurrent,
     required this.streakLongest,
-    required this.duelsPlayed,
+    required this.streakPoints,
+    required this.dailyGoal,
+    required this.questionsAnsweredToday,
+    required this.lastDailyReset,
+    required this.totalQuestionsAnswered,
+    required this.totalCorrectAnswers,
+    required this.totalMasteredQuestions,
+    required this.duelsCompleted,
     required this.duelsWon,
-    required this.duelsLost,
-    required this.duelPoints,
     this.categoryProgress = const {},
   });
 
@@ -58,16 +72,17 @@ class UserModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'lastActiveAt': Timestamp.fromDate(lastActiveAt),
       'friendCode': friendCode,
-      'totalXp': totalXp,
-      'currentLevel': currentLevel,
-      'weeklyXpCurrent': weeklyXpCurrent,
-      'weeklyXpWeekStart': Timestamp.fromDate(weeklyXpWeekStart),
       'streakCurrent': streakCurrent,
       'streakLongest': streakLongest,
-      'duelsPlayed': duelsPlayed,
+      'streakPoints': streakPoints,
+      'dailyGoal': dailyGoal,
+      'questionsAnsweredToday': questionsAnsweredToday,
+      'lastDailyReset': Timestamp.fromDate(lastDailyReset),
+      'totalQuestionsAnswered': totalQuestionsAnswered,
+      'totalCorrectAnswers': totalCorrectAnswers,
+      'totalMasteredQuestions': totalMasteredQuestions,
+      'duelsCompleted': duelsCompleted,
       'duelsWon': duelsWon,
-      'duelsLost': duelsLost,
-      'duelPoints': duelPoints,
       'categoryProgress': categoryProgressMap,
     };
   }
@@ -92,16 +107,19 @@ class UserModel {
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       lastActiveAt: (map['lastActiveAt'] as Timestamp).toDate(),
       friendCode: map['friendCode'] as String,
-      totalXp: map['totalXp'] as int,
-      currentLevel: map['currentLevel'] as int,
-      weeklyXpCurrent: map['weeklyXpCurrent'] as int,
-      weeklyXpWeekStart: (map['weeklyXpWeekStart'] as Timestamp).toDate(),
-      streakCurrent: map['streakCurrent'] as int,
-      streakLongest: map['streakLongest'] as int,
-      duelsPlayed: map['duelsPlayed'] as int,
-      duelsWon: map['duelsWon'] as int,
-      duelsLost: map['duelsLost'] as int,
-      duelPoints: map['duelPoints'] as int,
+      streakCurrent: map['streakCurrent'] as int? ?? 0,
+      streakLongest: map['streakLongest'] as int? ?? 0,
+      streakPoints: map['streakPoints'] as int? ?? 0,
+      dailyGoal: map['dailyGoal'] as int? ?? 10,
+      questionsAnsweredToday: map['questionsAnsweredToday'] as int? ?? 0,
+      lastDailyReset: map['lastDailyReset'] != null 
+          ? (map['lastDailyReset'] as Timestamp).toDate()
+          : DateTime.now(),
+      totalQuestionsAnswered: map['totalQuestionsAnswered'] as int? ?? 0,
+      totalCorrectAnswers: map['totalCorrectAnswers'] as int? ?? 0,
+      totalMasteredQuestions: map['totalMasteredQuestions'] as int? ?? 0,
+      duelsCompleted: map['duelsCompleted'] as int? ?? (map['duelsPlayed'] as int? ?? 0),
+      duelsWon: map['duelsWon'] as int? ?? 0,
       categoryProgress: categoryProgressMap,
     );
   }

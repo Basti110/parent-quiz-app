@@ -955,6 +955,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to exit? Your progress will be lost.'**
   String get exitQuizConfirmation;
+
+  /// Daily goal label
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Goal'**
+  String get dailyGoal;
+
+  /// Questions per day label
+  ///
+  /// In en, this message translates to:
+  /// **'Questions per day'**
+  String get questionsPerDay;
+
+  /// Daily goal description
+  ///
+  /// In en, this message translates to:
+  /// **'Set how many questions you want to answer each day'**
+  String get dailyGoalDescription;
+
+  /// Daily goal updated success message
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal updated successfully'**
+  String get dailyGoalUpdated;
+
+  /// Invalid daily goal error message
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal must be between 1 and 50'**
+  String get invalidDailyGoal;
 }
 
 class _AppLocalizationsDelegate

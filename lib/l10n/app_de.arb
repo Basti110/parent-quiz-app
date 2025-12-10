@@ -142,5 +142,10 @@
   "weeklyXp": "Wöchentliche EP",
   "xp": "EP",
   "exitQuiz": "Quiz beenden",
-  "exitQuizConfirmation": "Möchten Sie wirklich beenden? Ihr Fortschritt geht verloren."
+  "exitQuizConfirmation": "Möchten Sie wirklich beenden? Ihr Fortschritt geht verloren.",
+  "dailyGoal": "Tagesziel",
+  "questionsPerDay": "Fragen pro Tag",
+  "dailyGoalDescription": "Legen Sie fest, wie viele Fragen Sie jeden Tag beantworten möchten",
+  "dailyGoalUpdated": "Tagesziel erfolgreich aktualisiert",
+  "invalidDailyGoal": "Tagesziel muss zwischen 1 und 50 liegen"
 }

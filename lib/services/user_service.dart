@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 import '../models/question_state.dart';
-import '../models/weekly_points.dart';
 
 class UserService {
   final FirebaseFirestore _firestore;
@@ -61,7 +60,6 @@ class UserService {
       final displayName = currentUser.displayName ?? email.split('@')[0];
 
       final now = DateTime.now();
-      final currentMonday = _getMondayOfWeek(now);
 
       // Generate a simple friend code (not checking for uniqueness here for simplicity)
       final friendCode = _generateSimpleFriendCode();
@@ -74,16 +72,17 @@ class UserService {
         createdAt: now,
         lastActiveAt: now,
         friendCode: friendCode,
-        totalXp: 0,
-        currentLevel: 1,
-        weeklyXpCurrent: 0,
-        weeklyXpWeekStart: currentMonday,
         streakCurrent: 0,
         streakLongest: 0,
-        duelsPlayed: 0,
+        streakPoints: 0,
+        dailyGoal: 10,
+        questionsAnsweredToday: 0,
+        lastDailyReset: now,
+        totalQuestionsAnswered: 0,
+        totalCorrectAnswers: 0,
+        totalMasteredQuestions: 0,
+        duelsCompleted: 0,
         duelsWon: 0,
-        duelsLost: 0,
-        duelPoints: 0,
       );
 
       await _firestore.collection('users').doc(userId).set(userModel.toMap());
@@ -105,10 +104,95 @@ class UserService {
     ).join();
   }
 
-  /// Update user's streak based on last active date
-  /// Property 15: Streak continuation - if lastActiveAt is yesterday, increment streak
-  /// Property 16: Streak reset - if lastActiveAt is more than 1 day ago, reset to 1
-  Future<void> updateStreak(String userId) async {
+  // ============================================================================
+  // Daily Goal Management Methods (Task 2.1)
+  // ============================================================================
+
+  /// Update user's daily goal with validation (1-50)
+  /// Requirements: 1.3, 1.4
+  Future<void> updateDailyGoal(String userId, int newGoal) async {
+    // Validate daily goal is between 1 and 50
+    if (newGoal < 1 || newGoal > 50) {
+      throw ArgumentError('Daily goal must be between 1 and 50');
+    }
+
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'dailyGoal': newGoal,
+      });
+    } on FirebaseException catch (e) {
+      print('Firebase error updating daily goal: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to update daily goal. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error updating daily goal: $e');
+      rethrow;
+    }
+  }
+
+  /// Increment the count of questions answered today
+  /// Requirements: 1.5
+  Future<void> incrementQuestionsAnsweredToday(String userId) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'questionsAnsweredToday': FieldValue.increment(1),
+      });
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error incrementing questions answered today: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to update daily progress. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error incrementing questions answered today: $e');
+      rethrow;
+    }
+  }
+
+  /// Reset daily progress if a new day has started
+  /// Requirements: 5.5
+  Future<void> resetDailyProgressIfNeeded(String userId) async {
+    try {
+      final user = await getUserData(userId);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final lastReset = DateTime(
+        user.lastDailyReset.year,
+        user.lastDailyReset.month,
+        user.lastDailyReset.day,
+      );
+
+      // If last reset was not today, reset the counter
+      if (!_isSameDay(today, lastReset)) {
+        await _firestore.collection('users').doc(userId).update({
+          'questionsAnsweredToday': 0,
+          'lastDailyReset': Timestamp.fromDate(now),
+        });
+      }
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error resetting daily progress: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to reset daily progress. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error resetting daily progress: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================================
+  // Streak Management Methods (Task 2.2)
+  // ============================================================================
+
+  /// Check and update streak based on daily goal completion
+  /// Property 5: Streak continuation - if met goal yesterday, increment streak
+  /// Property 6: Streak reset - if failed to meet goal, reset to 0
+  /// Requirements: 2.1, 2.2, 2.3, 2.4
+  Future<void> checkAndUpdateStreak(String userId) async {
     try {
       final user = await getUserData(userId);
       final now = DateTime.now();
@@ -119,7 +203,15 @@ class UserService {
         user.lastActiveAt.day,
       );
 
-      // If already active today, no change needed
+      // Check if user met their daily goal today
+      final metGoalToday = user.questionsAnsweredToday >= user.dailyGoal;
+
+      if (!metGoalToday) {
+        // User hasn't met goal yet, don't update streak
+        return;
+      }
+
+      // If already updated streak today, no change needed
       if (_isSameDay(today, lastActive)) {
         return;
       }
@@ -136,9 +228,21 @@ class UserService {
         if (newStreakCurrent > newStreakLongest) {
           newStreakLongest = newStreakCurrent;
         }
-      } else {
-        // Streak broken - reset to 1
+      } else if (user.streakCurrent == 0) {
+        // First time meeting goal
         newStreakCurrent = 1;
+        if (newStreakLongest == 0) {
+          newStreakLongest = 1;
+        }
+      } else {
+        // Streak broken - reset to 0
+        newStreakCurrent = 0;
+      }
+
+      // Calculate and award streak points if applicable
+      final streakPoints = calculateStreakPoints(newStreakCurrent);
+      if (streakPoints > 0) {
+        await awardStreakPoints(userId, streakPoints);
       }
 
       // Update user document
@@ -154,6 +258,103 @@ class UserService {
       );
     } catch (e) {
       print('Error updating streak: $e');
+      rethrow;
+    }
+  }
+
+  /// Calculate streak points based on current streak
+  /// Property 8: No points for days 1-2
+  /// Property 9: Three points at day 3
+  /// Property 10: Three points per additional day
+  /// Requirements: 3.1, 3.2, 3.3
+  int calculateStreakPoints(int currentStreak) {
+    if (currentStreak <= 2) {
+      return 0; // No points for days 1-2
+    } else if (currentStreak == 3) {
+      return 3; // 3 points at day 3
+    } else {
+      return 3; // 3 points per additional day
+    }
+  }
+
+  /// Award streak points to user
+  /// Property 11: Streak points accumulation - only increases
+  /// Requirements: 3.1, 3.2, 3.3
+  Future<void> awardStreakPoints(String userId, int points) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'streakPoints': FieldValue.increment(points),
+      });
+    } on FirebaseException catch (e) {
+      print('Firebase error awarding streak points: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to award streak points. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error awarding streak points: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================================
+  // Question Statistics Methods (Task 2.3)
+  // ============================================================================
+
+  /// Increment total questions answered and correct answers if applicable
+  /// Property 12: Correct answer counting
+  /// Property 13: Total questions counting
+  /// Requirements: 4.1, 4.3
+  Future<void> incrementTotalQuestions(String userId, bool correct) async {
+    try {
+      final updates = <String, dynamic>{
+        'totalQuestionsAnswered': FieldValue.increment(1),
+      };
+
+      if (correct) {
+        updates['totalCorrectAnswers'] = FieldValue.increment(1);
+      }
+
+      await _firestore.collection('users').doc(userId).update(updates);
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error incrementing total questions: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to update question statistics. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error incrementing total questions: $e');
+      rethrow;
+    }
+  }
+
+  /// Update the count of mastered questions by counting from questionStates
+  /// Property 15: Mastered count accuracy
+  /// Requirements: 4.5
+  Future<void> updateMasteredCount(String userId) async {
+    try {
+      // Get all question states for the user
+      final statesSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('questionStates')
+          .where('mastered', isEqualTo: true)
+          .get();
+
+      final masteredCount = statesSnapshot.docs.length;
+
+      await _firestore.collection('users').doc(userId).update({
+        'totalMasteredQuestions': masteredCount,
+      });
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error updating mastered count: ${e.code} - ${e.message}',
+      );
+      throw Exception(
+        'Failed to update mastered count. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error updating mastered count: $e');
       rethrow;
     }
   }
@@ -176,37 +377,13 @@ class UserService {
     }
   }
 
-  /// Calculate user level based on total XP (100 XP per level)
-  /// Property 18: Level calculation - currentLevel = floor(totalXp / 100) + 1
-  int calculateLevel(int totalXp) {
-    return (totalXp ~/ 100) + 1;
-  }
-
-  /// Update weekly XP with week rollover logic
-  /// Property 21: Weekly XP accumulation - add to weeklyXpCurrent if in current week
-  /// Property 22: Weekly XP reset - reset if new week started
-  Future<void> updateWeeklyXP(String userId, int xpGained) async {
+  /// Update weekly XP (legacy method for compatibility)
+  /// This method is kept for backward compatibility with existing quiz screen
+  Future<void> updateWeeklyXP(String userId, int xpToAdd) async {
     try {
-      final user = await getUserData(userId);
-      final now = DateTime.now();
-      final currentMonday = _getMondayOfWeek(now);
-
-      // Check if we're in a new week
-      if (user.weeklyXpWeekStart.isBefore(currentMonday)) {
-        // New week started - save previous week to history and reset
-        await _saveWeeklyPointsToHistory(userId, user);
-
-        // Reset weekly XP
-        await _firestore.collection('users').doc(userId).update({
-          'weeklyXpCurrent': xpGained,
-          'weeklyXpWeekStart': Timestamp.fromDate(currentMonday),
-        });
-      } else {
-        // Same week - accumulate XP
-        await _firestore.collection('users').doc(userId).update({
-          'weeklyXpCurrent': user.weeklyXpCurrent + xpGained,
-        });
-      }
+      await _firestore.collection('users').doc(userId).update({
+        'weeklyXpCurrent': FieldValue.increment(xpToAdd),
+      });
     } on FirebaseException catch (e) {
       print('Firebase error updating weekly XP: ${e.code} - ${e.message}');
       throw Exception(
@@ -218,42 +395,19 @@ class UserService {
     }
   }
 
-  /// Save completed week to history subcollection
-  Future<void> _saveWeeklyPointsToHistory(String userId, UserModel user) async {
+  /// Update streak (legacy method for compatibility)
+  /// This method is kept for backward compatibility with existing quiz screen
+  Future<void> updateStreak(String userId) async {
     try {
-      // Format date as yyyy-MM-dd for the Monday of the week
-      final weekStart = user.weeklyXpWeekStart;
-      final dateKey = _formatDate(weekStart);
-
-      // Calculate week end (Sunday)
-      final weekEnd = weekStart.add(const Duration(days: 6));
-
-      final weeklyPoints = WeeklyPoints(
-        date: dateKey,
-        weekStart: weekStart,
-        weekEnd: weekEnd,
-        points: user.weeklyXpCurrent,
-        sessionsCompleted: 0, // Will be tracked in future enhancements
-        questionsAnswered: 0,
-        correctAnswers: 0,
-      );
-
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('history')
-          .doc(dateKey)
-          .set(weeklyPoints.toMap());
-    } on FirebaseException catch (e) {
-      print(
-        'Firebase error saving weekly points to history: ${e.code} - ${e.message}',
-      );
-      // Don't throw here - this is a background operation that shouldn't block the main flow
+      // This calls the existing checkAndUpdateStreak method
+      await checkAndUpdateStreak(userId);
     } catch (e) {
-      print('Error saving weekly points to history: $e');
-      // Don't throw here - this is a background operation that shouldn't block the main flow
+      print('Error updating streak: $e');
+      rethrow;
     }
   }
+
+
 
   /// Update question state for mastery tracking
   /// Property 7: Question state update on answer
@@ -452,15 +606,5 @@ class UserService {
   bool _isYesterday(DateTime lastActive, DateTime today) {
     final yesterday = today.subtract(const Duration(days: 1));
     return _isSameDay(lastActive, yesterday);
-  }
-
-  DateTime _getMondayOfWeek(DateTime date) {
-    final daysFromMonday = date.weekday - DateTime.monday;
-    final monday = date.subtract(Duration(days: daysFromMonday));
-    return DateTime(monday.year, monday.month, monday.day);
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }

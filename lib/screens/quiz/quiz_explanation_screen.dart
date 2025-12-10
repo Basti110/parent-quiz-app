@@ -18,6 +18,7 @@ class QuizExplanationScreen extends StatelessWidget {
     final isCorrect = args['isCorrect'] as bool;
     final isLastQuestion = args['isLastQuestion'] as bool;
     final selectedIndices = args['selectedIndices'] as List<int>;
+    final isVSMode = args['isVSMode'] as bool? ?? false;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -551,7 +552,7 @@ class QuizExplanationScreen extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    isLastQuestion ? l10n.finishQuiz.toUpperCase() : 'WEITER',
+                    _getButtonText(isLastQuestion, isVSMode, l10n),
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
@@ -565,6 +566,17 @@ class QuizExplanationScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getButtonText(
+    bool isLastQuestion,
+    bool isVSMode,
+    AppLocalizations l10n,
+  ) {
+    if (isVSMode) {
+      return isLastQuestion ? 'FERTIG' : 'WEITER';
+    }
+    return isLastQuestion ? l10n.finishQuiz.toUpperCase() : 'WEITER';
   }
 
   Future<void> _showExitConfirmation(BuildContext context) async {

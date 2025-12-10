@@ -460,4 +460,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get exitQuizConfirmation =>
       'Are you sure you want to exit? Your progress will be lost.';
+
+  @override
+  String get dailyGoal => 'Daily Goal';
+
+  @override
+  String get questionsPerDay => 'Questions per day';
+
+  @override
+  String get dailyGoalDescription =>
+      'Set how many questions you want to answer each day';
+
+  @override
+  String get dailyGoalUpdated => 'Daily goal updated successfully';
+
+  @override
+  String get invalidDailyGoal => 'Daily goal must be between 1 and 50';
 }

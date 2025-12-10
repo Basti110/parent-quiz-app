@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../models/category.dart';
 import '../../models/question.dart';
 import '../../models/vs_mode_session.dart';
@@ -25,14 +24,38 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
   int _currentQuestionIndex = 0;
   Set<int> _selectedIndices = {};
   bool _isAnswered = false;
-  bool _isCorrect = false;
-  bool _showExplanation = false;
+  DateTime? _questionStartTime;
+
+  @override
+  void initState() {
+    super.initState();
+    // Start timer when first question is displayed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startQuestionTimer();
+    });
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_session == null) {
       _initializeSession();
+    }
+  }
+
+  void _startQuestionTimer() {
+    setState(() {
+      _questionStartTime = DateTime.now();
+    });
+    
+    // Record question start in session
+    if (_session != null) {
+      final vsModeService = VSModeService();
+      _session = vsModeService.recordQuestionStart(
+        session: _session!,
+        playerId: _currentPlayer,
+        startTime: _questionStartTime!,
+      );
     }
   }
 
@@ -114,7 +137,7 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
         : _session!.playerBName;
   }
 
-  void _submitAnswer() {
+  Future<void> _submitAnswer() async {
     if (_selectedIndices.isEmpty) {
       ScaffoldMessenger.of(
         context,
@@ -126,32 +149,63 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
     final question = _questionsMap![questionId]!;
     final isCorrect = question.isCorrectAnswer(_selectedIndices.toList());
 
-    setState(() {
-      _isAnswered = true;
-      _isCorrect = isCorrect;
-      _showExplanation = true;
-    });
+    // Record end time before navigating to explanation (timer pauses)
+    final endTime = DateTime.now();
+    final vsModeService = VSModeService();
+    
+    if (_questionStartTime != null) {
+      _session = vsModeService.recordQuestionEnd(
+        session: _session!,
+        playerId: _currentPlayer,
+        endTime: endTime,
+        startTime: _questionStartTime!,
+      );
+    }
 
     // Update session with answer
-    final vsModeService = VSModeService();
     _session = vsModeService.submitPlayerAnswer(
       session: _session!,
       playerId: _currentPlayer,
       questionId: questionId,
       isCorrect: isCorrect,
     );
+
+    // Navigate to explanation screen
+    final isLastQuestion = _currentQuestionIndex >= _currentPlayerQuestionIds.length - 1;
+    
+    await Navigator.of(context).pushNamed(
+      '/quiz-explanation',
+      arguments: {
+        'question': question,
+        'isCorrect': isCorrect,
+        'isLastQuestion': isLastQuestion,
+        'selectedIndices': _selectedIndices.toList(),
+        'isVSMode': true,
+      },
+    );
+
+    // Track explanation view
+    _session = vsModeService.recordExplanationViewed(
+      session: _session!,
+      playerId: _currentPlayer,
+      questionId: questionId,
+    );
+
+    // After returning from explanation, handle next step
+    if (!mounted) return;
+    
+    _handleAfterExplanation();
   }
 
-  void _nextQuestion() {
+  void _handleAfterExplanation() {
     if (_currentQuestionIndex < _currentPlayerQuestionIds.length - 1) {
-      // More questions for current player
+      // More questions for current player - restart timer for next question
       setState(() {
         _currentQuestionIndex++;
         _selectedIndices.clear();
         _isAnswered = false;
-        _isCorrect = false;
-        _showExplanation = false;
       });
+      _startQuestionTimer();
     } else if (_currentPlayer == 'playerA') {
       // Player A finished, show handoff screen
       Navigator.of(context).pushReplacementNamed(
@@ -166,6 +220,8 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
       );
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -256,99 +312,26 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
                   }),
 
                   const SizedBox(height: 16),
-
-                  // Feedback and explanation
-                  if (_isAnswered) ...[
-                    Card(
-                      color: _isCorrect
-                          ? AppColors.successLight
-                          : AppColors.errorLight,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  _isCorrect
-                                      ? Icons.check_circle
-                                      : Icons.cancel,
-                                  color: _isCorrect
-                                      ? AppColors.success
-                                      : AppColors.error,
-                                  size: 32,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _isCorrect ? 'Correct!' : 'Incorrect',
-                                  style: Theme.of(context).textTheme.titleLarge
-                                      ?.copyWith(
-                                        color: _isCorrect
-                                            ? AppColors.success
-                                            : AppColors.error,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            if (_showExplanation) ...[
-                              const SizedBox(height: 16),
-                              const Divider(),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Explanation:',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                question.explanation,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              if (question.sourceUrl != null) ...[
-                                const SizedBox(height: 12),
-                                TextButton.icon(
-                                  onPressed: () =>
-                                      _launchUrl(question.sourceUrl!),
-                                  icon: const Icon(Icons.open_in_new),
-                                  label: Text(
-                                    question.sourceLabel ?? 'View Source',
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
           ),
 
           // Action button
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: _isAnswered ? _nextQuestion : _submitAnswer,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                _isAnswered
-                    ? (_currentQuestionIndex <
-                              _currentPlayerQuestionIds.length - 1
-                          ? 'Next Question'
-                          : (_currentPlayer == 'playerA'
-                                ? 'Pass to ${_session!.playerBName}'
-                                : 'View Results'))
-                    : 'Submit Answer',
-                style: const TextStyle(fontSize: 18),
+          if (!_isAnswered)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: _submitAnswer,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  'Submit Answer',
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -448,16 +431,4 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
     });
   }
 
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Could not open link')));
-      }
-    }
-  }
 }

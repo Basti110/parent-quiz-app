@@ -27,6 +27,23 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
     }
   }
 
+  /// Determines if a player has the faster time
+  /// Returns true if the player has a faster time than their opponent
+  bool _isFasterTime(int? playerATime, int? playerBTime, {required bool isPlayerA}) {
+    // If either time is missing, no one is faster
+    if (playerATime == null || playerBTime == null) return false;
+    
+    // If times are equal, no one is faster
+    if (playerATime == playerBTime) return false;
+    
+    // Check if this player is faster
+    if (isPlayerA) {
+      return playerATime < playerBTime;
+    } else {
+      return playerBTime < playerATime;
+    }
+  }
+
   Future<void> _updateDuelStats() async {
     if (_isUpdatingStats || _statsUpdated) return;
 
@@ -112,6 +129,12 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
               totalQuestions: session.questionsPerPlayer,
               isWinner: result.outcome == VSModeOutcome.playerAWins,
               color: AppColors.playerA,
+              timeSeconds: result.playerATimeSeconds,
+              isFasterTime: _isFasterTime(
+                result.playerATimeSeconds,
+                result.playerBTimeSeconds,
+                isPlayerA: true,
+              ),
             ),
             const SizedBox(height: 16),
             _buildPlayerScoreCard(
@@ -120,6 +143,12 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
               totalQuestions: session.questionsPerPlayer,
               isWinner: result.outcome == VSModeOutcome.playerBWins,
               color: AppColors.playerB,
+              timeSeconds: result.playerBTimeSeconds,
+              isFasterTime: _isFasterTime(
+                result.playerATimeSeconds,
+                result.playerBTimeSeconds,
+                isPlayerA: false,
+              ),
             ),
             const SizedBox(height: 32),
 
@@ -168,6 +197,10 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
 
   Widget _buildWinnerSection(VSModeResult result) {
     final isTie = result.outcome == VSModeOutcome.tie;
+    final isPerfectTie = isTie && 
+        result.playerATimeSeconds != null && 
+        result.playerBTimeSeconds != null &&
+        result.playerATimeSeconds == result.playerBTimeSeconds;
 
     return Card(
       color: isTie ? AppColors.warningLight : AppColors.primaryLightest,
@@ -182,13 +215,34 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              isTie ? "It's a Tie!" : '${result.winnerName} Wins!',
+              isTie ? (isPerfectTie ? "Perfect Tie!" : "It's a Tie!") : '${result.winnerName} Wins!',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: isTie ? AppColors.warning : AppColors.primary,
               ),
               textAlign: TextAlign.center,
             ),
+            if (result.wonByTime && !isTie) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.flash_on,
+                    size: 20,
+                    color: AppColors.accent,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Won by speed!',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -201,6 +255,8 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
     required int totalQuestions,
     required bool isWinner,
     required MaterialColor color,
+    int? timeSeconds,
+    bool isFasterTime = false,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -252,6 +308,33 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                     'Correct: $score / $totalQuestions',
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
+                  if (timeSeconds != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.timer, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          VSModeResult(
+                            playerAName: '',
+                            playerBName: '',
+                            playerAScore: 0,
+                            playerBScore: 0,
+                            outcome: VSModeOutcome.tie,
+                          ).formatTime(timeSeconds) ?? '--:--',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        if (isFasterTime) ...[
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.flash_on,
+                            size: 16,
+                            color: AppColors.accent,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Allow users to read their own profile and other users' public data
+      // (needed for leaderboard, friends list, duel opponents, etc.)
+      allow read: if isAuthenticated();
+      
+      // Allow users to create their own profile during registration
+      allow create: if isOwner(userId);
+      
+      // Allow users to update their own profile
+      // This includes:
+      // - Daily goal settings (dailyGoal: 1-50)
+      // - Streak data (streakCurrent, streakLongest, streakPoints)
+      // - Daily progress (questionsAnsweredToday, lastDailyReset)
+      // - Question statistics (totalQuestionsAnswered, totalCorrectAnswers, totalMasteredQuestions)
+      // - Duel statistics (duelsCompleted, duelsWon)
+      // - Profile data (displayName, avatarPath, lastActiveAt)
+      allow update: if isOwner(userId);
+      
+      // Prevent deletion for data integrity
+      allow delete: if false;
+      
+      // Question states subcollection
+      match /questionStates/{questionId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+      
+      // Friends subcollection
+      match /friends/{friendUserId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+      
+      // History subcollection
+      match /history/{date} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+    }
+    
+    // Duels collection (MVP - Client-Side Implementation)
+    // Note: In future, this will be migrated to Cloud Functions
+    // where only Cloud Functions can write, and clients can only read
+    match /duels/{duelId} {
+      // Allow read for participants (challenger or opponent)
+      allow read: if isAuthenticated() && 
+        (resource.data.challengerId == request.auth.uid ||
+         resource.data.opponentId == request.auth.uid);
+      
+      // Allow create for authenticated users (when challenging a friend)
+      allow create: if isAuthenticated() &&
+        request.resource.data.challengerId == request.auth.uid;
+      
+      // Allow update for participants (MVP - for submitting answers)
+      // In future Cloud Function implementation, this will be:
+      // allow update: if false;
+      allow update: if isAuthenticated() &&
+        (resource.data.challengerId == request.auth.uid ||
+         resource.data.opponentId == request.auth.uid);
+      
+      // Prevent deletion for data integrity
+      allow delete: if false;
+    }
+    
+    // Categories collection (read-only for clients)
+    match /categories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only admins can modify via Firebase Console
+    }
+    
+    // Questions collection (read-only for clients)
+    match /questions/{questionId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only admins can modify via Firebase Console
+    }
+    
+    // VS Mode sessions (if stored in Firestore in the future)
+    // Currently VS Mode is pass-and-play and doesn't persist to Firestore
+    match /vsSessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+  }
+}

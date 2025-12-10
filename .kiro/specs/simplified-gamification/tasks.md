@@ -8,15 +8,15 @@ This implementation plan covers the transition from XP-based gamification to a s
 
 ## Task List
 
-- [ ] 1. Update data models for simplified gamification
-- [ ] 1.1 Update UserModel to remove XP fields and add streak/daily goal fields
+- [x] 1. Update data models for simplified gamification
+- [x] 1.1 Update UserModel to remove XP fields and add streak/daily goal fields
 
   - Remove: totalXp, currentLevel, weeklyXpCurrent, weeklyXpWeekStart
   - Add: streakPoints, dailyGoal, questionsAnsweredToday, lastDailyReset, totalQuestionsAnswered, totalCorrectAnswers, totalMasteredQuestions
   - Update: duelsPlayed → duelsCompleted, remove duelsLost, remove duelPoints
   - _Requirements: 6.1, 6.2_
 
-- [ ] 1.2 Create DuelModel for asynchronous duels
+- [x] 1.2 Create DuelModel for asynchronous duels
 
   - Fields: id, challengerId, opponentId, status, timestamps, questionIds
   - Fields: challengerAnswers (Map<String, bool>), challengerScore, challengerCompletedAt
@@ -24,21 +24,21 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Method: getWinnerId() for winner determination
   - _Requirements: 15.1, 15.2, 15.3_
 
-- [ ] 1.3 Update VSModeSession model for time tracking and explanations
+- [x] 1.3 Update VSModeSession model for time tracking and explanations
 
   - Add: playerAElapsedSeconds, playerBElapsedSeconds (accumulated time, questions only)
   - Add: playerAExplanationsViewed, playerBExplanationsViewed (Map<String, bool>)
   - Add computed properties: playerATimeSeconds, playerBTimeSeconds (return elapsed seconds)
   - _Requirements: 18.1, 18.2, 18.3, 18.5, 21.1, 21.2_
 
-- [ ] 1.4 Update VSModeResult model for time-based tiebreaker
+- [x] 1.4 Update VSModeResult model for time-based tiebreaker
 
   - Add: playerATimeSeconds, playerBTimeSeconds, wonByTime
   - Add method: formatTime(int? seconds) for MM:SS formatting
   - Update outcome calculation to consider time when scores are equal
   - _Requirements: 19.1, 19.2, 19.5, 20.2_
 
-- [ ] 1.5 Create FriendModel for head-to-head statistics
+- [x] 1.5 Create FriendModel for head-to-head statistics
 
   - Fields: friendUserId, status, createdAt, createdBy
   - Fields: myWins, theirWins, ties, totalDuels (all default to 0)
@@ -47,28 +47,28 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Method: isTied() returns true if myWins == theirWins
   - _Requirements: 15a.1, 15a.5_
 
-- [ ] 2. Update UserService for streak-based system
-- [ ] 2.1 Implement daily goal management methods
+- [x] 2. Update UserService for streak-based system
+- [x] 2.1 Implement daily goal management methods
 
   - updateDailyGoal(userId, newGoal) with validation (1-50)
   - incrementQuestionsAnsweredToday(userId)
   - resetDailyProgressIfNeeded(userId) - check lastDailyReset
   - _Requirements: 1.3, 1.4, 1.5, 5.5_
 
-- [ ] 2.2 Implement streak management methods
+- [x] 2.2 Implement streak management methods
 
   - checkAndUpdateStreak(userId) - check consecutive days
   - calculateStreakPoints(currentStreak) - 0 for days 1-2, 3 for day 3+
   - awardStreakPoints(userId, points)
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3_
 
-- [ ] 2.3 Implement question statistics methods
+- [x] 2.3 Implement question statistics methods
 
   - incrementTotalQuestions(userId, correct) - update both counters
   - updateMasteredCount(userId) - count mastered questions from questionStates
   - _Requirements: 4.1, 4.3, 4.5_
 
-- [ ]\* 2.4 Write property test for daily goal bounds
+- [x] 2.4 Write property test for daily goal bounds
 
   - **Property 1: Daily goal bounds**
   - **Validates: Requirements 1.3**
@@ -78,25 +78,25 @@ This implementation plan covers the transition from XP-based gamification to a s
   - **Property 5: Streak continuation**
   - **Validates: Requirements 2.2**
 
-- [ ]\* 2.6 Write property test for streak reset
+- [x] 2.6 Write property test for streak reset
 
   - **Property 6: Streak reset**
   - **Validates: Requirements 2.3**
 
-- [ ]\* 2.7 Write property test for streak points calculation
+- [x] 2.7 Write property test for streak points calculation
 
   - **Property 10: Three points per additional day**
   - **Validates: Requirements 3.2**
 
-- [ ] 3. Create DuelService for asynchronous duels
-- [ ] 3.1 Implement duel creation and management
+- [x] 3. Create DuelService for asynchronous duels
+- [x] 3.1 Implement duel creation and management
 
   - createDuel(challengerId, opponentId) - generate 5 questions
   - acceptDuel(duelId, userId) - update status to accepted
   - declineDuel(duelId, userId) - update status to declined
   - _Requirements: 10.2, 11.1, 11.2, 11.3_
 
-- [ ] 3.2 Implement duel gameplay methods
+- [x] 3.2 Implement duel gameplay methods
 
   - submitAnswer(duelId, userId, questionIndex, questionId, isCorrect)
   - Increment score if correct, store answer in map
@@ -104,7 +104,7 @@ This implementation plan covers the transition from XP-based gamification to a s
   - When both players complete, call \_updateHeadToHeadStats for both users
   - _Requirements: 12.2, 12.3, 12.4, 13.2, 15a.2_
 
-- [ ] 3.3 Implement duel query methods
+- [x] 3.3 Implement duel query methods
 
   - getPendingDuels(userId) - stream of pending challenges
   - getActiveDuels(userId) - stream of accepted, incomplete duels
@@ -112,24 +112,24 @@ This implementation plan covers the transition from XP-based gamification to a s
   - getDuel(duelId) - single duel fetch
   - _Requirements: 14.1, 14.2, 14.4, 15.4_
 
-- [ ] 3.4 Implement helper methods
+- [x] 3.4 Implement helper methods
 
   - \_generateDuelQuestions() - select 5 random active questions
   - \_updateDuelStatistics(winnerId, loserId, isTie) - update user stats
   - \_updateHeadToHeadStats(userId, friendId, userWon, isTie) - update friendship documents for both users
   - _Requirements: 11.5, 13.4, 15a.2_
 
-- [ ] 3.5 Write property test for duel question consistency
+- [x] 3.5 Write property test for duel question consistency
 
   - **Property 18: Duel question consistency**
   - **Validates: Requirements 11.5**
 
-- [ ] 3.6 Write property test for duel score calculation
+- [x] 3.6 Write property test for duel score calculation
 
   - **Property 19: Duel score calculation**
   - **Validates: Requirements 13.2**
 
-- [ ] 3.7 Write property test for duel winner determination
+- [x] 3.7 Write property test for duel winner determination
 
   - **Property 20: Duel winner determination**
   - **Validates: Requirements 13.4**
@@ -144,15 +144,15 @@ This implementation plan covers the transition from XP-based gamification to a s
   - **Property 26: Head-to-head symmetry**
   - **Validates: Requirements 15a.2**
 
-- [ ] 4. Update VSModeService for time tracking and explanations
-- [ ] 4.1 Implement time tracking methods
+- [-] 4. Update VSModeService for time tracking and explanations
+- [x] 4.1 Implement time tracking methods
 
   - recordQuestionStart(session, playerId, startTime) - called when question displayed
   - recordQuestionEnd(session, playerId, endTime) - called when answer submitted, accumulates elapsed time
   - recordExplanationViewed(session, playerId, questionId) - tracks explanation views
   - _Requirements: 18.1, 18.2, 18.5, 17.4, 22.2, 22.3_
 
-- [ ] 4.2 Update calculateResult for time-based tiebreaker
+- [x] 4.2 Update calculateResult for time-based tiebreaker
 
   - Compare scores first
   - If tied, compare completion times
@@ -160,19 +160,19 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Handle missing time data for backward compatibility
   - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 24.1, 24.2, 24.3_
 
-- [ ] 4.3 Implement XP calculation for VS Mode
+- [x] 4.3 Implement XP calculation for VS Mode
 
   - calculatePlayerXP(answers, explanationsViewed, questionsPerPlayer)
   - Apply same XP rules as solo mode (10/5/2 XP)
   - Apply session bonuses (completion + perfect)
   - _Requirements: 25.1, 25.2, 25.3, 25.4_
 
-- [ ] 4.4 Write property test for VS Mode time calculation
+- [x] 4.4 Write property test for VS Mode time calculation
 
   - **Property 35: VS Mode Completion Time Calculation**
   - **Validates: Requirements 18.3**
 
-- [ ] 4.4b Write property test for VS Mode explanation time exclusion
+- [x] 4.4b Write property test for VS Mode explanation time exclusion
 
   - **Property 48b: VS Mode Explanation Time Exclusion**
   - **Validates: Requirements 18.5, 22.3**
@@ -197,8 +197,8 @@ This implementation plan covers the transition from XP-based gamification to a s
   - **Property 48: VS Mode Elapsed Time Accumulation**
   - **Validates: Requirements 22.5, 22.2**
 
-- [ ] 5. Update home screen for daily progress
-- [ ] 5.1 Replace XP display with daily progress
+- [x] 5. Update home screen for daily progress
+- [x] 5.1 Replace XP display with daily progress
 
   - Show "X/Y questions" progress bar
   - Show current streak with fire icon
@@ -206,21 +206,21 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Remove level and XP displays
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 5.2 Add daily goal completion indicator
+- [x] 5.2 Add daily goal completion indicator
 
   - Show checkmark when goal met
   - Show celebration animation on goal completion
   - _Requirements: 5.4_
 
-- [ ] 6. Update leaderboard for streak points
-- [ ] 6.1 Change leaderboard query to sort by streakPoints
+- [x] 6. Update leaderboard for streak points
+- [x] 6.1 Change leaderboard query to sort by streakPoints
 
   - Query users collection ordered by streakPoints DESC
   - Remove weekly reset logic
   - Show current streak alongside streak points
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 6.2 Update leaderboard UI
+- [x] 6.2 Update leaderboard UI
 
   - Display streak points instead of weekly XP
   - Show current streak for each user
@@ -228,36 +228,36 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Handle users with 0 points
   - _Requirements: 7.5_
 
-- [ ] 6.3 Display head-to-head statistics for friends
+- [x] 6.3 Display head-to-head statistics for friends
 
   - For each friend on leaderboard, show head-to-head record (e.g., "5-3-1")
   - Indicate if user is leading, tied, or trailing
   - Format as "vs You: X-Y-Z" where X=their wins, Y=their losses, Z=ties
   - _Requirements: 15a.3, 15a.4_
 
-- [ ] 7. Update settings screen for daily goal
-- [ ] 7.1 Add daily goal adjustment control
+- [x] 7. Update settings screen for daily goal
+- [x] 7.1 Add daily goal adjustment control
 
   - Slider or number input (1-50 range)
   - Show current value
   - Validate input before saving
   - _Requirements: 9.1, 9.2, 9.3_
 
-- [ ] 7.2 Implement daily goal save logic
+- [x] 7.2 Implement daily goal save logic
 
   - Call UserService.updateDailyGoal
   - Show error for invalid values
   - Show success confirmation
   - _Requirements: 9.4, 9.5_
 
-- [ ] 8. Update friends screen for duel challenges
-- [ ] 8.1 Display friend avatars prominently
+- [x] 8. Update friends screen for duel challenges
+- [x] 8.1 Display friend avatars prominently
 
   - Show avatar images in friend list
   - Make avatars tappable
   - _Requirements: 10.1_
 
-- [ ] 8.2 Implement duel challenge flow
+- [x] 8.2 Implement duel challenge flow
 
   - Tap avatar to initiate challenge
   - Show confirmation dialog
@@ -265,21 +265,21 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Show success/error feedback
   - _Requirements: 10.2, 10.3_
 
-- [ ] 8.3 Add pending duel indicators
+- [x] 8.3 Add pending duel indicators
 
   - Show badge on friends with pending challenges
   - Display pending challenge count
   - _Requirements: 10.4, 10.5, 14.1_
 
-- [ ] 8.4 Display head-to-head statistics on friends screen
+- [x] 8.4 Display head-to-head statistics on friends screen
 
   - Show win-loss-tie record for each friend
   - Display "You: X, Them: Y" format
   - Show total duels completed
   - _Requirements: 15a.3, 15a.4_
 
-- [ ] 9. Create duel screens
-- [ ] 9.1 Create duel challenge acceptance screen
+- [x] 9. Create duel screens
+- [x] 9.1 Create duel challenge acceptance screen
 
   - Show challenger's name and avatar
   - Display accept/decline buttons
@@ -287,7 +287,7 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Navigate to duel question screen on accept
   - _Requirements: 11.1, 11.2, 11.3_
 
-- [ ] 9.2 Create duel question screen
+- [x] 9.2 Create duel question screen
 
   - Reuse quiz question UI components
   - Show "Duel with [opponent]" header
@@ -296,7 +296,7 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Track answers in DuelModel format
   - _Requirements: 12.1, 12.2, 16.1, 16.2, 16.3_
 
-- [ ] 9.3 Implement duel question submission
+- [x] 9.3 Implement duel question submission
 
   - Call DuelService.submitAnswer after each question
   - Navigate to explanation screen
@@ -304,7 +304,7 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Continue to next question or completion
   - _Requirements: 12.3, 12.4, 17.4_
 
-- [ ] 9.4 Create duel results screen
+- [x] 9.4 Create duel results screen
 
   - Show both participants' avatars and names
   - Display scores side-by-side
@@ -313,14 +313,14 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Display "Results available" notification
   - _Requirements: 13.1, 13.2, 13.3, 13.4, 14.5_
 
-- [ ] 10. Update VSModeQuizScreen for explanations and timing
-- [ ] 10.1 Remove inline explanation display
+- [x] 10. Update VSModeQuizScreen for explanations and timing
+- [x] 10.1 Remove inline explanation display
 
   - Remove \_showExplanation flag
   - Remove explanation UI from quiz screen
   - _Requirements: 16.1, 17.1_
 
-- [ ] 10.2 Implement time tracking in VS Mode
+- [x] 10.2 Implement time tracking in VS Mode
 
   - Add \_questionStartTime field (tracks current question start)
   - Record start time when question is displayed (initState and after explanation)
@@ -330,7 +330,7 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Timer pauses during explanation screens
   - _Requirements: 18.1, 18.2, 18.5, 22.1, 22.2, 22.3_
 
-- [ ] 10.3 Navigate to explanation screen after each answer
+- [x] 10.3 Navigate to explanation screen after each answer
 
   - Stop timer before navigating to explanation
   - Pass isVSMode: true flag
@@ -340,50 +340,50 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Restart timer when next question displays
   - _Requirements: 16.4, 16.5, 17.4, 18.5, 22.3_
 
-- [ ] 10.4 Update navigation flow
+- [x] 10.4 Update navigation flow
 
   - After explanation: next question or handoff/results
   - Pass session with timing data to handoff/results
   - _Requirements: 26.1, 26.2, 26.3_
 
-- [ ] 11. Update QuizExplanationScreen for VS Mode
-- [ ] 11.1 Add VS Mode support flag
+- [x] 11. Update QuizExplanationScreen for VS Mode
+- [x] 11.1 Add VS Mode support flag
 
   - Accept isVSMode parameter in arguments
   - Skip user stat updates when isVSMode is true
   - Adjust button text based on mode
   - _Requirements: 17.1, 17.2, 17.3, 17.5_
 
-- [ ] 11.2 Maintain consistent UI
+- [x] 11.2 Maintain consistent UI
 
   - Use same layout and styling
   - Show same information fields
   - Display source links and tips
   - _Requirements: 16.2, 16.3, 17.2, 17.3_
 
-- [ ] 12. Update VSModeResultScreen for time display
-- [ ] 12.1 Display completion times
+- [x] 12. Update VSModeResultScreen for time display
+- [x] 12.1 Display completion times
 
   - Show formatted time (MM:SS) for each player
   - Highlight faster time with icon
   - Handle missing times for old sessions
   - _Requirements: 20.1, 20.2, 20.4, 24.2_
 
-- [ ] 12.2 Show tiebreaker indicator
+- [x] 12.2 Show tiebreaker indicator
 
   - Display "Won by speed!" when wonByTime is true
   - Display "Perfect Tie!" when scores and times equal
   - _Requirements: 20.3, 20.5_
 
-- [ ] 12.3 Update results layout
+- [x] 12.3 Update results layout
 
   - Show scores and times side-by-side
   - Display question breakdown
   - Show winner/tie status clearly
   - _Requirements: 26.5_
 
-- [ ] 13. Implement data migration
-- [ ] 13.1 Create migration script
+- [x] 13. Implement data migration
+- [x] 13.1 Create migration script
 
   - Preserve existing streak data
   - Preserve question state data
@@ -391,47 +391,47 @@ This implementation plan covers the transition from XP-based gamification to a s
   - Initialize new fields with defaults
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
 
-- [ ] 13.2 Test migration on sample data
+- [x] 13.2 Test migration on sample data
 
   - Create test users with old schema
   - Run migration
   - Verify all fields correct
   - Verify no data loss
 
-- [ ] 13.3 Deploy migration to production
+- [x] 13.3 Deploy migration to production
 
   - Backup database before migration
   - Run migration script
   - Verify all users migrated successfully
   - Monitor for errors
 
-- [ ] 14. Update Firestore indexes
-- [ ] 14.1 Create streak points index
+- [x] 14. Update Firestore indexes
+- [x] 14.1 Create streak points index
 
   - Index: users collection, streakPoints DESC
   - _Requirements: 7.1_
 
-- [ ] 14.2 Create duel indexes
+- [x] 14.2 Create duel indexes
 
   - Index: duels collection, challengerId + status
   - Index: duels collection, opponentId + status
   - Index: duels collection, status + createdAt
   - _Requirements: 15.4_
 
-- [ ] 15. Update Firestore security rules
-- [ ] 15.1 Add duel collection rules
+- [x] 15. Update Firestore security rules
+- [x] 15.1 Add duel collection rules
 
   - Allow read for participants
   - Allow update for participants (MVP)
   - Document future Cloud Function rules
   - _Requirements: 23.3_
 
-- [ ] 15.2 Update user collection rules
+- [x] 15.2 Update user collection rules
 
   - Ensure users can update their own daily goal
   - Ensure users can update their own stats
 
-- [ ] 16. Final checkpoint - Ensure all tests pass
+- [x] 16. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

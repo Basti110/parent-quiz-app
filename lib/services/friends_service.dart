@@ -173,7 +173,7 @@ class FriendsService {
         });
   }
 
-  /// Get friends leaderboard sorted by weeklyXpCurrent
+  /// Get friends leaderboard sorted by streakPoints
   /// Property 30: Friends leaderboard sorting
   /// Requirements: 10.6
   Future<List<UserModel>> getFriendsLeaderboard(String userId) async {
@@ -181,8 +181,8 @@ class FriendsService {
       // Get list of friends
       final friends = await getFriends(userId);
 
-      // Sort by weeklyXpCurrent in descending order
-      friends.sort((a, b) => b.weeklyXpCurrent.compareTo(a.weeklyXpCurrent));
+      // Sort by streakPoints in descending order
+      friends.sort((a, b) => b.streakPoints.compareTo(a.streakPoints));
 
       return friends;
     } on FirebaseException catch (e) {
@@ -195,6 +195,81 @@ class FriendsService {
     } catch (e) {
       print('Error getting friends leaderboard: $e');
       rethrow;
+    }
+  }
+
+  /// Get friends with their friendship data (including openChallenge) as a stream
+  /// Requirements: 10.3, 11.1
+  Stream<List<(UserModel, Friend)>> getFriendsWithDataStream(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('friends')
+        .snapshots()
+        .asyncMap((snapshot) async {
+          if (snapshot.docs.isEmpty) {
+            return <(UserModel, Friend)>[];
+          }
+
+          // Convert friendship documents to Friend objects
+          final friendships = snapshot.docs
+              .map((doc) => Friend.fromMap(doc.data()))
+              .toList();
+
+          // Extract friend user IDs
+          final friendUserIds = friendships
+              .map((friendship) => friendship.friendUserId)
+              .toList();
+
+          // Fetch all friend user documents
+          final userDocs = await Future.wait(
+            friendUserIds.map(
+              (id) => _firestore.collection('users').doc(id).get(),
+            ),
+          );
+
+          // Combine user data with friendship data
+          final friendsWithData = <(UserModel, Friend)>[];
+          for (int i = 0; i < userDocs.length; i++) {
+            final userDoc = userDocs[i];
+            if (userDoc.exists) {
+              final user = UserModel.fromMap(userDoc.data()!, userDoc.id);
+              final friendship = friendships[i];
+              friendsWithData.add((user, friendship));
+            }
+          }
+
+          // Sort alphabetically by display name
+          friendsWithData.sort((a, b) => a.$1.displayName.compareTo(b.$1.displayName));
+
+          return friendsWithData;
+        });
+  }
+
+  /// Get friendship document for head-to-head statistics
+  /// Requirements: 15a.3, 15a.4
+  Future<Friend?> getFriendshipDocument(String userId, String friendId) async {
+    try {
+      final doc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('friends')
+          .doc(friendId)
+          .get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      return Friend.fromMap(doc.data()!);
+    } on FirebaseException catch (e) {
+      print(
+        'Firebase error getting friendship document: ${e.code} - ${e.message}',
+      );
+      return null;
+    } catch (e) {
+      print('Error getting friendship document: $e');
+      return null;
     }
   }
 }

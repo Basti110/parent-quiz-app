@@ -463,4 +463,20 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get exitQuizConfirmation =>
       'Möchten Sie wirklich beenden? Ihr Fortschritt geht verloren.';
+
+  @override
+  String get dailyGoal => 'Tagesziel';
+
+  @override
+  String get questionsPerDay => 'Fragen pro Tag';
+
+  @override
+  String get dailyGoalDescription =>
+      'Legen Sie fest, wie viele Fragen Sie jeden Tag beantworten möchten';
+
+  @override
+  String get dailyGoalUpdated => 'Tagesziel erfolgreich aktualisiert';
+
+  @override
+  String get invalidDailyGoal => 'Tagesziel muss zwischen 1 und 50 liegen';
 }

@@ -5,7 +5,7 @@ import 'package:babycation/models/user_model.dart';
 import 'dart:math';
 
 void main() {
-  group('UserService', () {
+  group('UserService - Streak-Based System', () {
     late FakeFirebaseFirestore fakeFirestore;
     late UserService userService;
 
@@ -14,15 +14,17 @@ void main() {
       userService = UserService(firestore: fakeFirestore);
     });
 
-    // Helper to create a test user
+    // Helper to create a test user with new schema
     Future<UserModel> createTestUser({
       required String userId,
       required DateTime lastActiveAt,
       required int streakCurrent,
       required int streakLongest,
+      int dailyGoal = 10,
+      int questionsAnsweredToday = 0,
+      DateTime? lastDailyReset,
     }) async {
       final now = DateTime.now();
-      final currentMonday = _getMondayOfWeek(now);
 
       final user = UserModel(
         id: userId,
@@ -32,82 +34,94 @@ void main() {
         createdAt: now,
         lastActiveAt: lastActiveAt,
         friendCode: 'TEST123',
-        totalXp: 0,
-        currentLevel: 1,
-        weeklyXpCurrent: 0,
-        weeklyXpWeekStart: currentMonday,
         streakCurrent: streakCurrent,
         streakLongest: streakLongest,
-        duelsPlayed: 0,
+        streakPoints: 0,
+        dailyGoal: dailyGoal,
+        questionsAnsweredToday: questionsAnsweredToday,
+        lastDailyReset: lastDailyReset ?? now,
+        totalQuestionsAnswered: 0,
+        totalCorrectAnswers: 0,
+        totalMasteredQuestions: 0,
+        duelsCompleted: 0,
         duelsWon: 0,
-        duelsLost: 0,
-        duelPoints: 0,
       );
 
       await fakeFirestore.collection('users').doc(userId).set(user.toMap());
       return user;
     }
 
-    // Feature: parent-quiz-app, Property 15: Streak continuation
-    // Validates: Requirements 6.2
-    group('Property 15: Streak continuation', () {
+    // ========================================================================
+    // PROPERTY TESTS FOR STREAK-BASED SYSTEM (Task 2)
+    // ========================================================================
+
+    // Feature: simplified-gamification, Property 1: Daily goal bounds
+    // Validates: Requirements 1.3
+    group('Property 1: Daily goal bounds', () {
       test(
-        'for any user whose lastActiveAt is yesterday, completing a session should increment streakCurrent by 1',
-        () async {
-          final random = Random(42); // Seed for reproducibility
-          const iterations = 100;
-
-          for (int i = 0; i < iterations; i++) {
-            // Generate random test data
-            final userId = 'user_$i';
-            final now = DateTime.now();
-            final yesterday = DateTime(
-              now.year,
-              now.month,
-              now.day,
-            ).subtract(const Duration(days: 1));
-            final initialStreak = random.nextInt(50); // Random streak 0-49
-            final initialLongest =
-                initialStreak + random.nextInt(10); // Longest >= current
-
-            // Create user with lastActiveAt = yesterday
-            await createTestUser(
-              userId: userId,
-              lastActiveAt: yesterday,
-              streakCurrent: initialStreak,
-              streakLongest: initialLongest,
-            );
-
-            // Update streak
-            await userService.updateStreak(userId);
-
-            // Verify streak incremented by 1
-            final updatedUser = await userService.getUserData(userId);
-            expect(
-              updatedUser.streakCurrent,
-              equals(initialStreak + 1),
-              reason:
-                  'Streak should increment by 1 when lastActiveAt is yesterday (iteration $i)',
-            );
-          }
-        },
-      );
-    });
-
-    // Feature: parent-quiz-app, Property 16: Streak reset
-    // Validates: Requirements 6.3
-    group('Property 16: Streak reset', () {
-      test(
-        'for any user whose lastActiveAt is more than 1 day ago, completing a session should reset streakCurrent to 1',
+        'for any daily goal value, the system should only accept values between 1 and 50 (inclusive)',
         () async {
           final random = Random(42);
           const iterations = 100;
 
           for (int i = 0; i < iterations; i++) {
-            final userId = 'user_reset_$i';
+            final userId = 'user_daily_goal_$i';
+
+            // Create a test user with new schema
+            await createTestUser(
+              userId: userId,
+              lastActiveAt: DateTime.now(),
+              streakCurrent: 0,
+              streakLongest: 0,
+            );
+
+            // Test valid values (1-50)
+            final validGoal = 1 + random.nextInt(50); // 1 to 50
+            await userService.updateDailyGoal(userId, validGoal);
+            final updatedUser = await userService.getUserData(userId);
+            expect(
+              updatedUser.dailyGoal,
+              equals(validGoal),
+              reason: 'Valid goal $validGoal should be accepted (iteration $i)',
+            );
+
+            // Test invalid values (< 1 or > 50)
+            final invalidGoals = [
+              0,
+              -1,
+              -random.nextInt(100),
+              51,
+              52,
+              51 + random.nextInt(100),
+            ];
+
+            for (final invalidGoal in invalidGoals) {
+              expect(
+                () => userService.updateDailyGoal(userId, invalidGoal),
+                throwsA(isA<ArgumentError>()),
+                reason:
+                    'Invalid goal $invalidGoal should be rejected (iteration $i)',
+              );
+            }
+          }
+        },
+      );
+    });
+
+    // Feature: simplified-gamification, Property 6: Streak reset
+    // Validates: Requirements 2.3
+    group('Property 6: Streak reset', () {
+      test(
+        'for any user who fails to meet their daily goal for a calendar day, the current streak should reset to 0',
+        () async {
+          final random = Random(42);
+          const iterations = 100;
+
+          for (int i = 0; i < iterations; i++) {
+            final userId = 'user_streak_reset_$i';
             final now = DateTime.now();
 
-            // Generate lastActiveAt that's 2-30 days ago (more than 1 day)
+            // Generate lastActiveAt that's 2-30 days ago (missed days)
             final daysAgo = 2 + random.nextInt(29);
             final lastActiveAt = DateTime(
               now.year,
@@ -115,212 +129,76 @@ void main() {
               now.day,
             ).subtract(Duration(days: daysAgo));
 
-            final initialStreak =
-                1 + random.nextInt(100); // Random streak 1-100
-            final initialLongest = initialStreak + random.nextInt(50);
+            final initialStreak = 1 + random.nextInt(100); // Random streak 1-100
+            final dailyGoal = 5 + random.nextInt(20); // Random goal 5-24
+            final questionsAnswered = dailyGoal; // Met goal today
 
-            // Create user with old lastActiveAt
+            // Create user with old lastActiveAt and current streak
             await createTestUser(
               userId: userId,
               lastActiveAt: lastActiveAt,
               streakCurrent: initialStreak,
-              streakLongest: initialLongest,
+              streakLongest: initialStreak + random.nextInt(50),
+              dailyGoal: dailyGoal,
+              questionsAnsweredToday: questionsAnswered,
             );
 
-            // Update streak
-            await userService.updateStreak(userId);
+            // Check and update streak (should reset because of gap)
+            await userService.checkAndUpdateStreak(userId);
 
-            // Verify streak reset to 1
+            // Verify streak reset to 0
             final updatedUser = await userService.getUserData(userId);
             expect(
               updatedUser.streakCurrent,
-              equals(1),
+              equals(0),
               reason:
-                  'Streak should reset to 1 when lastActiveAt is $daysAgo days ago (iteration $i)',
+                  'Streak should reset to 0 when lastActiveAt is $daysAgo days ago (iteration $i)',
             );
           }
         },
       );
     });
 
-    // Feature: parent-quiz-app, Property 18: Level calculation
-    // Validates: Requirements 7.1
-    group('Property 18: Level calculation', () {
+    // Feature: simplified-gamification, Property 10: Three points per additional day
+    // Validates: Requirements 3.2
+    group('Property 10: Three points per additional day', () {
       test(
-        'for any totalXp value, currentLevel should equal floor(totalXp / 100) + 1',
+        'for any user with a streak greater than 3, each additional consecutive day should award exactly 3 streak points',
         () async {
           final random = Random(42);
           const iterations = 100;
 
           for (int i = 0; i < iterations; i++) {
-            // Generate random XP values from 0 to 10000
-            final totalXp = random.nextInt(10001);
+            // Test streaks from 4 to 100
+            final currentStreak = 4 + random.nextInt(97);
 
-            // Calculate expected level
-            final expectedLevel = (totalXp ~/ 100) + 1;
-
-            // Test the calculation
-            final actualLevel = userService.calculateLevel(totalXp);
+            // Calculate expected points
+            final expectedPoints = userService.calculateStreakPoints(currentStreak);
 
             expect(
-              actualLevel,
-              equals(expectedLevel),
+              expectedPoints,
+              equals(3),
               reason:
-                  'Level calculation failed for totalXp=$totalXp (iteration $i)',
+                  'Streak day $currentStreak should award 3 points (iteration $i)',
             );
           }
         },
       );
-    });
 
-    // Feature: parent-quiz-app, Property 21: Weekly XP accumulation
-    // Validates: Requirements 8.2
-    group('Property 21: Weekly XP accumulation', () {
       test(
-        'for any session completed within the current week, the session XP should be added to weeklyXpCurrent',
-        () async {
-          final random = Random(42);
-          const iterations = 100;
-
-          for (int i = 0; i < iterations; i++) {
-            final userId = 'user_weekly_$i';
-            final now = DateTime.now();
-            final currentMonday = _getMondayOfWeek(now);
-
-            // Generate random initial weekly XP
-            final initialWeeklyXp = random.nextInt(1000);
-
-            // Create user with weeklyXpWeekStart = current Monday
-            final user = UserModel(
-              id: userId,
-              displayName: 'Test User',
-              email: 'test@example.com',
-              avatarUrl: null,
-              createdAt: now,
-              lastActiveAt: now,
-              friendCode: 'TEST$i',
-              totalXp: 0,
-              currentLevel: 1,
-              weeklyXpCurrent: initialWeeklyXp,
-              weeklyXpWeekStart: currentMonday,
-              streakCurrent: 0,
-              streakLongest: 0,
-              duelsPlayed: 0,
-              duelsWon: 0,
-              duelsLost: 0,
-              duelPoints: 0,
-            );
-
-            await fakeFirestore
-                .collection('users')
-                .doc(userId)
-                .set(user.toMap());
-
-            // Generate random XP gain
-            final xpGained = 10 + random.nextInt(100);
-
-            // Update weekly XP
-            await userService.updateWeeklyXP(userId, xpGained);
-
-            // Verify XP was added
-            final updatedUser = await userService.getUserData(userId);
-            expect(
-              updatedUser.weeklyXpCurrent,
-              equals(initialWeeklyXp + xpGained),
-              reason:
-                  'Weekly XP should accumulate when in same week (iteration $i)',
-            );
-          }
+        'for any user with streak of 1 or 2, no streak points should be awarded',
+        () {
+          expect(userService.calculateStreakPoints(1), equals(0));
+          expect(userService.calculateStreakPoints(2), equals(0));
         },
       );
-    });
 
-    // Feature: parent-quiz-app, Property 22: Weekly XP reset
-    // Validates: Requirements 8.3
-    group('Property 22: Weekly XP reset', () {
       test(
-        'for any session completed after the current week ends, weeklyXpCurrent should be reset',
-        () async {
-          final random = Random(42);
-          const iterations = 100;
-
-          for (int i = 0; i < iterations; i++) {
-            final userId = 'user_reset_weekly_$i';
-            final now = DateTime.now();
-            final currentMonday = _getMondayOfWeek(now);
-
-            // Set weeklyXpWeekStart to a previous week (1-4 weeks ago)
-            final weeksAgo = 1 + random.nextInt(4);
-            final oldMonday = currentMonday.subtract(
-              Duration(days: 7 * weeksAgo),
-            );
-
-            // Generate random old weekly XP
-            final oldWeeklyXp = 100 + random.nextInt(900);
-
-            // Create user with old week start
-            final user = UserModel(
-              id: userId,
-              displayName: 'Test User',
-              email: 'test@example.com',
-              avatarUrl: null,
-              createdAt: now,
-              lastActiveAt: now,
-              friendCode: 'TEST$i',
-              totalXp: 0,
-              currentLevel: 1,
-              weeklyXpCurrent: oldWeeklyXp,
-              weeklyXpWeekStart: oldMonday,
-              streakCurrent: 0,
-              streakLongest: 0,
-              duelsPlayed: 0,
-              duelsWon: 0,
-              duelsLost: 0,
-              duelPoints: 0,
-            );
-
-            await fakeFirestore
-                .collection('users')
-                .doc(userId)
-                .set(user.toMap());
-
-            // Generate random XP gain for new week
-            final xpGained = 10 + random.nextInt(100);
-
-            // Update weekly XP (should trigger reset)
-            await userService.updateWeeklyXP(userId, xpGained);
-
-            // Verify XP was reset to just the new XP
-            final updatedUser = await userService.getUserData(userId);
-            expect(
-              updatedUser.weeklyXpCurrent,
-              equals(xpGained),
-              reason:
-                  'Weekly XP should reset to new session XP when new week starts (iteration $i)',
-            );
-
-            // Verify weeklyXpWeekStart was updated to current Monday
-            expect(
-              updatedUser.weeklyXpWeekStart.year,
-              equals(currentMonday.year),
-            );
-            expect(
-              updatedUser.weeklyXpWeekStart.month,
-              equals(currentMonday.month),
-            );
-            expect(
-              updatedUser.weeklyXpWeekStart.day,
-              equals(currentMonday.day),
-            );
-          }
+        'for any user reaching exactly 3 consecutive days, exactly 3 streak points should be awarded',
+        () {
+          expect(userService.calculateStreakPoints(3), equals(3));
         },
       );
     });
   });
-}
-
-DateTime _getMondayOfWeek(DateTime date) {
-  final daysFromMonday = date.weekday - DateTime.monday;
-  final monday = date.subtract(Duration(days: daysFromMonday));
-  return DateTime(monday.year, monday.month, monday.day);
 }
