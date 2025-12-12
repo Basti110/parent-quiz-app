@@ -67,9 +67,15 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
         _isLoading = false;
       });
 
-      // Clear the openChallenge field now that user is viewing results
-      // This allows them to create new challenges
-      await duelService.clearOpenChallenge(duel.challengerId, duel.opponentId);
+      // Only mark results as viewed if both players have completed
+      // This ensures the "View Results" button stays visible until both have seen the final results
+      final bothCompleted = duel.challengerCompletedAt != null && 
+                           duel.opponentCompletedAt != null;
+      
+      if (bothCompleted) {
+        final userId = ref.read(currentUserIdProvider);
+        await duelService.markResultsViewed(duelId, userId!);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

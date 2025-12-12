@@ -585,6 +585,56 @@ class DuelService {
     await _clearOpenChallenge(challengerId, opponentId);
   }
 
+  /// Mark that a user has viewed the duel results
+  /// If both users have viewed, clear the openChallenge field
+  Future<void> markResultsViewed(String duelId, String userId) async {
+    try {
+      final duelDoc = await _firestore.collection('duels').doc(duelId).get();
+
+      if (!duelDoc.exists) {
+        throw StateError('Duel not found');
+      }
+
+      final duel = DuelModel.fromMap(duelDoc.data()!, duelDoc.id);
+
+      // Verify the user is a participant
+      if (duel.challengerId != userId && duel.opponentId != userId) {
+        throw ArgumentError('User is not a participant in this duel');
+      }
+
+      // Determine which field to update
+      final isChallenger = duel.challengerId == userId;
+      final viewedField = isChallenger 
+          ? 'challengerViewedResults' 
+          : 'opponentViewedResults';
+
+      // Mark that this user has viewed the results
+      await _firestore.collection('duels').doc(duelId).update({
+        viewedField: true,
+      });
+
+      // Check if both users have now viewed the results
+      final updatedDuelDoc = await _firestore.collection('duels').doc(duelId).get();
+      final data = updatedDuelDoc.data();
+      
+      final challengerViewed = data?['challengerViewedResults'] ?? false;
+      final opponentViewed = data?['opponentViewedResults'] ?? false;
+
+      // If both have viewed, clear the openChallenge field
+      if (challengerViewed && opponentViewed) {
+        await _clearOpenChallenge(duel.challengerId, duel.opponentId);
+      }
+    } on FirebaseException catch (e) {
+      print('Firebase error marking results viewed: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to mark results viewed. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error marking results viewed: $e');
+      rethrow;
+    }
+  }
+
   /// Clear the openChallenge field from both friendship documents
   Future<void> _clearOpenChallenge(String challengerId, String opponentId) async {
     try {

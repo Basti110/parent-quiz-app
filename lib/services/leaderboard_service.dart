@@ -9,6 +9,7 @@ class LeaderboardEntry {
   final int currentStreak;
   final int rank;
   final String? avatarUrl;
+  final String? avatarPath;
 
   LeaderboardEntry({
     required this.userId,
@@ -17,6 +18,7 @@ class LeaderboardEntry {
     required this.currentStreak,
     required this.rank,
     this.avatarUrl,
+    this.avatarPath,
   });
 }
 
@@ -49,6 +51,7 @@ class LeaderboardService {
             currentStreak: data['streakCurrent'] as int? ?? 0,
             rank: rank++,
             avatarUrl: data['avatarUrl'] as String?,
+            avatarPath: data['avatarPath'] as String?,
           ),
         );
       }
@@ -149,6 +152,7 @@ class LeaderboardService {
             currentStreak: user.streakCurrent,
             rank: rank++,
             avatarUrl: user.avatarUrl,
+            avatarPath: user.avatarPath,
           ),
         );
       }

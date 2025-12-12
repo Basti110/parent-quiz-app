@@ -102,11 +102,50 @@ if (isSameDay(now, lastActiveAt)) {
 
 ### Duel Mechanics
 
-- **Challenge creation**: Tap friend's avatar to initiate duel
+- **Challenge creation**: Tap friend's avatar or challenge button to initiate duel
 - **Question count**: 5 questions per duel
 - **Question consistency**: Both participants get identical questions in same order
 - **Asynchronous play**: Complete at your own pace
 - **Score tracking**: Increment score for each correct answer
+
+### Challenge State Management (Single Source of Truth)
+
+The `openChallenge` field in the friendship document is the **single source of truth** for active duels:
+
+**Field Structure:**
+```dart
+'openChallenge': {
+  'duelId': String,
+  'challengerId': String,
+  'createdAt': Timestamp,
+  'status': String,  // 'pending' or 'accepted'
+}
+```
+
+**Status Lifecycle:**
+1. **Challenge Created**: `openChallenge` set with `status: 'pending'`
+2. **Challenge Accepted**: `status` updated to `'accepted'`
+3. **Both Complete**: `openChallenge` remains (for "View Results")
+4. **Results Viewed**: `openChallenge` cleared (can create new challenges)
+
+**Prevention Logic:**
+- If `openChallenge` exists → Block new challenges
+- Check friendship document (not duels collection) for efficiency
+- Real-time updates via friendship document stream
+
+### Duel Completion Tracking
+
+**Completion Status:**
+- Tracked in duel document: `challengerCompletedAt`, `opponentCompletedAt`
+- Real-time updates via `duelStreamProvider`
+- UI updates automatically when either user completes
+
+**UI States:**
+- **Pending (Incoming)**: Blue banner with Accept/Decline buttons
+- **Pending (Outgoing)**: Yellow indicator, waiting for response
+- **Accepted (Ready)**: Green banner with "Start Duel" button
+- **Accepted (User Done)**: Yellow banner, "Waiting for opponent"
+- **Both Complete**: Blue banner with "View Results" button
 
 ### Duel Statistics
 

@@ -182,7 +182,7 @@ class LeaderboardScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 16),
               // Avatar
-              _buildAvatar(entry.avatarUrl, initials, avatarColor),
+              _buildAvatar(entry.avatarPath ?? entry.avatarUrl, initials, avatarColor),
               const SizedBox(width: 16),
               // Name and streak
               Expanded(
@@ -361,12 +361,33 @@ class LeaderboardScreen extends ConsumerWidget {
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
       return CircleAvatar(
         radius: 24,
-        backgroundImage: AssetImage(avatarUrl),
         backgroundColor: avatarColor,
-        onBackgroundImageError: (_, __) {
-          // Fallback handled by child
-        },
-        child: null,
+        child: ClipOval(
+          child: Image.asset(
+            avatarUrl,
+            width: 48,
+            height: 48,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              // Fallback to initials if image fails to load
+              return Container(
+                width: 48,
+                height: 48,
+                color: avatarColor,
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      color: AppColors.textOnPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       );
     }
     

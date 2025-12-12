@@ -36,6 +36,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isSaving = false;
+  bool _hasInitializedGoal = false;
 
   @override
   Widget build(BuildContext context) {
@@ -141,12 +142,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           if (currentUserAsync != null)
             currentUserAsync.when(
               data: (user) {
-                // Initialize daily goal provider with user's current goal
+                // Initialize daily goal provider with user's current goal only once
                 // Ensure it's within valid range (5-30) and rounded to nearest 5
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  final validGoal = (user.dailyGoal.clamp(5, 30) / 5).round() * 5;
-                  ref.read(dailyGoalProvider.notifier).updateGoal(validGoal);
-                });
+                if (!_hasInitializedGoal) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final validGoal = (user.dailyGoal.clamp(5, 30) / 5).round() * 5;
+                    ref.read(dailyGoalProvider.notifier).updateGoal(validGoal);
+                    _hasInitializedGoal = true;
+                  });
+                }
                 return _buildDailyGoalSection(context, ref, l10n, theme, isDark, user.dailyGoal, currentUserId!);
               },
               loading: () => const SizedBox.shrink(),

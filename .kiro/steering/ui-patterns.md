@@ -268,3 +268,125 @@ Container(
   color: colorScheme.primary,
 )
 ```
+
+## Duel Challenge UI Patterns
+
+### Real-Time Status Display
+
+Use Consumer with StreamProvider for real-time duel updates:
+
+```dart
+Consumer(
+  builder: (context, ref, child) {
+    final duelAsync = ref.watch(duelStreamProvider(duelId));
+    
+    return duelAsync.when(
+      data: (duel) {
+        // Determine UI state based on completion status
+        final userCompleted = isChallenger 
+            ? duel.challengerCompletedAt != null
+            : duel.opponentCompletedAt != null;
+        final opponentCompleted = isChallenger
+            ? duel.opponentCompletedAt != null
+            : duel.challengerCompletedAt != null;
+            
+        if (!userCompleted) {
+          return _buildStartButton(); // Green - Start Duel
+        } else if (!opponentCompleted) {
+          return _buildWaitingBanner(); // Yellow - Waiting
+        } else {
+          return _buildResultsButton(); // Blue - View Results
+        }
+      },
+      loading: () => CircularProgressIndicator(),
+      error: (err, _) => Text('Error: $err'),
+    );
+  },
+)
+```
+
+### Challenge Status Banners
+
+Use color-coded banners for different challenge states:
+
+```dart
+// Incoming challenge (pending)
+Container(
+  color: Colors.blue.shade100,
+  padding: EdgeInsets.all(16),
+  child: Row(
+    children: [
+      Text('Challenge from ${friend.displayName}'),
+      Spacer(),
+      TextButton(onPressed: _decline, child: Text('Decline')),
+      ElevatedButton(onPressed: _accept, child: Text('Accept')),
+    ],
+  ),
+)
+
+// Outgoing challenge (pending)
+Container(
+  color: Colors.yellow.shade100,
+  padding: EdgeInsets.all(16),
+  child: Row(
+    children: [
+      Icon(Icons.hourglass_empty),
+      SizedBox(width: 8),
+      Text('Waiting for ${friend.displayName} to accept...'),
+    ],
+  ),
+)
+
+// Accepted - ready to start
+Container(
+  color: Colors.green.shade100,
+  padding: EdgeInsets.all(16),
+  child: ElevatedButton(
+    onPressed: _startDuel,
+    child: Text('Start Duel'),
+  ),
+)
+
+// Waiting for opponent
+Container(
+  color: Colors.yellow.shade100,
+  padding: EdgeInsets.all(16),
+  child: Row(
+    children: [
+      CircularProgressIndicator(),
+      SizedBox(width: 16),
+      Text('Waiting for ${friend.displayName} to finish...'),
+    ],
+  ),
+)
+
+// Both complete - view results
+Container(
+  color: Colors.blue.shade100,
+  padding: EdgeInsets.all(16),
+  child: ElevatedButton(
+    onPressed: _viewResults,
+    child: Text('View Results'),
+  ),
+)
+```
+
+### Preventing Duplicate Actions
+
+Check for active challenges before allowing new ones:
+
+```dart
+void _handleChallengePress(Friend friend) {
+  if (friend.openChallenge != null) {
+    _showInfoDialog(
+      context,
+      'You already have an active challenge with ${friend.displayName}. '
+      'Please complete or decline it before starting a new one.',
+    );
+    return;
+  }
+  
+  // Proceed with challenge creation
+  _createChallenge(friend);
+}
+```

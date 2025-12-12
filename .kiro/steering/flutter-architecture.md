@@ -44,6 +44,47 @@ final userDataProvider = StreamProvider.family<UserModel, String>((ref, userId) 
 });
 ```
 
+### Real-Time Data Patterns
+
+**Always use StreamProvider for data that changes in real-time:**
+
+- Friend lists (to see incoming challenges)
+- Duel status (to see when opponent completes)
+- User stats (to see live updates)
+
+**Example - Duel Real-Time Updates:**
+
+```dart
+// Provider
+final duelStreamProvider = StreamProvider.family<Duel, String>((ref, duelId) {
+  final duelService = ref.watch(duelServiceProvider);
+  return duelService.getDuelStream(duelId);
+});
+
+// Service
+Stream<Duel> getDuelStream(String duelId) {
+  return _firestore
+      .collection('duels')
+      .doc(duelId)
+      .snapshots()
+      .map((doc) => Duel.fromMap(doc.data()!));
+}
+
+// UI - Use Consumer for automatic rebuilds
+Consumer(
+  builder: (context, ref, child) {
+    final duelAsync = ref.watch(duelStreamProvider(duelId));
+    return duelAsync.when(
+      data: (duel) => _buildDuelUI(duel),
+      loading: () => CircularProgressIndicator(),
+      error: (err, stack) => Text('Error: $err'),
+    );
+  },
+)
+```
+
+**Avoid FutureBuilder for real-time data** - it doesn't update when data changes.
+
 ## Service Layer Pattern
 
 All business logic should be in service classes:
@@ -61,6 +102,60 @@ class ServiceName {
   }
 }
 ```
+
+### Duel System Architecture
+
+**Single Source of Truth Pattern:**
+
+The duel system uses the `openChallenge` field in friendship documents as the single source of truth for active challenges:
+
+```dart
+// Check for active challenge before creating new one
+Future<bool> hasActiveDuel(String userId, String friendId) async {
+  final friendDoc = await _firestore
+      .collection('users')
+      .doc(userId)
+      .collection('friends')
+      .doc(friendId)
+      .get();
+
+  final data = friendDoc.data();
+  return data?['openChallenge'] != null;
+}
+
+// Create challenge - updates both friendship documents
+Future<String> createDuel(String challengerId, String opponentId) async {
+  // Check for existing challenge first
+  if (await hasActiveDuel(challengerId, opponentId)) {
+    throw Exception('Active challenge already exists');
+  }
+
+  // Create duel document
+  final duelRef = _firestore.collection('duels').doc();
+  
+  // Update both friendship documents with openChallenge
+  final batch = _firestore.batch();
+  batch.set(duelRef, duelData);
+  batch.update(challengerFriendDoc, {'openChallenge': challengeData});
+  batch.update(opponentFriendDoc, {'openChallenge': challengeData});
+  await batch.commit();
+  
+  return duelRef.id;
+}
+```
+
+**Lifecycle Management:**
+
+1. **Challenge Created**: Set `openChallenge` with `status: 'pending'`
+2. **Challenge Accepted**: Update `status` to `'accepted'`
+3. **Both Complete**: Keep `openChallenge` (for "View Results" button)
+4. **Results Viewed**: Clear `openChallenge` (allow new challenges)
+
+**Real-Time Updates:**
+
+- Use `StreamProvider` to watch duel documents
+- UI automatically updates when opponent completes
+- Show different states based on completion timestamps
 
 ## UI Guidelines
 
