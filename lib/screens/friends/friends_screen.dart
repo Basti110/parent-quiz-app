@@ -789,28 +789,179 @@ class FriendsScreen extends ConsumerWidget {
     String userId,
     UserModel friend,
   ) async {
-    // Show challenge dialog directly - the createDuel method will validate
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Challenge to Duel'),
-        content: Text(
-          'Challenge ${friend.displayName} to a 5-question duel?',
+    final userDataAsync = ref.read(userDataProvider(userId));
+    
+    userDataAsync.when(
+      data: (currentUser) {
+        showDialog(
+          context: context,
+          builder: (dialogContext) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // VS Mode display
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Current user
+                      _buildDialogAvatar(
+                        context: context,
+                        player: currentUser,
+                        isYou: true,
+                      ),
+
+                      // VS text
+                      Text(
+                        'VS',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade400,
+                          letterSpacing: 2,
+                        ),
+                      ),
+
+                      // Friend
+                      _buildDialogAvatar(
+                        context: context,
+                        player: friend,
+                        isYou: false,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  Text(
+                    'Challenge ${friend.displayName}?',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    '5 questions • Answer at your own pace',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            Navigator.of(dialogContext).pop();
+                            await _createDuelChallenge(context, ref, userId, friend);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF5C9EFF),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Send Challenge',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      loading: () {},
+      error: (_, __) {},
+    );
+  }
+
+  Widget _buildDialogAvatar({
+    required BuildContext context,
+    required UserModel player,
+    required bool isYou,
+  }) {
+    final borderColor = const Color(0xFF00897B);
+
+    return Column(
+      children: [
+        // Avatar with border
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: borderColor,
+              width: 3,
+            ),
+          ),
+          child: CircleAvatar(
+            radius: 40,
+            backgroundColor: Colors.grey.shade200,
+            child: ClipOval(
+              child: (player.avatarPath ?? player.avatarUrl) != null
+                  ? Image.asset(
+                      player.avatarPath ?? player.avatarUrl!,
+                      fit: BoxFit.cover,
+                      width: 80,
+                      height: 80,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.person,
+                          size: 40,
+                          color: Colors.grey.shade600,
+                        );
+                      },
+                    )
+                  : Icon(
+                      Icons.person,
+                      size: 40,
+                      color: Colors.grey.shade600,
+                    ),
+            ),
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+
+        const SizedBox(height: 12),
+
+        // Player name
+        Text(
+          isYou ? 'You' : player.displayName,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await _createDuelChallenge(context, ref, userId, friend);
-            },
-            child: const Text('Challenge'),
-          ),
-        ],
-      ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 

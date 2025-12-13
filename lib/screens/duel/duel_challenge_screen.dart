@@ -72,13 +72,17 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
       );
     }
 
+    final userId = ref.read(currentUserIdProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Duel Challenge'),
-        elevation: 0,
       ),
-      body: FutureBuilder<UserModel>(
-        future: ref.read(userServiceProvider).getUserData(duel.challengerId),
+      body: FutureBuilder<List<UserModel>>(
+        future: Future.wait([
+          ref.read(userServiceProvider).getUserData(duel.challengerId),
+          ref.read(userServiceProvider).getUserData(duel.opponentId),
+        ]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -92,7 +96,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
                   const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
-                    'Error loading challenger data',
+                    'Error loading user data',
                     style: TextStyle(
                       fontSize: 16,
                       color: isDarkMode
@@ -105,207 +109,276 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
             );
           }
 
-          final challenger = snapshot.data!;
+          final challenger = snapshot.data![0];
+          final opponent = snapshot.data![1];
+          
+          // Determine which user is the current user
+          final isChallenger = duel.challengerId == userId;
+          final currentUser = isChallenger ? opponent : challenger;
+          final otherUser = isChallenger ? challenger : opponent;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 20),
-
-                // Challenge header
-                Text(
-                  'You\'ve been challenged!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-
-                // Challenger avatar and name
-                Center(
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Avatar
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isDarkMode
-                                ? AppColors.primaryLight
-                                : AppColors.primary,
-                            width: 4,
+                      const SizedBox(height: 40),
+
+                      // VS Mode display
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // Other user (challenger)
+                          _buildPlayerAvatar(
+                            context: context,
+                            player: otherUser,
+                            isDarkMode: isDarkMode,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isDarkMode
-                                      ? AppColors.primaryLight
-                                      : AppColors.primary)
-                                  .withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 4),
+
+                          // VS text
+                          Text(
+                            'VS',
+                            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade300,
+                              letterSpacing: 2,
+                            ),
+                          ),
+
+                          // Current user (you)
+                          _buildPlayerAvatar(
+                            context: context,
+                            player: currentUser,
+                            isDarkMode: isDarkMode,
+                            isYou: true,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // Challenge message
+                      Container(
+                        padding: const EdgeInsets.all(24.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF5C9EFF).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFF5C9EFF),
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.emoji_events,
+                              size: 48,
+                              color: Color(0xFF5C9EFF),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              '${otherUser.displayName} challenges you!',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF5C9EFF),
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
-                        child: ClipOval(
-                          child: challenger.avatarUrl != null
-                              ? Image.asset(
-                                  challenger.avatarUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return _buildDefaultAvatar(isDarkMode);
-                                  },
-                                )
-                              : _buildDefaultAvatar(isDarkMode),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // Challenge details
+                      Container(
+                        padding: const EdgeInsets.all(24.0),
+                        decoration: BoxDecoration(
+                          color: isDarkMode 
+                              ? const Color(0xFF2A3647) 
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDarkMode
+                                ? Colors.grey.shade700
+                                : Colors.grey.shade300,
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Challenger name
-                      Text(
-                        challenger.displayName,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-
-                // Challenge details
-                Container(
-                  padding: const EdgeInsets.all(24.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDarkMode
-                          ? AppColors.textSecondary.withValues(alpha: 0.2)
-                          : AppColors.borderLight,
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildDetailRow(
-                        context,
-                        Icons.quiz_outlined,
-                        'Questions',
-                        '5 questions',
-                        isDarkMode,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildDetailRow(
-                        context,
-                        Icons.timer_outlined,
-                        'Time',
-                        'Answer at your own pace',
-                        isDarkMode,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildDetailRow(
-                        context,
-                        Icons.emoji_events_outlined,
-                        'Winner',
-                        'Highest score wins',
-                        isDarkMode,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-
-                // Accept button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : () => _acceptDuel(duel),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDarkMode
-                          ? AppColors.primaryDark
-                          : AppColors.textPrimary,
-                      foregroundColor: AppColors.textOnPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                        child: Column(
+                          children: [
+                            _buildDetailRow(
+                              context,
+                              Icons.quiz_outlined,
+                              'Questions',
+                              '5 questions',
+                              isDarkMode,
                             ),
-                          )
-                        : const Text(
-                            'ACCEPT CHALLENGE',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
+                            const SizedBox(height: 16),
+                            _buildDetailRow(
+                              context,
+                              Icons.timer_outlined,
+                              'Time',
+                              'Answer at your own pace',
+                              isDarkMode,
+                            ),
+                            const SizedBox(height: 16),
+                            _buildDetailRow(
+                              context,
+                              Icons.emoji_events_outlined,
+                              'Winner',
+                              'Highest score wins',
+                              isDarkMode,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+
+                      // Accept button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : () => _acceptDuel(duel),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF5C9EFF),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor:
+                                        AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  'ACCEPT CHALLENGE',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Decline button
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton(
+                          onPressed: _isLoading ? null : () => _declineDuel(duel),
+                          style: TextButton.styleFrom(
+                            foregroundColor: isDarkMode
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Decline button
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: _isLoading ? null : () => _declineDuel(duel),
-                    style: TextButton.styleFrom(
-                      foregroundColor: isDarkMode
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondary,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                          child: const Text(
+                            'Decline',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      'Decline',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          );
+                );
         },
       ),
     );
   }
 
-  Widget _buildDefaultAvatar(bool isDarkMode) {
-    return Container(
-      color: isDarkMode
-          ? AppColors.textSecondary.withValues(alpha: 0.2)
-          : AppColors.borderLight,
-      child: Icon(
-        Icons.person,
-        size: 60,
-        color: isDarkMode
-            ? AppColors.textSecondaryDark
-            : AppColors.textSecondary,
-      ),
+  Widget _buildPlayerAvatar({
+    required BuildContext context,
+    required UserModel player,
+    required bool isDarkMode,
+    bool isYou = false,
+  }) {
+    final borderColor = const Color(0xFF00897B);
+
+    return Column(
+      children: [
+        // Avatar with border
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: borderColor,
+              width: 4,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: borderColor.withValues(alpha: 0.3),
+                blurRadius: 12,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: CircleAvatar(
+            radius: 60,
+            backgroundColor: Colors.grey.shade200,
+            child: ClipOval(
+              child: (player.avatarPath ?? player.avatarUrl) != null
+                  ? Image.asset(
+                      player.avatarPath ?? player.avatarUrl!,
+                      fit: BoxFit.cover,
+                      width: 120,
+                      height: 120,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Colors.grey.shade600,
+                        );
+                      },
+                    )
+                  : Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Colors.grey.shade600,
+                    ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Player name
+        Text(
+          isYou ? 'You' : player.displayName,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+
+        const SizedBox(height: 8),
+
+        // Placeholder score
+        Text(
+          '---',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: const Color(0xFF5C6BC0),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 

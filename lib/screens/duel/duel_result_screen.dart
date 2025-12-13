@@ -109,354 +109,325 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
     final bothCompleted = _duel!.challengerCompletedAt != null &&
         _duel!.opponentCompletedAt != null;
 
+    // Determine which player is the current user
+    final isChallenger = _duel!.challengerId == userId;
+    final currentUser = isChallenger ? _challenger! : _opponent!;
+    final otherUser = isChallenger ? _opponent! : _challenger!;
+    final currentUserScore = isChallenger ? _duel!.challengerScore : _duel!.opponentScore;
+    final otherUserScore = isChallenger ? _duel!.opponentScore : _duel!.challengerScore;
+    final currentUserCompleted = isChallenger 
+        ? _duel!.challengerCompletedAt != null 
+        : _duel!.opponentCompletedAt != null;
+    final otherUserCompleted = isChallenger 
+        ? _duel!.opponentCompletedAt != null 
+        : _duel!.challengerCompletedAt != null;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Duel Results'),
-        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Result header
-            if (bothCompleted) ...[
-              Container(
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isTie
-                        ? [
-                            AppColors.info.withValues(alpha: 0.2),
-                            AppColors.info.withValues(alpha: 0.1),
-                          ]
-                        : userWon
-                            ? [
-                                AppColors.success.withValues(alpha: 0.2),
-                                AppColors.success.withValues(alpha: 0.1),
-                              ]
-                            : [
-                                AppColors.error.withValues(alpha: 0.2),
-                                AppColors.error.withValues(alpha: 0.1),
-                              ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isTie
-                        ? AppColors.info
-                        : userWon
-                            ? AppColors.success
-                            : AppColors.error,
-                    width: 2,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      isTie
-                          ? Icons.handshake
-                          : userWon
-                              ? Icons.emoji_events
-                              : Icons.sentiment_neutral,
-                      size: 48,
-                      color: isTie
-                          ? AppColors.info
-                          : userWon
-                              ? AppColors.success
-                              : AppColors.error,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      isTie
-                          ? 'It\'s a Tie!'
-                          : userWon
-                              ? 'You Won!'
-                              : 'You Lost',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: isTie
-                            ? AppColors.info
-                            : userWon
-                                ? AppColors.success
-                                : AppColors.error,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-            ] else ...[
-              Container(
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.info,
-                    width: 2,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.hourglass_empty,
-                      size: 48,
-                      color: AppColors.info,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Waiting for opponent...',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.info,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Results will be available when both players complete the duel',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDarkMode
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // Player scores
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPlayerCard(
-                    context,
-                    _challenger!,
-                    _duel!.challengerScore,
-                    _duel!.challengerCompletedAt != null,
-                    winnerId == _duel!.challengerId && !isTie,
-                    isDarkMode,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildPlayerCard(
-                    context,
-                    _opponent!,
-                    _duel!.opponentScore,
-                    _duel!.opponentCompletedAt != null,
-                    winnerId == _duel!.opponentId && !isTie,
-                    isDarkMode,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Question breakdown (only if both completed)
-            if (bothCompleted) ...[
-              Text(
-                'Question Breakdown',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ..._buildQuestionBreakdown(isDarkMode),
-            ],
-
-            const SizedBox(height: 24),
-
-            // Done button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () =>
-                    Navigator.of(context).popUntil((route) => route.isFirst),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isDarkMode
-                      ? AppColors.primaryDark
-                      : AppColors.textPrimary,
-                  foregroundColor: AppColors.textOnPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'DONE',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlayerCard(
-    BuildContext context,
-    UserModel player,
-    int score,
-    bool completed,
-    bool isWinner,
-    bool isDarkMode,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isWinner
-              ? AppColors.success
-              : isDarkMode
-                  ? AppColors.textSecondary.withValues(alpha: 0.2)
-                  : AppColors.borderLight,
-          width: isWinner ? 3 : 1,
-        ),
-        boxShadow: isWinner
-            ? [
-                BoxShadow(
-                  color: AppColors.success.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
-      child: Column(
+      body: Column(
         children: [
-          // Avatar
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isWinner
-                    ? AppColors.success
-                    : isDarkMode
-                        ? AppColors.textSecondary.withValues(alpha: 0.3)
-                        : AppColors.borderLight,
-                width: 2,
-              ),
-            ),
-            child: ClipOval(
-              child: player.avatarUrl != null
-                  ? Image.asset(
-                      player.avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildDefaultAvatar(isDarkMode);
-                      },
-                    )
-                  : _buildDefaultAvatar(isDarkMode),
-            ),
-          ),
-          const SizedBox(height: 12),
 
-          // Winner badge
-          if (isWinner)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.success,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(Icons.emoji_events, color: Colors.white, size: 14),
-                  SizedBox(width: 4),
-                  Text(
-                    'Winner',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 20),
+
+                  // VS Mode display with scores
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Current user
+                      _buildPlayerAvatar(
+                        context: context,
+                        player: currentUser,
+                        score: currentUserScore,
+                        completed: currentUserCompleted,
+                        isWinner: winnerId == userId && !isTie,
+                        isDarkMode: isDarkMode,
+                      ),
+
+                      // VS text
+                      Text(
+                        'VS',
+                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade300,
+                          letterSpacing: 2,
+                        ),
+                      ),
+
+                      // Other user
+                      _buildPlayerAvatar(
+                        context: context,
+                        player: otherUser,
+                        score: otherUserScore,
+                        completed: otherUserCompleted,
+                        isWinner: winnerId != null && winnerId != userId && !isTie,
+                        isDarkMode: isDarkMode,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Result announcement
+                  if (bothCompleted) ...[
+                    Container(
+                      padding: const EdgeInsets.all(24.0),
+                      decoration: BoxDecoration(
+                        color: isTie
+                            ? const Color(0xFF5C9EFF).withValues(alpha: 0.15)
+                            : userWon
+                                ? AppColors.success.withValues(alpha: 0.15)
+                                : AppColors.error.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isTie
+                              ? const Color(0xFF5C9EFF)
+                              : userWon
+                                  ? AppColors.success
+                                  : AppColors.error,
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            isTie
+                                ? Icons.handshake
+                                : userWon
+                                    ? Icons.emoji_events
+                                    : Icons.sentiment_neutral,
+                            size: 48,
+                            color: isTie
+                                ? const Color(0xFF5C9EFF)
+                                : userWon
+                                    ? AppColors.success
+                                    : AppColors.error,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            isTie
+                                ? 'It\'s a Tie!'
+                                : userWon
+                                    ? 'You Won!'
+                                    : 'You Lost',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: isTie
+                                  ? const Color(0xFF5C9EFF)
+                                  : userWon
+                                      ? AppColors.success
+                                      : AppColors.error,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(24.0),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.info,
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.hourglass_empty,
+                            size: 48,
+                            color: AppColors.info,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Waiting for ${otherUser.displayName}...',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.info,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Results will be available when both players complete the duel',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDarkMode
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+
+                  // Question breakdown (only if both completed)
+                  if (bothCompleted) ...[
+                    Text(
+                      'Question Breakdown',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ..._buildQuestionBreakdown(isDarkMode),
+                  ],
+
+                  const SizedBox(height: 24),
+
+                  // Done button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          Navigator.of(context).popUntil((route) => route.isFirst),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5C9EFF),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                      child: const Text(
+                        'DONE',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          if (isWinner) const SizedBox(height: 8),
-
-          // Name
-          Text(
-            player.displayName,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 8),
-
-          // Score
-          if (completed)
-            Text(
-              '$score / 5',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: isWinner
-                    ? AppColors.success
-                    : Theme.of(context).textTheme.bodyLarge?.color,
-              ),
-            )
-          else
-            Text(
-              '- / 5',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: isDarkMode
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondary,
-              ),
-            ),
         ],
       ),
     );
   }
 
-  Widget _buildDefaultAvatar(bool isDarkMode) {
-    return Container(
-      color: isDarkMode
-          ? AppColors.textSecondary.withValues(alpha: 0.2)
-          : AppColors.borderLight,
-      child: Icon(
-        Icons.person,
-        size: 30,
-        color: isDarkMode
-            ? AppColors.textSecondaryDark
-            : AppColors.textSecondary,
-      ),
+  Widget _buildPlayerAvatar({
+    required BuildContext context,
+    required UserModel player,
+    required int score,
+    required bool completed,
+    required bool isWinner,
+    required bool isDarkMode,
+  }) {
+    final borderColor = isWinner 
+        ? const Color(0xFF00897B) 
+        : Colors.grey.shade300;
+
+    return Column(
+      children: [
+        // Avatar with border
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: borderColor,
+              width: isWinner ? 4 : 3,
+            ),
+            boxShadow: isWinner
+                ? [
+                    BoxShadow(
+                      color: borderColor.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : null,
+          ),
+          child: CircleAvatar(
+            radius: 60,
+            backgroundColor: Colors.grey.shade200,
+            child: ClipOval(
+              child: (player.avatarPath ?? player.avatarUrl) != null
+                  ? Image.asset(
+                      player.avatarPath ?? player.avatarUrl!,
+                      fit: BoxFit.cover,
+                      width: 120,
+                      height: 120,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Colors.grey.shade600,
+                        );
+                      },
+                    )
+                  : Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Colors.grey.shade600,
+                    ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Player name
+        Text(
+          player.displayName,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+
+        const SizedBox(height: 8),
+
+        // Score display and winner crown on same row
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              completed ? '$score / 5' : '- / 5',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: const Color(0xFF5C6BC0),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (isWinner) ...[
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.emoji_events,
+                color: AppColors.crown,
+                size: 28,
+              ),
+            ],
+          ],
+        ),
+      ],
     );
   }
+
+
 
   List<Widget> _buildQuestionBreakdown(bool isDarkMode) {
     final userId = ref.read(currentUserIdProvider);
@@ -475,36 +446,34 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
         margin: const EdgeInsets.only(bottom: 12.0),
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: isDarkMode 
+              ? const Color(0xFF2A3647) 
+              : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isDarkMode
-                ? AppColors.textSecondary.withValues(alpha: 0.2)
-                : AppColors.borderLight,
+                ? Colors.grey.shade700
+                : Colors.grey.shade300,
             width: 1,
           ),
         ),
         child: Row(
           children: [
-            // Question number
+            // Question number in circle
             Container(
-              width: 32,
-              height: 32,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                color: (isDarkMode
-                        ? AppColors.primaryLight
-                        : AppColors.primary)
-                    .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFF00897B),
+                shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
                   '${index + 1}',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color:
-                        isDarkMode ? AppColors.primaryLight : AppColors.primary,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -519,17 +488,27 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                   fontSize: 14,
                   color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 16),
 
             // User result
-            Icon(
-              userCorrect ? Icons.check_circle : Icons.cancel,
-              color: userCorrect ? AppColors.success : AppColors.error,
-              size: 24,
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: userCorrect 
+                    ? const Color(0xFF4CAF50) 
+                    : const Color(0xFFE57373),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                userCorrect ? Icons.check : Icons.close,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 8),
 
@@ -538,19 +517,27 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
               'vs',
               style: TextStyle(
                 fontSize: 12,
-                color: isDarkMode
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(width: 8),
 
             // Opponent result
-            Icon(
-              opponentCorrect ? Icons.check_circle : Icons.cancel,
-              color: opponentCorrect ? AppColors.success : AppColors.error,
-              size: 24,
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: opponentCorrect 
+                    ? const Color(0xFF4CAF50) 
+                    : const Color(0xFFE57373),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                opponentCorrect ? Icons.check : Icons.close,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ],
         ),

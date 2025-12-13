@@ -109,89 +109,246 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
     final result = vsModeService.calculateResult(session);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Duel Results'),
-        automaticallyImplyLeading: false,
+      body: Column(
+        children: [
+          // Gradient bar at top
+          Container(
+            height: 8,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF00897B),
+                  Color(0xFF26C6DA),
+                  Color(0xFF42A5F5),
+                  Color(0xFF5C6BC0),
+                  Color(0xFF7E57C2),
+                ],
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 20),
+
+                  // VS Mode display with scores
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Player A
+                      _buildPlayerResult(
+                        context: context,
+                        playerName: session.playerAName,
+                        score: session.playerAScore,
+                        totalQuestions: session.questionsPerPlayer,
+                        isWinner: result.outcome == VSModeOutcome.playerAWins,
+                        timeSeconds: result.playerATimeSeconds,
+                        isFasterTime: _isFasterTime(
+                          result.playerATimeSeconds,
+                          result.playerBTimeSeconds,
+                          isPlayerA: true,
+                        ),
+                      ),
+
+                      // VS text
+                      Text(
+                        'VS',
+                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade300,
+                          letterSpacing: 2,
+                        ),
+                      ),
+
+                      // Player B
+                      _buildPlayerResult(
+                        context: context,
+                        playerName: session.playerBName,
+                        score: session.playerBScore,
+                        totalQuestions: session.questionsPerPlayer,
+                        isWinner: result.outcome == VSModeOutcome.playerBWins,
+                        timeSeconds: result.playerBTimeSeconds,
+                        isFasterTime: _isFasterTime(
+                          result.playerATimeSeconds,
+                          result.playerBTimeSeconds,
+                          isPlayerA: false,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Winner announcement
+                  _buildWinnerSection(result),
+                  const SizedBox(height: 32),
+
+                  // XP earned (for logged-in user only)
+                  _buildXPSection(session, result),
+                  const SizedBox(height: 32),
+
+                  // Action buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(
+                              context,
+                            ).pushNamedAndRemoveUntil('/home', (route) => false);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Home'),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/vs-mode-setup',
+                              (route) => route.settings.name == '/home',
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: const Color(0xFF5C9EFF),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Play Again'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Winner announcement
-            _buildWinnerSection(result),
-            const SizedBox(height: 32),
+    );
+  }
 
-            // Player scores
-            _buildPlayerScoreCard(
-              playerName: session.playerAName,
-              score: session.playerAScore,
-              totalQuestions: session.questionsPerPlayer,
-              isWinner: result.outcome == VSModeOutcome.playerAWins,
-              color: AppColors.playerA,
-              timeSeconds: result.playerATimeSeconds,
-              isFasterTime: _isFasterTime(
-                result.playerATimeSeconds,
-                result.playerBTimeSeconds,
-                isPlayerA: true,
-              ),
+  Widget _buildPlayerResult({
+    required BuildContext context,
+    required String playerName,
+    required int score,
+    required int totalQuestions,
+    required bool isWinner,
+    int? timeSeconds,
+    bool isFasterTime = false,
+  }) {
+    final theme = Theme.of(context);
+    final borderColor = isWinner 
+        ? const Color(0xFF00897B) 
+        : Colors.grey.shade300;
+
+    return Column(
+      children: [
+        // Avatar with border
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: borderColor,
+              width: isWinner ? 4 : 3,
             ),
-            const SizedBox(height: 16),
-            _buildPlayerScoreCard(
-              playerName: session.playerBName,
-              score: session.playerBScore,
-              totalQuestions: session.questionsPerPlayer,
-              isWinner: result.outcome == VSModeOutcome.playerBWins,
-              color: AppColors.playerB,
-              timeSeconds: result.playerBTimeSeconds,
-              isFasterTime: _isFasterTime(
-                result.playerATimeSeconds,
-                result.playerBTimeSeconds,
-                isPlayerA: false,
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // XP earned (for logged-in user only)
-            _buildXPSection(session, result),
-            const SizedBox(height: 32),
-
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(
-                        context,
-                      ).pushNamedAndRemoveUntil('/home', (route) => false);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+            boxShadow: isWinner
+                ? [
+                    BoxShadow(
+                      color: borderColor.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      spreadRadius: 2,
                     ),
-                    child: const Text('Home'),
-                  ),
+                  ]
+                : null,
+          ),
+          child: CircleAvatar(
+            radius: 60,
+            backgroundColor: Colors.grey.shade200,
+            child: Icon(
+              Icons.person,
+              size: 60,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Player name
+        Text(
+          playerName,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // Score display
+        Text(
+          '$score/$totalQuestions',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: const Color(0xFF5C6BC0),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+
+        // Time display
+        if (timeSeconds != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.timer, size: 16, color: Colors.grey),
+              const SizedBox(width: 4),
+              Text(
+                VSModeResult(
+                  playerAName: '',
+                  playerBName: '',
+                  playerAScore: 0,
+                  playerBScore: 0,
+                  outcome: VSModeOutcome.tie,
+                ).formatTime(timeSeconds) ?? '--:--',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade600,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        '/vs-mode-setup',
-                        (route) => route.settings.name == '/home',
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text('Play Again'),
-                  ),
+              ),
+              if (isFasterTime) ...[
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.flash_on,
+                  size: 16,
+                  color: AppColors.accent,
                 ),
               ],
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        ],
+
+        // Winner crown
+        if (isWinner) ...[
+          const SizedBox(height: 8),
+          const Icon(
+            Icons.emoji_events,
+            color: AppColors.crown,
+            size: 32,
+          ),
+        ],
+      ],
     );
   }
 
@@ -204,6 +361,10 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
 
     return Card(
       color: isTie ? AppColors.warningLight : AppColors.primaryLightest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -243,108 +404,6 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                 ],
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlayerScoreCard({
-    required String playerName,
-    required int score,
-    required int totalQuestions,
-    required bool isWinner,
-    required MaterialColor color,
-    int? timeSeconds,
-    bool isFasterTime = false,
-  }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final cardColor = isDark
-        ? color.shade900.withValues(alpha: 0.3)
-        : color.shade50;
-    final iconColor = isDark ? color.shade300 : color.shade700;
-    final textColor = isDark ? color.shade300 : color.shade700;
-    final borderColor = isWinner
-        ? (isDark ? color.shade400 : color.shade700)
-        : (isDark ? color.shade700 : color.shade200);
-
-    return Card(
-      color: cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: borderColor, width: isWinner ? 3 : 1),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Row(
-          children: [
-            Icon(Icons.person, size: 40, color: iconColor),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        playerName,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (isWinner) ...[
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.emoji_events,
-                          color: AppColors.crown,
-                          size: 24,
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Correct: $score / $totalQuestions',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  if (timeSeconds != null) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.timer, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          VSModeResult(
-                            playerAName: '',
-                            playerBName: '',
-                            playerAScore: 0,
-                            playerBScore: 0,
-                            outcome: VSModeOutcome.tie,
-                          ).formatTime(timeSeconds) ?? '--:--',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        if (isFasterTime) ...[
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.flash_on,
-                            size: 16,
-                            color: AppColors.accent,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            Text(
-              '$score',
-              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
           ],
         ),
       ),
