@@ -46,3 +46,4 @@ app.*.map.json
 
 # Firebase service account key (sensitive)
 serviceAccountKey.json
+.venv
