@@ -15,7 +15,7 @@ import pillow_heif
 pillow_heif.register_heif_opener()
 
 # Configuration
-SOURCE_DIR = "assets/app_images"
+SOURCE_DIR = "assets/assets_to_compress"
 OUTPUT_DIR = "assets/app_images_compressed"
 MIN_DIMENSION = 255
 TARGET_FILE_SIZE_MIN = 50 * 1024  # 50KB

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:babycation/services/duel_service.dart';
-import 'package:babycation/models/user_model.dart';
-import 'package:babycation/models/question.dart';
+import 'package:eduparo/services/duel_service.dart';
+import 'package:eduparo/models/user_model.dart';
+import 'package:eduparo/models/question.dart';
 import 'dart:math';
 
 void main() {

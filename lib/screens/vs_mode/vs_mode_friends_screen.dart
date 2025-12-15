@@ -224,8 +224,8 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
         return;
       }
 
-      // Add friend
-      await friendsService.addFriend(widget.userId, friendUser.id);
+      // Send friend request
+      await friendsService.sendFriendRequest(widget.userId, friendUser.id);
 
       // Success - close dialog and show success message
       if (mounted) {

@@ -62,7 +62,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _navigateToRegister() {
-    Navigator.of(context).pushReplacementNamed('/register');
+    Navigator.of(context).pushReplacementNamed('/welcome');
   }
 
   @override

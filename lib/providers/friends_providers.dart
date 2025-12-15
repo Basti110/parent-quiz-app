@@ -30,6 +30,16 @@ final friendsWithDataProvider = StreamProvider.family<List<(UserModel, Friend)>,
   return service.getFriendsWithDataStream(userId);
 });
 
+/// Provider for pending friend requests (incoming)
+/// Requirements: 10.4
+final pendingRequestsProvider = StreamProvider.family<List<UserModel>, String>((
+  ref,
+  userId,
+) {
+  final service = ref.watch(friendsServiceProvider);
+  return service.getPendingRequestsStream(userId);
+});
+
 /// Provider to check if there's an active duel between two users
 /// Requirements: 11.1
 final hasActiveDuelProvider = FutureProvider.family<bool, (String, String)>((

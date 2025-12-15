@@ -4,9 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
-import 'screens/auth/onboarding_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
+import 'screens/auth/welcome_screen.dart';
+import 'screens/settings/avatar_selection_screen.dart';
 import 'screens/main_navigation.dart';
 import 'screens/quiz/category_selection_screen.dart';
 import 'screens/quiz/quiz_length_screen.dart';
@@ -49,7 +50,7 @@ class MainApp extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
 
     return MaterialApp(
-      title: 'ParentQuiz',
+      title: 'Eduparo',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
@@ -64,9 +65,19 @@ class MainApp extends ConsumerWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const AuthGate(),
-        '/onboarding': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
+        '/welcome': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          return WelcomeScreen(userId: args?['userId'] as String?);
+        },
+        '/avatar-selection': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return AvatarSelectionScreen(
+            isRegistrationFlow: args['isRegistrationFlow'] as bool,
+            userId: args['userId'] as String,
+          );
+        },
         '/home': (context) => const MainNavigationScreen(),
         '/category-selection': (context) => const CategorySelectionScreen(),
         '/quiz-length': (context) => const QuizLengthScreen(),
@@ -102,14 +113,14 @@ class AuthGate extends ConsumerWidget {
         if (user != null) {
           return const MainNavigationScreen();
         }
-        // If not authenticated, show onboarding
-        return const OnboardingScreen();
+        // If not authenticated, show login screen
+        return const LoginScreen();
       },
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, stack) {
-        // On error, default to onboarding screen
-        return const OnboardingScreen();
+        // On error, default to login screen
+        return const LoginScreen();
       },
     );
   }

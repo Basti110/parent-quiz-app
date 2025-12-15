@@ -40,10 +40,10 @@ class FriendsService {
     }
   }
 
-  /// Add a friend by creating a friend document
+  /// Send a friend request by creating a request document in receiver's requests subcollection
   /// Property 29: Friend document creation
   /// Requirements: 10.4
-  Future<void> addFriend(String userId, String friendUserId) async {
+  Future<void> sendFriendRequest(String userId, String friendUserId) async {
     try {
       // Prevent self-friending
       if (userId == friendUserId) {
@@ -62,37 +62,133 @@ class FriendsService {
         throw Exception('Already friends with this user');
       }
 
-      // Create friend document
-      final friend = Friend(
-        friendUserId: friendUserId,
-        status: 'accepted',
-        createdAt: DateTime.now(),
-        createdBy: userId,
-      );
+      // Check if request already exists
+      final existingRequest = await _firestore
+          .collection('users')
+          .doc(friendUserId)
+          .collection('requests')
+          .doc(userId)
+          .get();
+
+      if (existingRequest.exists) {
+        throw Exception('Friend request already sent');
+      }
+
+      final now = DateTime.now();
+
+      // Create incoming request for receiver in their requests subcollection
+      final requestData = {
+        'fromUserId': userId,
+        'createdAt': Timestamp.fromDate(now),
+      };
 
       await _firestore
           .collection('users')
-          .doc(userId)
-          .collection('friends')
           .doc(friendUserId)
-          .set(friend.toMap());
+          .collection('requests')
+          .doc(userId)
+          .set(requestData);
     } on FirebaseException catch (e) {
-      print('Firebase error adding friend: ${e.code} - ${e.message}');
+      print('Firebase error sending friend request: ${e.code} - ${e.message}');
       throw Exception(
-        'Failed to add friend. Please check your connection and try again.',
+        'Failed to send friend request. Please check your connection and try again.',
       );
     } catch (e) {
-      print('Error adding friend: $e');
+      print('Error sending friend request: $e');
       rethrow;
     }
   }
 
-  /// Get list of friends as a one-time fetch
+  /// Accept a friend request by creating friendship documents and deleting the request
+  /// Requirements: 10.4
+  Future<void> acceptFriendRequest(String userId, String friendUserId) async {
+    try {
+      final now = DateTime.now();
+      final batch = _firestore.batch();
+
+      // Create friendship document for user (who is accepting)
+      final userFriend = Friend(
+        friendUserId: friendUserId,
+        status: 'accepted',
+        createdAt: now,
+        createdBy: friendUserId, // Original requester
+      );
+
+      batch.set(
+        _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('friends')
+            .doc(friendUserId),
+        userFriend.toMap(),
+      );
+
+      // Create friendship document for friend (who sent the request)
+      final friendFriend = Friend(
+        friendUserId: userId,
+        status: 'accepted',
+        createdAt: now,
+        createdBy: friendUserId, // Original requester
+      );
+
+      batch.set(
+        _firestore
+            .collection('users')
+            .doc(friendUserId)
+            .collection('friends')
+            .doc(userId),
+        friendFriend.toMap(),
+      );
+
+      // Delete the request document
+      batch.delete(
+        _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('requests')
+            .doc(friendUserId),
+      );
+
+      await batch.commit();
+    } on FirebaseException catch (e) {
+      print('Firebase error accepting friend request: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to accept friend request. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error accepting friend request: $e');
+      rethrow;
+    }
+  }
+
+  /// Decline a friend request by deleting the request document
+  /// Requirements: 10.4
+  Future<void> declineFriendRequest(String userId, String friendUserId) async {
+    try {
+      // Delete the request document
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('requests')
+          .doc(friendUserId)
+          .delete();
+    } on FirebaseException catch (e) {
+      print('Firebase error declining friend request: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to decline friend request. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error declining friend request: $e');
+      rethrow;
+    }
+  }
+
+  /// Get list of accepted friends as a one-time fetch
   /// Property 7: Friend list ordering - returns friends sorted alphabetically by display name
   /// Requirements: 10.3
   Future<List<UserModel>> getFriends(String userId) async {
     try {
-      // Get friend documents
+      // Get all friend documents (all are accepted in this collection)
       final friendsSnapshot = await _firestore
           .collection('users')
           .doc(userId)
@@ -134,7 +230,7 @@ class FriendsService {
     }
   }
 
-  /// Get list of friends as a stream for real-time updates
+  /// Get list of accepted friends as a stream for real-time updates
   /// Property 7: Friend list ordering - returns friends sorted alphabetically by display name
   /// Requirements: 10.3
   Stream<List<UserModel>> getFriendsStream(String userId) {
@@ -198,7 +294,7 @@ class FriendsService {
     }
   }
 
-  /// Get friends with their friendship data (including openChallenge) as a stream
+  /// Get accepted friends with their friendship data (including openChallenge) as a stream
   /// Requirements: 10.3, 11.1
   Stream<List<(UserModel, Friend)>> getFriendsWithDataStream(String userId) {
     return _firestore
@@ -240,10 +336,45 @@ class FriendsService {
           }
 
           // Sort alphabetically by display name
-          friendsWithData.sort((a, b) => a.$1.displayName.compareTo(b.$1.displayName));
+          friendsWithData
+              .sort((a, b) => a.$1.displayName.compareTo(b.$1.displayName));
 
           return friendsWithData;
         });
+  }
+
+  /// Get pending friend requests (incoming) as a stream
+  /// Requirements: 10.4
+  Stream<List<UserModel>> getPendingRequestsStream(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('requests')
+        .snapshots()
+        .asyncMap((snapshot) async {
+      if (snapshot.docs.isEmpty) {
+        return <UserModel>[];
+      }
+
+      // Extract requester user IDs
+      final requesterIds =
+          snapshot.docs.map((doc) => doc.data()['fromUserId'] as String).toList();
+
+      // Fetch all requester user documents
+      final userDocs = await Future.wait(
+        requesterIds.map(
+          (id) => _firestore.collection('users').doc(id).get(),
+        ),
+      );
+
+      // Convert to UserModel
+      final requesters = userDocs
+          .where((doc) => doc.exists)
+          .map((doc) => UserModel.fromMap(doc.data()!, doc.id))
+          .toList();
+
+      return requesters;
+    });
   }
 
   /// Get friendship document for head-to-head statistics

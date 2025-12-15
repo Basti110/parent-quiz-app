@@ -27,6 +27,7 @@ class FriendsScreen extends ConsumerWidget {
 
     final userDataAsync = ref.watch(userDataProvider(userId));
     final friendsWithDataAsync = ref.watch(friendsWithDataProvider(userId));
+    final pendingRequestsAsync = ref.watch(pendingRequestsProvider(userId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Friends')),
@@ -37,6 +38,27 @@ class FriendsScreen extends ConsumerWidget {
               // Friend code section
               _buildFriendCodeSection(context, userData),
               const Divider(),
+              // Pending requests section
+              pendingRequestsAsync.when(
+                data: (pendingRequests) {
+                  if (pendingRequests.isNotEmpty) {
+                    return Column(
+                      children: [
+                        _buildPendingRequestsSection(
+                          context,
+                          ref,
+                          userId,
+                          pendingRequests,
+                        ),
+                        const Divider(),
+                      ],
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (error, stack) => const SizedBox.shrink(),
+              ),
               // Friends list section
               Expanded(
                 child: friendsWithDataAsync.when(
@@ -90,6 +112,117 @@ class FriendsScreen extends ConsumerWidget {
         onPressed: () => _showAddFriendDialog(context, ref, userId),
         icon: const Icon(Icons.person_add),
         label: const Text('Add Friend'),
+      ),
+    );
+  }
+
+  Widget _buildPendingRequestsSection(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    List<UserModel> pendingRequests,
+  ) {
+    return Container(
+      color: AppColors.primary.withValues(alpha: 0.1),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.notifications, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                'Friend Requests (${pendingRequests.length})',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...pendingRequests.map((requester) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundImage: requester.avatarPath != null
+                          ? AssetImage(requester.avatarPath!)
+                          : null,
+                      backgroundColor: AppColors.primary,
+                      child: requester.avatarPath == null
+                          ? Text(
+                              requester.displayName.isNotEmpty
+                                  ? requester.displayName[0].toUpperCase()
+                                  : '?',
+                              style: const TextStyle(
+                                color: AppColors.textOnPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            requester.displayName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Wants to be your friend',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => _handleDeclineFriendRequest(
+                        context,
+                        ref,
+                        userId,
+                        requester,
+                      ),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                      ),
+                      child: const Text('Decline'),
+                    ),
+                    const SizedBox(width: 4),
+                    ElevatedButton(
+                      onPressed: () => _handleAcceptFriendRequest(
+                        context,
+                        ref,
+                        userId,
+                        requester,
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.success,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Accept'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
@@ -259,7 +392,7 @@ class FriendsScreen extends ConsumerWidget {
                     ),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     ),
                     child: const Text('Accept'),
@@ -275,7 +408,7 @@ class FriendsScreen extends ConsumerWidget {
                     ),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     ),
                     child: const Text('Decline'),
@@ -714,6 +847,70 @@ class FriendsScreen extends ConsumerWidget {
     );
   }
 
+  /// Handle accepting a friend request
+  /// Requirements: 10.4
+  Future<void> _handleAcceptFriendRequest(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    UserModel requester,
+  ) async {
+    try {
+      final friendsService = ref.read(friendsServiceProvider);
+      await friendsService.acceptFriendRequest(userId, requester.id);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('You are now friends with ${requester.displayName}!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to accept friend request: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Handle declining a friend request
+  /// Requirements: 10.4
+  Future<void> _handleDeclineFriendRequest(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    UserModel requester,
+  ) async {
+    try {
+      final friendsService = ref.read(friendsServiceProvider);
+      await friendsService.declineFriendRequest(userId, requester.id);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Friend request declined'),
+            backgroundColor: AppColors.textSecondary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to decline friend request: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   /// Handle accepting or declining a duel challenge
   /// Requirements: 11.2, 11.3
   Future<void> _handleChallengeResponse(
@@ -1148,15 +1345,15 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
         return;
       }
 
-      // Add friend
-      await friendsService.addFriend(widget.userId, friendUser.id);
+      // Send friend request
+      await friendsService.sendFriendRequest(widget.userId, friendUser.id);
 
       // Success - close dialog and show success message
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${friendUser.displayName} added as friend!'),
+            content: Text('Friend request sent to ${friendUser.displayName}!'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1166,10 +1363,12 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
         // Handle specific error messages
         if (e.toString().contains('Cannot add yourself')) {
           _errorMessage = 'You cannot add yourself as a friend';
+        } else if (e.toString().contains('Friend request already sent')) {
+          _errorMessage = 'Friend request already sent to this user';
         } else if (e.toString().contains('Already friends')) {
           _errorMessage = 'You are already friends with this user';
         } else {
-          _errorMessage = 'Failed to add friend. Please try again.';
+          _errorMessage = 'Failed to send friend request. Please try again.';
         }
         _isLoading = false;
       });

@@ -56,14 +56,14 @@ Tracks user progress per question:
 
 ### users/{userId}/friends/{friendUserId}
 
-Friend relationships:
+Accepted friend relationships (only created after request is accepted):
 
 ```dart
 {
   'friendUserId': String,
-  'status': String,              // "accepted" for MVP
+  'status': String,              // Always "accepted" (only accepted friends are in this collection)
   'createdAt': Timestamp,
-  'createdBy': String,           // userId who initiated
+  'createdBy': String,           // userId who initiated the original friend request
 
   // Head-to-head duel statistics
   'myWins': int,                 // How many times I beat this friend
@@ -88,6 +88,36 @@ Friend relationships:
   }>?,
 }
 ```
+
+### users/{userId}/requests/{requesterId}
+
+Pending friend requests (incoming):
+
+```dart
+{
+  'fromUserId': String,          // User ID of the person who sent the request
+  'createdAt': Timestamp,
+}
+```
+
+**Friend Request Flow:**
+
+1. **Send Request**: User A enters User B's friend code
+   - Creates a request document in User B's `requests` subcollection
+   - Document ID is User A's ID, contains `fromUserId: userA`
+   
+2. **Pending State**: 
+   - User A sees "Friend request sent" confirmation
+   - User B sees "Friend request from User A" with Accept/Decline buttons in their requests section
+   
+3. **Accept Request**: User B accepts
+   - Creates friendship documents in both users' `friends` subcollections with `status: 'accepted'`
+   - Deletes the request document from User B's `requests` subcollection
+   - Both users can now see each other in friends list and challenge each other
+   
+4. **Decline Request**: User B declines
+   - Deletes the request document from User B's `requests` subcollection
+   - Users are not friends and can send new requests later
 
 ### duels/{duelId}
 

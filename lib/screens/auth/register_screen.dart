@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
 import '../../l10n/app_localizations.dart';
-import '../settings/avatar_selection_screen.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -48,14 +47,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
 
       if (mounted && user != null) {
-        // Navigate to avatar selection screen with registration flow
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => AvatarSelectionScreen(
-              isRegistrationFlow: true,
-              userId: user.uid,
-            ),
-          ),
+        // Navigate to avatar selection screen
+        Navigator.of(context).pushReplacementNamed(
+          '/avatar-selection',
+          arguments: {
+            'isRegistrationFlow': true,
+            'userId': user.uid,
+          },
         );
       }
     } catch (e) {

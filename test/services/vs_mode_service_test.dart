@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:babycation/services/vs_mode_service.dart';
-import 'package:babycation/models/vs_mode_session.dart';
+import 'package:eduparo/services/vs_mode_service.dart';
+import 'package:eduparo/models/vs_mode_session.dart';
 import 'dart:math';
 
 void main() {

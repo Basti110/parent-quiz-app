@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:babycation/services/history_service.dart';
-import 'package:babycation/models/weekly_points.dart';
+import 'package:eduparo/services/history_service.dart';
+import 'package:eduparo/models/weekly_points.dart';
 import 'dart:math';
 
 void main() {

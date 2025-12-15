@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:babycation/widgets/category_card.dart';
-import 'package:babycation/models/category.dart';
+import 'package:eduparo/widgets/category_card.dart';
+import 'package:eduparo/models/category.dart';
 import 'dart:math';
 
 void main() {

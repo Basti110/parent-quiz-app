@@ -40,10 +40,27 @@ service cloud.firestore {
         allow write: if isOwner(userId);
       }
       
-      // Friends subcollection
+      // Friends subcollection (accepted friendships only)
       match /friends/{friendUserId} {
+        // Allow users to read their own friends
         allow read: if isOwner(userId);
+        
+        // Allow users to write to their own friends subcollection
         allow write: if isOwner(userId);
+      }
+      
+      // Requests subcollection (pending friend requests)
+      match /requests/{requesterId} {
+        // Allow users to read their own incoming requests
+        allow read: if isOwner(userId);
+        
+        // Allow users to delete their own incoming requests (decline)
+        allow delete: if isOwner(userId);
+        
+        // Allow any authenticated user to create a request in another user's subcollection
+        // This is needed for sending friend requests
+        allow create: if isAuthenticated() && 
+          request.resource.data.fromUserId == request.auth.uid;
       }
       
       // History subcollection

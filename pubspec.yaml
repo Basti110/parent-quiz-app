@@ -1,5 +1,5 @@
-name: babycation
-description: "A new Flutter project."
+name: eduparo
+description: "Eduparo - Educational Quiz App"
 publish_to: "none"
 version: 0.1.0
 
@@ -26,11 +26,31 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   fake_cloud_firestore: ^3.0.3
   firebase_auth_mocks: ^0.14.1
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
   generate: true
   assets:
+    - assets/app_symbol.png
     - assets/app_images/
     - assets/app_images/avatars/
     - assets/app_images/categories/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon_400.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icon_400.png"
+  windows:
+    generate: true
+    image_path: "assets/icon_400.png"
+  macos:
+    generate: true
+    image_path: "assets/icon_400.png"
+  linux:
+    generate: true
+    image_path: "assets/icon_400.png"
