@@ -15,13 +15,13 @@ import pillow_heif
 pillow_heif.register_heif_opener()
 
 # Configuration
-SOURCE_DIR = "assets/assets_to_compress"
+SOURCE_DIR = "assets/image_to_compress"
 OUTPUT_DIR = "assets/app_images_compressed"
-MIN_DIMENSION = 255
+MIN_DIMENSION = 750
 TARGET_FILE_SIZE_MIN = 50 * 1024  # 50KB
-TARGET_FILE_SIZE_MAX = 100 * 1024  # 100KB
-INITIAL_QUALITY = 85
-MIN_QUALITY = 60
+TARGET_FILE_SIZE_MAX = 2000 *  1000# 100KB
+INITIAL_QUALITY = 1000
+MIN_QUALITY = 85
 
 
 def ensure_output_dir(path):
