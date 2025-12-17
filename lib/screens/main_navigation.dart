@@ -4,7 +4,6 @@ import '../l10n/app_localizations.dart';
 import 'home/home_screen.dart';
 import 'friends/friends_screen.dart';
 import 'leaderboard/leaderboard_screen.dart';
-import 'settings/settings_screen.dart';
 
 /// MainNavigationScreen with bottom navigation bar
 /// Requirements: 1.1, 1.2, 1.3, 1.4
@@ -32,7 +31,6 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     HomeScreen(),
     FriendsScreen(),
     LeaderboardScreen(),
-    SettingsScreen(),
   ];
 
   /// Handle navigation item tap
@@ -78,10 +76,6 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.leaderboard, size: 28),
             label: l10n.leaderboard.toUpperCase(),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person, size: 28),
-            label: l10n.settings.toUpperCase(),
           ),
         ],
       ),

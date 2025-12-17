@@ -8,6 +8,7 @@ import '../../providers/auth_providers.dart';
 import '../../providers/duel_providers.dart';
 import '../../providers/friends_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/app_header.dart';
 
 /// FriendsScreen displaying friend code and friends list with duel challenges
 /// Requirements: 10.1, 10.2, 10.4, 10.5, 15a.3, 15a.4
@@ -30,83 +31,89 @@ class FriendsScreen extends ConsumerWidget {
     final pendingRequestsAsync = ref.watch(pendingRequestsProvider(userId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Friends')),
-      body: userDataAsync.when(
-        data: (userData) {
-          return Column(
-            children: [
-              // Friend code section
-              _buildFriendCodeSection(context, userData),
-              const Divider(),
-              // Pending requests section
-              pendingRequestsAsync.when(
-                data: (pendingRequests) {
-                  if (pendingRequests.isNotEmpty) {
-                    return Column(
-                      children: [
-                        _buildPendingRequestsSection(
+      body: Column(
+        children: [
+          const AppHeader(),
+          Expanded(
+            child: userDataAsync.when(
+              data: (userData) {
+                return Column(
+                  children: [
+                    // Friend code section
+                    _buildFriendCodeSection(context, userData),
+                    const Divider(),
+                    // Pending requests section
+                    pendingRequestsAsync.when(
+                      data: (pendingRequests) {
+                        if (pendingRequests.isNotEmpty) {
+                          return Column(
+                            children: [
+                              _buildPendingRequestsSection(
+                                context,
+                                ref,
+                                userId,
+                                pendingRequests,
+                              ),
+                              const Divider(),
+                            ],
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                      loading: () => const SizedBox.shrink(),
+                      error: (error, stack) => const SizedBox.shrink(),
+                    ),
+                    // Friends list section
+                    Expanded(
+                      child: friendsWithDataAsync.when(
+                        data: (friendsWithData) => _buildFriendsList(
                           context,
                           ref,
                           userId,
-                          pendingRequests,
+                          friendsWithData,
                         ),
-                        const Divider(),
-                      ],
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (error, stack) => const SizedBox.shrink(),
-              ),
-              // Friends list section
-              Expanded(
-                child: friendsWithDataAsync.when(
-                  data: (friendsWithData) => _buildFriendsList(
-                    context,
-                    ref,
-                    userId,
-                    friendsWithData,
-                  ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 48,
-                          color: AppColors.error,
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (error, stack) => Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                size: 48,
+                                color: AppColors.error,
+                              ),
+                              const SizedBox(height: 16),
+                              Text('Error loading friends: $error'),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  ref.invalidate(friendsWithDataProvider(userId));
+                                },
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 16),
-                        Text('Error loading friends: $error'),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            ref.invalidate(friendsWithDataProvider(userId));
-                          },
-                          child: const Text('Retry'),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                    const SizedBox(height: 16),
+                    Text('Error loading user data: $error'),
+                  ],
                 ),
               ),
-            ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-              const SizedBox(height: 16),
-              Text('Error loading user data: $error'),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddFriendDialog(context, ref, userId),

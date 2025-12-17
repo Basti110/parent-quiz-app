@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/leaderboard_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/app_header.dart';
 
 /// LeaderboardScreen showing streak points leaderboard
 /// Requirements: 7.1, 7.2, 7.3, 7.4, 7.5
@@ -27,11 +28,11 @@ class LeaderboardScreen extends ConsumerWidget {
     final userRankAsync = ref.watch(userRankProvider(userId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('LEADERBOARD'),
-        centerTitle: false,
-      ),
-      body: leaderboardAsync.when(
+      body: Column(
+        children: [
+          const AppHeader(),
+          Expanded(
+            child: leaderboardAsync.when(
         data: (entries) {
           if (entries.isEmpty) {
             return Center(
@@ -127,6 +128,9 @@ class LeaderboardScreen extends ConsumerWidget {
             ],
           ),
         ),
+            ),
+          ),
+        ],
       ),
     );
   }

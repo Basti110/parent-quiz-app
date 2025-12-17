@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/quiz_providers.dart';
 import '../../widgets/category_card.dart';
+import '../../widgets/app_header.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 import '../quiz/quiz_length_screen.dart';
@@ -78,63 +79,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   _checkAndShowCelebration(isGoalMet);
                 });
 
-                return SafeArea(
-                  child: Column(
-                    children: [
-                      // Top bar with level/streak and XP
-                      _buildTopBar(context, userData, l10n),
+                return Column(
+                  children: [
+                    // Top bar with level/streak and XP
+                    const AppHeader(),
 
-                      // Scrollable content
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Hero section with dashboard image and greeting
-                              _buildHeroSection(context, userData, l10n),
+                    // Scrollable content
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Hero section with dashboard image and greeting
+                            _buildHeroSection(context, userData, l10n),
 
-                              // Daily goal card (overlapping hero)
-                              _buildDailyGoalCard(context, userData, l10n),
+                            // Daily goal card (overlapping hero)
+                            _buildDailyGoalCard(context, userData, l10n),
 
-                              // Main content area
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    // "Start Learning" button
-                                    _buildStartLearningButton(
-                                      context,
-                                      l10n,
-                                      categoriesAsync,
+                            // Main content area
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // "Start Learning" button
+                                  _buildStartLearningButton(
+                                    context,
+                                    l10n,
+                                    categoriesAsync,
+                                  ),
+
+                                  const SizedBox(height: 24),
+
+                                  // Categories section
+                                  categoriesAsync.when(
+                                    data: (categories) =>
+                                        _buildCategoriesSection(
+                                          context,
+                                          categories,
+                                          l10n,
+                                        ),
+                                    loading: () => const Center(
+                                      child: CircularProgressIndicator(),
                                     ),
-
-                                    const SizedBox(height: 24),
-
-                                    // Categories section
-                                    categoriesAsync.when(
-                                      data: (categories) =>
-                                          _buildCategoriesSection(
-                                            context,
-                                            categories,
-                                            l10n,
-                                          ),
-                                      loading: () => const Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                      error: (error, stack) => Center(
-                                        child: Text('${l10n.error}: $error'),
-                                      ),
+                                    error: (error, stack) => Center(
+                                      child: Text('${l10n.error}: $error'),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -166,97 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  /// Build avatar widget
-  Widget _buildAvatar(BuildContext context, dynamic userData, bool isDark) {
-    final avatarPath = userData.avatarPath ?? userData.avatarUrl;
 
-    if (avatarPath != null && avatarPath.isNotEmpty) {
-      return CircleAvatar(
-        radius: 16,
-        backgroundColor: isDark
-            ? AppColors.primaryDark
-            : AppColors.primaryLightest,
-        child: ClipOval(
-          child: Image.asset(
-            avatarPath,
-            width: 32,
-            height: 32,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              // Fallback to icon if image fails to load
-              return Icon(
-                Icons.person,
-                size: 20,
-                color: isDark ? AppColors.primaryLight : AppColors.primaryDark,
-              );
-            },
-          ),
-        ),
-      );
-    }
-
-    // Default avatar icon
-    return CircleAvatar(
-      radius: 16,
-      backgroundColor: isDark
-          ? AppColors.primaryDark
-          : AppColors.primaryLightest,
-      child: Icon(
-        Icons.person,
-        size: 20,
-        color: isDark ? AppColors.primaryLight : AppColors.primaryDark,
-      ),
-    );
-  }
-
-  /// Build top bar with streak and streak points
-  /// Requirements: 5.1, 5.2, 5.3, 5.4
-  Widget _buildTopBar(
-    BuildContext context,
-    dynamic userData,
-    AppLocalizations l10n,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Streak and streak points
-          Row(
-            children: [
-              const Icon(
-                Icons.local_fire_department,
-                color: AppColors.fire,
-                size: 24,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '${userData.streakCurrent}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.titleMedium?.color,
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Icon(Icons.stars, color: AppColors.warning, size: 24),
-              const SizedBox(width: 4),
-              Text(
-                '${userData.streakPoints}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.titleMedium?.color,
-                ),
-              ),
-            ],
-          ),
-          // Profile avatar
-          _buildAvatar(context, userData, isDark),
-        ],
-      ),
-    );
-  }
 
   /// Build hero section with dashboard image and greeting
   /// Requirements: 2.7
