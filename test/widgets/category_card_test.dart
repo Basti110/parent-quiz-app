@@ -45,6 +45,7 @@ void main() {
               order: categoryOrder,
               iconName: iconName,
               isPremium: isPremium,
+              questionCounter: random.nextInt(50) + 1,
             );
 
             // Build the widget
@@ -98,6 +99,7 @@ void main() {
             order: i,
             iconName: iconName,
             isPremium: false,
+            questionCounter: 10,
           );
 
           await tester.pumpWidget(
@@ -131,6 +133,7 @@ void main() {
         order: 1,
         iconName: 'health',
         isPremium: false,
+        questionCounter: 15,
       );
 
       await tester.pumpWidget(

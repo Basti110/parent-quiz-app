@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/category.dart';
 import '../models/category_progress.dart';
-import '../providers/quiz_providers.dart';
 import '../screens/quiz/quiz_length_screen.dart';
 import '../theme/app_colors.dart';
 
@@ -21,8 +20,8 @@ class CategoryCard extends ConsumerWidget {
     final iconPath = 'assets/app_images/categories/${category.iconName}.png';
     const defaultIconPath = 'assets/app_images/categories/default.png';
 
-    // Watch question count for this category
-    final questionCountAsync = ref.watch(questionCountProvider(category.id));
+    // Use questionCounter directly from category model
+    final totalQuestions = category.questionCounter;
 
     // Calculate progress percentage
     final questionsAnswered = progress?.questionsAnswered ?? 0;
@@ -111,71 +110,33 @@ class CategoryCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     // Progress text and bar
-                    questionCountAsync.when(
-                      data: (totalQuestions) {
-                        final progressPercentage = totalQuestions > 0
-                            ? questionsAnswered / totalQuestions
-                            : 0.0;
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '$questionsAnswered / $totalQuestions Fragen',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.textSecondary),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$questionsAnswered / $totalQuestions Fragen',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 4),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: totalQuestions > 0
+                                ? questionsAnswered / totalQuestions
+                                : 0.0,
+                            backgroundColor: isDark
+                                ? AppColors.textSecondary.withValues(
+                                    alpha: 0.3,
+                                  )
+                                : AppColors.borderLight,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              _getCategoryColor(category.iconName),
                             ),
-                            const SizedBox(height: 4),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: progressPercentage,
-                                backgroundColor: isDark
-                                    ? AppColors.textSecondary.withValues(
-                                        alpha: 0.3,
-                                      )
-                                    : AppColors.borderLight,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  _getCategoryColor(category.iconName),
-                                ),
-                                minHeight: 6,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                      loading: () => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '$questionsAnswered / -- Fragen',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: AppColors.textSecondary),
+                            minHeight: 6,
                           ),
-                          const SizedBox(height: 4),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: 0,
-                              backgroundColor: isDark
-                                  ? AppColors.textSecondary.withValues(
-                                      alpha: 0.3,
-                                    )
-                                  : AppColors.borderLight,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                _getCategoryColor(category.iconName),
-                              ),
-                              minHeight: 6,
-                            ),
-                          ),
-                        ],
-                      ),
-                      error: (error, stack) => Text(
-                        'Error loading count',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: AppColors.error),
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

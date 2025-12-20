@@ -985,6 +985,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Daily goal must be between 1 and 50'**
   String get invalidDailyGoal;
+
+  /// Statistics screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statistics;
+
+  /// Overall progress section title
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Progress'**
+  String get overallProgress;
+
+  /// Questions answered label
+  ///
+  /// In en, this message translates to:
+  /// **'Questions Answered'**
+  String get questionsAnswered;
+
+  /// Questions mastered label
+  ///
+  /// In en, this message translates to:
+  /// **'Questions Mastered'**
+  String get questionsMastered;
+
+  /// Questions seen label
+  ///
+  /// In en, this message translates to:
+  /// **'Questions Seen'**
+  String get questionsSeen;
+
+  /// By category section title
+  ///
+  /// In en, this message translates to:
+  /// **'By Category'**
+  String get byCategory;
+
+  /// Answered label
+  ///
+  /// In en, this message translates to:
+  /// **'Answered'**
+  String get answered;
+
+  /// Mastered label
+  ///
+  /// In en, this message translates to:
+  /// **'Mastered'**
+  String get mastered;
+
+  /// Progress label
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get progress;
+
+  /// No category statistics message
+  ///
+  /// In en, this message translates to:
+  /// **'No category statistics yet. Start answering questions!'**
+  String get noCategoryStatistics;
+
+  /// Failed to load statistics error
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load statistics'**
+  String get failedToLoadStatistics;
+
+  /// Please try again message
+  ///
+  /// In en, this message translates to:
+  /// **'Please try again'**
+  String get pleaseTryAgain;
 }
 
 class _AppLocalizationsDelegate

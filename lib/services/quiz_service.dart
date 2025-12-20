@@ -115,6 +115,92 @@ class QuizService {
     }
   }
 
+  /// Get questions from ALL categories with intelligent cross-category selection
+  /// Priority order:
+  /// 1. Unseen questions (seenCount = 0) - random from all categories
+  /// 2. Unmastered questions (mastered = false) - random from all categories  
+  /// 3. All questions - random from all categories
+  /// Requirements: Cross-category question selection for "Jetzt Lernen"
+  Future<List<Question>> getQuestionsFromAllCategories(
+    int count,
+    String userId,
+  ) async {
+    try {
+      // Load all active questions from all categories
+      final questionsSnapshot = await _firestore
+          .collection('questions')
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      if (questionsSnapshot.docs.isEmpty) {
+        return [];
+      }
+
+      final allQuestions = questionsSnapshot.docs
+          .map((doc) => Question.fromMap(doc.data(), doc.id))
+          .toList();
+
+      // Load user's question states
+      final statesSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('questionStates')
+          .get();
+
+      final questionStates = <String, QuestionState>{};
+      for (final doc in statesSnapshot.docs) {
+        final state = QuestionState.fromMap(doc.data());
+        questionStates[state.questionId] = state;
+      }
+
+      // Separate questions by priority
+      final unseenQuestions = <Question>[];
+      final unmasteredQuestions = <Question>[];
+      final masteredQuestions = <Question>[];
+
+      for (final question in allQuestions) {
+        final state = questionStates[question.id];
+        
+        if (state == null || state.seenCount == 0) {
+          // Never seen before - highest priority
+          unseenQuestions.add(question);
+        } else if (!state.mastered) {
+          // Seen but not mastered - medium priority
+          unmasteredQuestions.add(question);
+        } else {
+          // Mastered - lowest priority
+          masteredQuestions.add(question);
+        }
+      }
+
+      // Priority 1: Select from unseen questions
+      if (unseenQuestions.isNotEmpty) {
+        unseenQuestions.shuffle(_random);
+        return unseenQuestions.take(count).toList();
+      }
+
+      // Priority 2: Select from unmastered questions
+      if (unmasteredQuestions.isNotEmpty) {
+        unmasteredQuestions.shuffle(_random);
+        return unmasteredQuestions.take(count).toList();
+      }
+
+      // Priority 3: Select from all questions (everything is mastered)
+      final allQuestionsList = [...unseenQuestions, ...unmasteredQuestions, ...masteredQuestions];
+      allQuestionsList.shuffle(_random);
+      return allQuestionsList.take(count).toList();
+
+    } on FirebaseException catch (e) {
+      print('Firebase error loading questions from all categories: ${e.code} - ${e.message}');
+      throw Exception(
+        'Failed to load questions. Please check your connection and try again.',
+      );
+    } catch (e) {
+      print('Error loading questions from all categories: $e');
+      throw Exception('Failed to load questions. Please try again.');
+    }
+  }
+
   /// Calculate XP for a quiz session
   /// Property 8: Correct answer XP - +10 XP
   /// Property 9: Incorrect answer with explanation XP - +5 XP
@@ -201,17 +287,28 @@ class QuizService {
   }
 
   /// Count total active questions for a category
-  /// Requirements: 3.2
+  /// Property 3: Fallback to query when counter missing
+  /// Requirements: 1.1, 1.4, 1.5
   Future<int> getQuestionCountForCategory(String categoryId) async {
     try {
-      final snapshot = await _firestore
-          .collection('questions')
-          .where('categoryId', isEqualTo: categoryId)
-          .where('isActive', isEqualTo: true)
-          .count()
+      final categoryDoc = await _firestore
+          .collection('categories')
+          .doc(categoryId)
           .get();
 
-      return snapshot.count ?? 0;
+      if (!categoryDoc.exists) {
+        return 0;
+      }
+
+      final data = categoryDoc.data()!;
+      final questionCounter = data['questionCounter'] as int?;
+
+      // Fallback to querying if field is missing
+      if (questionCounter == null) {
+        return await _countActiveQuestions(categoryId);
+      }
+
+      return questionCounter;
     } on FirebaseException catch (e) {
       print('Firebase error counting questions: ${e.code} - ${e.message}');
       throw Exception(
@@ -221,6 +318,18 @@ class QuizService {
       print('Error counting questions: $e');
       throw Exception('Failed to count questions. Please try again.');
     }
+  }
+
+  /// Helper method for fallback - count active questions by querying
+  Future<int> _countActiveQuestions(String categoryId) async {
+    final snapshot = await _firestore
+        .collection('questions')
+        .where('categoryId', isEqualTo: categoryId)
+        .where('isActive', isEqualTo: true)
+        .count()
+        .get();
+
+    return snapshot.count ?? 0;
   }
 
   /// Get a single question by ID

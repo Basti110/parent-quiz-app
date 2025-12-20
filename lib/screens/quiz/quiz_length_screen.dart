@@ -9,9 +9,10 @@ class QuizLengthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get category from navigation arguments
-    final category = ModalRoute.of(context)!.settings.arguments as Category;
+    // Get category from navigation arguments (null means cross-category mode)
+    final category = ModalRoute.of(context)!.settings.arguments as Category?;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isAllCategories = category == null;
 
     return Scaffold(
       appBar: AppBar(
@@ -28,9 +29,9 @@ class QuizLengthScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 16),
-              // Category title
+              // Category title or "All Categories"
               Text(
-                category.title,
+                isAllCategories ? 'Alle Kategorien' : category!.title,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -38,7 +39,9 @@ class QuizLengthScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Wie viele Fragen möchtest du beantworten?',
+                isAllCategories 
+                    ? 'Intelligente Fragenauswahl aus allen Kategorien\nWie viele Fragen möchtest du beantworten?'
+                    : 'Wie viele Fragen möchtest du beantworten?',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: isDarkMode
                       ? AppColors.textSecondaryDark
@@ -80,7 +83,7 @@ class QuizLengthScreen extends StatelessWidget {
     BuildContext context, {
     required int questionCount,
     required int xpBonus,
-    required Category category,
+    required Category? category,
     required IconData icon,
     required bool isDarkMode,
   }) {

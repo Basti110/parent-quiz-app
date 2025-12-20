@@ -147,5 +147,17 @@
   "questionsPerDay": "Fragen pro Tag",
   "dailyGoalDescription": "Legen Sie fest, wie viele Fragen Sie jeden Tag beantworten möchten",
   "dailyGoalUpdated": "Tagesziel erfolgreich aktualisiert",
-  "invalidDailyGoal": "Tagesziel muss zwischen 1 und 50 liegen"
+  "invalidDailyGoal": "Tagesziel muss zwischen 1 und 50 liegen",
+  "statistics": "Statistiken",
+  "overallProgress": "Gesamtfortschritt",
+  "questionsAnswered": "Beantwortete Fragen",
+  "questionsMastered": "Gemeisterte Fragen",
+  "questionsSeen": "Gesehene Fragen",
+  "byCategory": "Nach Kategorie",
+  "answered": "Beantwortet",
+  "mastered": "Gemeistert",
+  "progress": "Fortschritt",
+  "noCategoryStatistics": "Noch keine Kategoriestatistiken. Beginnen Sie mit dem Beantworten von Fragen!",
+  "failedToLoadStatistics": "Statistiken konnten nicht geladen werden",
+  "pleaseTryAgain": "Bitte versuchen Sie es erneut"
 }

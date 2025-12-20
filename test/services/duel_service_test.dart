@@ -441,13 +441,21 @@ void main() {
             await duelService.completeDuel(firstDuelId, challengerId);
             await duelService.completeDuel(firstDuelId, opponentId);
 
+            // Should still be active until results are viewed (according to design)
+            final stillActiveAfterCompletion = await duelService.hasActiveDuel(challengerId, opponentId);
+            expect(stillActiveAfterCompletion, isTrue, reason: 'Should still be active after completion until results viewed (iteration $i)');
+
+            // Simulate both users viewing results
+            await duelService.markResultsViewed(firstDuelId, challengerId);
+            await duelService.markResultsViewed(firstDuelId, opponentId);
+
             // Now should be able to create new duel
             final noLongerActive = await duelService.hasActiveDuel(challengerId, opponentId);
-            expect(noLongerActive, isFalse, reason: 'Should no longer be active after completion (iteration $i)');
+            expect(noLongerActive, isFalse, reason: 'Should no longer be active after results viewed (iteration $i)');
 
             // Should be able to create new duel now
             final secondDuelId = await duelService.createDuel(opponentId, challengerId);
-            expect(secondDuelId, isNotEmpty, reason: 'Should allow new duel after completion (iteration $i)');
+            expect(secondDuelId, isNotEmpty, reason: 'Should allow new duel after results viewed (iteration $i)');
           }
         },
       );

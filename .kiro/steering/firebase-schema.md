@@ -185,6 +185,7 @@ Quiz categories:
   'order': int,
   'iconName': String,
   'isPremium': bool,
+  'questionCounter': int,        // NEW: Total active questions in this category (for performance)
 }
 ```
 
@@ -231,3 +232,25 @@ For optimal query performance:
 - **Friends**: Real-time stream for friends list with head-to-head stats
 - **Duels**: Real-time streams for pending, active, and completed duels
 - **VS Mode**: Real-time stream for active session
+- **Statistics**: Calculated on-demand from questionStates subcollection (not stored as denormalized counts)
+
+## Statistics System
+
+### Dynamic Statistics Calculation
+
+Statistics are calculated dynamically from the `questionStates` subcollection rather than stored as denormalized counts. This ensures data consistency and accuracy.
+
+**Key Statistics:**
+- **Questions Answered**: Count of questionStates where `seenCount > 0`
+- **Questions Mastered**: Count of questionStates where `mastered == true`
+- **Questions Seen**: Count of questionStates where `seenCount > 0`
+
+**Category-Level Statistics:**
+- Statistics are calculated per category by filtering questionStates by categoryId
+- Each category shows progress as answered/mastered/seen counts and percentages
+- Uses `questionCounter` field from category document for total question count
+
+**Performance Considerations:**
+- Statistics are calculated on-demand when viewing the statistics screen
+- Category `questionCounter` field avoids expensive question counting queries
+- Results can be cached in providers for better UX

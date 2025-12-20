@@ -83,6 +83,26 @@ if (isSameDay(now, lastActiveAt)) {
 - **Status**: `mastered` field set to `true` when threshold reached
 - **Category mastery**: Percentage of mastered questions in category
 
+### Statistics Screen
+
+**Navigation**: Accessible via dedicated statistics tab in main navigation (last tab)
+
+**Overall Statistics Display:**
+- Total questions answered across all categories
+- Total questions mastered across all categories  
+- Total questions seen across all categories
+- Visual progress indicators and percentages
+
+**Category-Level Breakdown:**
+- Statistics grouped by category with category icons
+- Per-category counts: answered, mastered, seen
+- Progress bars showing completion percentage per category
+- Categories with no progress show 0 for all statistics
+
+**Data Source**: Statistics calculated dynamically from `questionStates` subcollection (not stored as denormalized counts)
+
+**Performance**: Uses `questionCounter` field from category documents to avoid expensive question counting queries
+
 ## Leaderboard System
 
 ### Ranking Logic

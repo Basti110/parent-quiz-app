@@ -21,6 +21,7 @@ lib/
     ├── leaderboard/          # Leaderboard screen
     ├── friends/              # Friends management screens
     ├── vs_mode/              # VS Mode screens
+    ├── statistics/           # Statistics screen (NEW)
     └── settings/             # Settings screen
 ```
 
@@ -156,6 +157,48 @@ Future<String> createDuel(String challengerId, String opponentId) async {
 - Use `StreamProvider` to watch duel documents
 - UI automatically updates when opponent completes
 - Show different states based on completion timestamps
+
+### Statistics System Architecture
+
+**Dynamic Calculation Pattern:**
+
+Statistics are calculated on-demand from the `questionStates` subcollection rather than stored as denormalized counts:
+
+```dart
+// Statistics Service
+class StatisticsService {
+  Future<UserStatistics> getUserStatistics(String userId) async {
+    // Load all question states for the user
+    final statesSnapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('questionStates')
+        .get();
+
+    // Calculate statistics from question states
+    // - Count where seenCount > 0 for answered questions
+    // - Count where mastered == true for mastered questions
+    // - Group by category for category-level stats
+  }
+}
+
+// Statistics Providers
+final statisticsServiceProvider = Provider<StatisticsService>((ref) {
+  return StatisticsService();
+});
+
+final userStatisticsProvider = FutureProvider.family<UserStatistics, String>(
+  (ref, userId) {
+    final statisticsService = ref.watch(statisticsServiceProvider);
+    return statisticsService.getUserStatistics(userId);
+  },
+);
+```
+
+**Key Models:**
+- `UserStatistics`: Overall user progress with category breakdown
+- `CategoryStatistics`: Per-category progress with percentages
+- Uses `questionCounter` field from categories for performance
 
 ## UI Guidelines
 

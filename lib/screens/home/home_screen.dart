@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
@@ -347,24 +346,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return ElevatedButton(
       onPressed: categoriesAsync.hasValue && categoriesAsync.value!.isNotEmpty
           ? () {
-              // Filter out premium categories and pick a random one
-              final categories = categoriesAsync.value!;
-              final nonPremiumCategories = categories
-                  .where((category) => category.isPremium != true)
-                  .toList();
-
-              if (nonPremiumCategories.isEmpty) return;
-
-              final randomCategory =
-                  nonPremiumCategories[Random().nextInt(
-                    nonPremiumCategories.length,
-                  )];
-
-              // Navigate to quiz length screen with random category
+              // Navigate to quiz length screen with special "all categories" mode
+              // Pass null as category to indicate cross-category selection
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => const QuizLengthScreen(),
-                  settings: RouteSettings(arguments: randomCategory),
+                  settings: const RouteSettings(arguments: null), // null = all categories
                 ),
               );
             }

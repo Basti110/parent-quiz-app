@@ -39,7 +39,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   Future<void> _loadQuestions() async {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final category = args['category'] as Category;
+    final category = args['category'] as Category?; // Can be null for cross-category
     final questionCount = args['questionCount'] as int;
     final userId = ref.read(currentUserIdProvider);
 
@@ -56,11 +56,22 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
     try {
       final quizService = ref.read(quizServiceProvider);
-      final questions = await quizService.getQuestionsForSession(
-        category.id,
-        questionCount,
-        userId,
-      );
+      final List<Question> questions;
+      
+      if (category == null) {
+        // Cross-category mode: select from all categories
+        questions = await quizService.getQuestionsFromAllCategories(
+          questionCount,
+          userId,
+        );
+      } else {
+        // Single category mode
+        questions = await quizService.getQuestionsForSession(
+          category.id,
+          questionCount,
+          userId,
+        );
+      }
 
       if (questions.isEmpty) {
         if (mounted) {
@@ -152,7 +163,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   void _finishQuiz() async {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final category = args['category'] as Category;
+    final category = args['category'] as Category?; // Can be null for cross-category
     final questionCount = args['questionCount'] as int;
     final userId = ref.read(currentUserIdProvider);
 
@@ -174,12 +185,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       await userService.updateWeeklyXP(userId, sessionXP);
       await userService.updateStreak(userId);
 
-      // Update category progress
-      await userService.updateCategoryProgress(
-        userId,
-        category.id,
-        questionCount,
-      );
+      // Update category progress only for single-category mode
+      if (category != null) {
+        await userService.updateCategoryProgress(
+          userId,
+          category.id,
+          questionCount,
+        );
+      }
+      // For cross-category mode, category progress is updated per question
+      // in the updateQuestionState method, so no additional update needed
 
       // Navigate to results screen
       if (mounted) {

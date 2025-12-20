@@ -636,5 +636,53 @@
   "invalidDailyGoal": "Daily goal must be between 1 and 50",
   "@invalidDailyGoal": {
     "description": "Invalid daily goal error message"
+  },
+  "statistics": "Statistics",
+  "@statistics": {
+    "description": "Statistics screen title"
+  },
+  "overallProgress": "Overall Progress",
+  "@overallProgress": {
+    "description": "Overall progress section title"
+  },
+  "questionsAnswered": "Questions Answered",
+  "@questionsAnswered": {
+    "description": "Questions answered label"
+  },
+  "questionsMastered": "Questions Mastered",
+  "@questionsMastered": {
+    "description": "Questions mastered label"
+  },
+  "questionsSeen": "Questions Seen",
+  "@questionsSeen": {
+    "description": "Questions seen label"
+  },
+  "byCategory": "By Category",
+  "@byCategory": {
+    "description": "By category section title"
+  },
+  "answered": "Answered",
+  "@answered": {
+    "description": "Answered label"
+  },
+  "mastered": "Mastered",
+  "@mastered": {
+    "description": "Mastered label"
+  },
+  "progress": "Progress",
+  "@progress": {
+    "description": "Progress label"
+  },
+  "noCategoryStatistics": "No category statistics yet. Start answering questions!",
+  "@noCategoryStatistics": {
+    "description": "No category statistics message"
+  },
+  "failedToLoadStatistics": "Failed to load statistics",
+  "@failedToLoadStatistics": {
+    "description": "Failed to load statistics error"
+  },
+  "pleaseTryAgain": "Please try again",
+  "@pleaseTryAgain": {
+    "description": "Please try again message"
   }
 }

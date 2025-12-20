@@ -479,4 +479,42 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get invalidDailyGoal => 'Tagesziel muss zwischen 1 und 50 liegen';
+
+  @override
+  String get statistics => 'Statistiken';
+
+  @override
+  String get overallProgress => 'Gesamtfortschritt';
+
+  @override
+  String get questionsAnswered => 'Beantwortete Fragen';
+
+  @override
+  String get questionsMastered => 'Gemeisterte Fragen';
+
+  @override
+  String get questionsSeen => 'Gesehene Fragen';
+
+  @override
+  String get byCategory => 'Nach Kategorie';
+
+  @override
+  String get answered => 'Beantwortet';
+
+  @override
+  String get mastered => 'Gemeistert';
+
+  @override
+  String get progress => 'Fortschritt';
+
+  @override
+  String get noCategoryStatistics =>
+      'Noch keine Kategoriestatistiken. Beginnen Sie mit dem Beantworten von Fragen!';
+
+  @override
+  String get failedToLoadStatistics =>
+      'Statistiken konnten nicht geladen werden';
+
+  @override
+  String get pleaseTryAgain => 'Bitte versuchen Sie es erneut';
 }

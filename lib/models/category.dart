@@ -5,6 +5,7 @@ class Category {
   final int order;
   final String iconName;
   final bool isPremium;
+  final int questionCounter;
 
   Category({
     required this.id,
@@ -13,6 +14,7 @@ class Category {
     required this.order,
     required this.iconName,
     required this.isPremium,
+    required this.questionCounter,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,6 +24,7 @@ class Category {
       'order': order,
       'iconName': iconName,
       'isPremium': isPremium,
+      'questionCounter': questionCounter,
     };
   }
 
@@ -33,6 +36,7 @@ class Category {
       order: map['order'] as int,
       iconName: map['iconName'] as String,
       isPremium: map['isPremium'] as bool,
+      questionCounter: map['questionCounter'] as int? ?? 0,
     );
   }
 }

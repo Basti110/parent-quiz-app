@@ -476,4 +476,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidDailyGoal => 'Daily goal must be between 1 and 50';
+
+  @override
+  String get statistics => 'Statistics';
+
+  @override
+  String get overallProgress => 'Overall Progress';
+
+  @override
+  String get questionsAnswered => 'Questions Answered';
+
+  @override
+  String get questionsMastered => 'Questions Mastered';
+
+  @override
+  String get questionsSeen => 'Questions Seen';
+
+  @override
+  String get byCategory => 'By Category';
+
+  @override
+  String get answered => 'Answered';
+
+  @override
+  String get mastered => 'Mastered';
+
+  @override
+  String get progress => 'Progress';
+
+  @override
+  String get noCategoryStatistics =>
+      'No category statistics yet. Start answering questions!';
+
+  @override
+  String get failedToLoadStatistics => 'Failed to load statistics';
+
+  @override
+  String get pleaseTryAgain => 'Please try again';
 }
