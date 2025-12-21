@@ -48,12 +48,12 @@ class LeaderboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No friends yet',
+                      l10n.noFriendsYet,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Add friends to see them on the leaderboard',
+                      l10n.addFriendsToSeeRankings,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -78,7 +78,7 @@ class LeaderboardScreen extends ConsumerWidget {
                       const Icon(Icons.emoji_events, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Text(
-                        'Your Rank: #${userRankAsync.value}',
+                        '${l10n.yourRank}: #${userRankAsync.value}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -100,6 +100,7 @@ class LeaderboardScreen extends ConsumerWidget {
                       ref,
                       userId,
                       entry,
+                      l10n,
                       isCurrentUser: isCurrentUser,
                     );
                   },
@@ -108,7 +109,16 @@ class LeaderboardScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(l10n.loadingLeaderboard),
+            ],
+          ),
+        ),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -116,14 +126,8 @@ class LeaderboardScreen extends ConsumerWidget {
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
               Text(
-                'Error loading leaderboard',
+                l10n.errorLoadingLeaderboard(error.toString()),
                 style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                error.toString(),
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -139,7 +143,8 @@ class LeaderboardScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String currentUserId,
-    dynamic entry, {
+    dynamic entry,
+    AppLocalizations l10n, {
     required bool isCurrentUser,
   }) {
     final theme = Theme.of(context);
@@ -215,7 +220,7 @@ class LeaderboardScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${entry.currentStreak} day streak',
+                          '${entry.currentStreak} ${l10n.dayStreak}',
                           style: const TextStyle(
                             fontSize: 14,
                             color: AppColors.textSecondary,
@@ -240,8 +245,8 @@ class LeaderboardScreen extends ConsumerWidget {
                           : theme.textTheme.bodyLarge?.color,
                     ),
                   ),
-                  const Text(
-                    'points',
+                  Text(
+                    l10n.points,
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -271,13 +276,13 @@ class LeaderboardScreen extends ConsumerWidget {
                     String statusText;
                     Color statusColor;
                     if (myWins > theirWins) {
-                      statusText = 'Leading';
+                      statusText = l10n.leading;
                       statusColor = AppColors.success;
                     } else if (myWins < theirWins) {
-                      statusText = 'Trailing';
+                      statusText = l10n.trailing;
                       statusColor = AppColors.error;
                     } else {
-                      statusText = 'Tied';
+                      statusText = l10n.tied;
                       statusColor = AppColors.warning;
                     }
 
@@ -299,7 +304,7 @@ class LeaderboardScreen extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Head-to-Head Record',
+                                l10n.headToHeadRecord,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -330,19 +335,19 @@ class LeaderboardScreen extends ConsumerWidget {
                           Row(
                             children: [
                               _buildStatItem(
-                                'Wins',
+                                l10n.wins,
                                 myWins,
                                 AppColors.success,
                               ),
                               const SizedBox(width: 16),
                               _buildStatItem(
-                                'Losses',
+                                l10n.losses,
                                 theirWins,
                                 AppColors.error,
                               ),
                               const SizedBox(width: 16),
                               _buildStatItem(
-                                'Ties',
+                                l10n.ties,
                                 ties,
                                 AppColors.warning,
                               ),

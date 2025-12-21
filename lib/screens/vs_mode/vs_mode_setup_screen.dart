@@ -4,6 +4,7 @@ import '../../models/category.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/quiz_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// VSModeSetupScreen allows users to configure a pass-and-play duel
 /// Requirements: 9.1, 9.2
@@ -52,10 +53,12 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
   }
 
   void _startVSMode() {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (_selectedCategory == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Please select a category')));
+      ).showSnackBar(SnackBar(content: Text(l10n.pleaseSelectCategory)));
       return;
     }
 
@@ -64,14 +67,14 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
 
     if (playerAName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter Player A name')),
+        SnackBar(content: Text(l10n.pleaseEnterPlayerAName)),
       );
       return;
     }
 
     if (playerBName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter Player B name')),
+        SnackBar(content: Text(l10n.pleaseEnterPlayerBName)),
       );
       return;
     }
@@ -90,10 +93,11 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('VS Mode Setup')),
+      appBar: AppBar(title: Text(l10n.vsModeSetup)),
       body: categoriesAsync.when(
         data: (categories) => SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -102,19 +106,19 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
             children: [
               // Header
               Text(
-                'Pass & Play Duel',
+                AppLocalizations.of(context)!.passAndPlayDuel,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
               Text(
-                'Compete with a friend on the same device',
+                AppLocalizations.of(context)!.competeWithFriendSameDevice,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 24),
 
               // Category selection
               Text(
-                'Select Category',
+                AppLocalizations.of(context)!.selectCategory,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -125,7 +129,7 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
 
               // Quiz length selection
               Text(
-                'Questions per Player',
+                AppLocalizations.of(context)!.questionsPerPlayer,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -142,7 +146,7 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
 
               // Player names
               Text(
-                'Player Names',
+                AppLocalizations.of(context)!.playerNames,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -150,8 +154,8 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _playerAController,
-                decoration: const InputDecoration(
-                  labelText: 'Player A',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.playerALabel,
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
                 ),
@@ -159,8 +163,8 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _playerBController,
-                decoration: const InputDecoration(
-                  labelText: 'Player B',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.playerBLabel,
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
@@ -173,14 +177,25 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Start Duel', style: TextStyle(fontSize: 18)),
+                child: Text(AppLocalizations.of(context)!.startDuel, style: const TextStyle(fontSize: 18)),
               ),
             ],
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) =>
-            Center(child: Text('Error loading categories: $error')),
+        loading: () => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(AppLocalizations.of(context)!.loadingCategories),
+            ],
+          ),
+        ),
+        error: (error, stack) {
+          final l10n = AppLocalizations.of(context)!;
+          return Center(child: Text(l10n.errorLoadingCategories(error.toString())));
+        },
       ),
     );
   }
@@ -285,7 +300,7 @@ class _VSModeSetupScreenState extends ConsumerState<VSModeSetupScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              Text('questions', style: Theme.of(context).textTheme.bodySmall),
+              Text(AppLocalizations.of(context)!.questionsLowercase, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
         ),

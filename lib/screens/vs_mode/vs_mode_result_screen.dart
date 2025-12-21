@@ -5,6 +5,7 @@ import '../../models/vs_mode_result.dart';
 import '../../services/vs_mode_service.dart';
 import '../../providers/auth_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// VSModeResultScreen displays the results of a VS Mode duel
 /// Requirements: 9.5
@@ -88,9 +89,10 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
       });
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error updating stats: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorUpdatingStats(e.toString()))));
       }
       setState(() {
         _isUpdatingStats = false;
@@ -101,6 +103,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final session = args['session'] as VSModeSession;
@@ -156,7 +159,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
 
                       // VS text
                       Text(
-                        'VS',
+                        l10n.vsText,
                         style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey.shade300,
@@ -184,11 +187,11 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                   const SizedBox(height: 40),
 
                   // Winner announcement
-                  _buildWinnerSection(result),
+                  _buildWinnerSection(result, l10n),
                   const SizedBox(height: 32),
 
                   // XP earned (for logged-in user only)
-                  _buildXPSection(session, result),
+                  _buildXPSection(session, result, l10n),
                   const SizedBox(height: 32),
 
                   // Action buttons
@@ -207,7 +210,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Home'),
+                          child: Text(AppLocalizations.of(context)!.buttonHome),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -227,7 +230,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Play Again'),
+                          child: Text(AppLocalizations.of(context)!.playAgain),
                         ),
                       ),
                     ],
@@ -352,7 +355,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
     );
   }
 
-  Widget _buildWinnerSection(VSModeResult result) {
+  Widget _buildWinnerSection(VSModeResult result, AppLocalizations l10n) {
     final isTie = result.outcome == VSModeOutcome.tie;
     final isPerfectTie = isTie && 
         result.playerATimeSeconds != null && 
@@ -376,7 +379,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              isTie ? (isPerfectTie ? "Perfect Tie!" : "It's a Tie!") : '${result.winnerName} Wins!',
+              isTie ? (isPerfectTie ? l10n.perfectTie : l10n.tie) : l10n.winnerWins(result.winnerName!),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: isTie ? AppColors.warning : AppColors.primary,
@@ -395,7 +398,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Won by speed!',
+                    l10n.wonBySpeed,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: AppColors.accent,
                       fontWeight: FontWeight.bold,
@@ -410,7 +413,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
     );
   }
 
-  Widget _buildXPSection(VSModeSession session, VSModeResult result) {
+  Widget _buildXPSection(VSModeSession session, VSModeResult result, AppLocalizations l10n) {
     final userId = ref.watch(currentUserIdProvider);
 
     if (userId == null) {
@@ -423,7 +426,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
 
     if (result.isTie()) {
       xpEarned = 1;
-      xpMessage = '+1 Duel Point (Tie)';
+      xpMessage = l10n.duelPointsTie;
     } else {
       // Check if logged-in user won
       final userDataAsync = ref.watch(userDataProvider(userId));
@@ -431,10 +434,10 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
         data: (userData) {
           if (result.isPlayerWinner(userData.displayName)) {
             xpEarned = 3;
-            xpMessage = '+3 Duel Points (Win)';
+            xpMessage = l10n.duelPointsWin;
           } else if (result.isPlayerLoser(userData.displayName)) {
             xpEarned = 0;
-            xpMessage = 'No Duel Points (Loss)';
+            xpMessage = l10n.duelPointsLoss;
           } else {
             // User is not one of the players
             return const SizedBox.shrink();
@@ -453,7 +456,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Duel Points Earned',
+                          l10n.duelPointsEarned,
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
@@ -496,7 +499,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Duel Points Earned',
+                    l10n.duelPointsEarned,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

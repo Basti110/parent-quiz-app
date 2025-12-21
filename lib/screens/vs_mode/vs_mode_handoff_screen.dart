@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/vs_mode_session.dart';
 import '../../models/question.dart';
 import '../../theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// VSModeHandoffScreen displays a transition screen between players
 /// Requirements: 9.4
@@ -58,7 +59,7 @@ class VSModeHandoffScreen extends StatelessWidget {
 
                         // VS text
                         Text(
-                          'VS',
+                          AppLocalizations.of(context)!.vsText,
                           style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.grey.shade300,
@@ -102,7 +103,7 @@ class VSModeHandoffScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Pass device to ${session.playerBName}',
+                            AppLocalizations.of(context)!.passDeviceTo(session.playerBName),
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: AppColors.success,
@@ -139,7 +140,7 @@ class VSModeHandoffScreen extends StatelessWidget {
                           elevation: 4,
                         ),
                         child: Text(
-                          'START ${session.playerBName.toUpperCase()}\'S TURN',
+                          AppLocalizations.of(context)!.startPlayerTurn(session.playerBName.toUpperCase()),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -222,7 +223,7 @@ class VSModeHandoffScreen extends StatelessWidget {
 
         // Score display
         Text(
-          isCompleted ? '$score correct' : '---',
+          isCompleted ? AppLocalizations.of(context)!.scoreCorrect(score) : AppLocalizations.of(context)!.scorePlaceholder,
           style: theme.textTheme.titleLarge?.copyWith(
             color: isActive 
                 ? const Color(0xFF5C6BC0) 

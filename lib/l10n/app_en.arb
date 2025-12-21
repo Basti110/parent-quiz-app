@@ -684,5 +684,705 @@
   "pleaseTryAgain": "Please try again",
   "@pleaseTryAgain": {
     "description": "Please try again message"
+  },
+  "errorStartingVsMode": "Error starting VS Mode: {error}",
+  "@errorStartingVsMode": {
+    "description": "Error starting VS Mode message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingDuel": "Error loading duel: {error}",
+  "@errorLoadingDuel": {
+    "description": "Error loading duel message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorSubmittingAnswer": "Error submitting answer: {error}",
+  "@errorSubmittingAnswer": {
+    "description": "Error submitting answer message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCompletingDuel": "Error completing duel: {error}",
+  "@errorCompletingDuel": {
+    "description": "Error completing duel message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAcceptingDuel": "Failed to accept duel: {error}",
+  "@errorAcceptingDuel": {
+    "description": "Error accepting duel message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorDecliningDuel": "Failed to decline duel: {error}",
+  "@errorDecliningDuel": {
+    "description": "Error declining duel message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdatingStats": "Error updating stats: {error}",
+  "@errorUpdatingStats": {
+    "description": "Error updating stats message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingResults": "Error loading results: {error}",
+  "@errorLoadingResults": {
+    "description": "Error loading results message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingCategories": "Error loading categories: {error}",
+  "@errorLoadingCategories": {
+    "description": "Error loading categories message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingFriends": "Error loading friends: {error}",
+  "@errorLoadingFriends": {
+    "description": "Error loading friends message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAcceptingFriendRequest": "Failed to accept friend request: {error}",
+  "@errorAcceptingFriendRequest": {
+    "description": "Error accepting friend request message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorDecliningFriendRequest": "Failed to decline friend request: {error}",
+  "@errorDecliningFriendRequest": {
+    "description": "Error declining friend request message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCreatingDuel": "Failed to create duel: {error}",
+  "@errorCreatingDuel": {
+    "description": "Error creating duel message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAddingFriend": "Failed to add friend. Please try again.",
+  "@errorAddingFriend": {
+    "description": "Error adding friend message"
+  },
+  "pleaseSelectCategory": "Please select a category",
+  "@pleaseSelectCategory": {
+    "description": "Validation message for category selection"
+  },
+  "pleaseEnterPlayerAName": "Please enter Player A name",
+  "@pleaseEnterPlayerAName": {
+    "description": "Validation message for Player A name"
+  },
+  "pleaseEnterPlayerBName": "Please enter Player B name",
+  "@pleaseEnterPlayerBName": {
+    "description": "Validation message for Player B name"
+  },
+  "pleaseEnterFriendCode": "Please enter a friend code",
+  "@pleaseEnterFriendCode": {
+    "description": "Validation message for friend code"
+  },
+  "friendCodeLength": "Friend code must be 6-8 characters",
+  "@friendCodeLength": {
+    "description": "Validation message for friend code length"
+  },
+  "noUserFoundWithCode": "No user found with this friend code",
+  "@noUserFoundWithCode": {
+    "description": "Error message when friend code not found"
+  },
+  "cannotAddYourself": "You cannot add yourself as a friend",
+  "@cannotAddYourself": {
+    "description": "Error message when trying to add self"
+  },
+  "alreadyFriends": "You are already friends with this user",
+  "@alreadyFriends": {
+    "description": "Error message when already friends"
+  },
+  "dialogTitleExitDuel": "Exit Duel?",
+  "@dialogTitleExitDuel": {
+    "description": "Exit duel dialog title"
+  },
+  "dialogContentExitDuel": "Your progress will be saved and you can continue later.",
+  "@dialogContentExitDuel": {
+    "description": "Exit duel dialog content"
+  },
+  "dialogTitleAddFriend": "Add Friend",
+  "@dialogTitleAddFriend": {
+    "description": "Add friend dialog title"
+  },
+  "dialogTitleDuelChallenge": "Duel Challenge",
+  "@dialogTitleDuelChallenge": {
+    "description": "Duel challenge dialog title"
+  },
+  "challengeNoLongerAvailable": "This challenge is no longer available",
+  "@challengeNoLongerAvailable": {
+    "description": "Challenge unavailable message"
+  },
+  "buttonGoBack": "Go Back",
+  "@buttonGoBack": {
+    "description": "Go back button label"
+  },
+  "buttonHome": "Home",
+  "@buttonHome": {
+    "description": "Home button label"
+  },
+  "buttonAcceptChallenge": "Accept Challenge",
+  "@buttonAcceptChallenge": {
+    "description": "Accept challenge button label"
+  },
+  "buttonDeclineChallenge": "Decline",
+  "@buttonDeclineChallenge": {
+    "description": "Decline challenge button label"
+  },
+  "buttonExit": "Exit",
+  "@buttonExit": {
+    "description": "Exit button label"
+  },
+  "buttonOk": "OK",
+  "@buttonOk": {
+    "description": "OK button label"
+  },
+  "buttonAccept": "Accept",
+  "@buttonAccept": {
+    "description": "Accept button label"
+  },
+  "buttonDecline": "Decline",
+  "@buttonDecline": {
+    "description": "Decline button label"
+  },
+  "screenTitleVsMode": "VS Mode",
+  "@screenTitleVsMode": {
+    "description": "VS Mode screen title"
+  },
+  "screenTitleDuel": "Duel",
+  "@screenTitleDuel": {
+    "description": "Duel screen title"
+  },
+  "screenTitleDuelResults": "Duel Results",
+  "@screenTitleDuelResults": {
+    "description": "Duel results screen title"
+  },
+  "statusFriendRequestSent": "Friend request sent to {name}!",
+  "@statusFriendRequestSent": {
+    "description": "Friend request sent status message",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "statusDuelChallengeSent": "Duel challenge sent to {name}!",
+  "@statusDuelChallengeSent": {
+    "description": "Duel challenge sent status message",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "statusDuelDeclined": "Duel declined",
+  "@statusDuelDeclined": {
+    "description": "Duel declined status message"
+  },
+  "statusFriendCodeCopied": "Friend code copied to clipboard",
+  "@statusFriendCodeCopied": {
+    "description": "Friend code copied status message"
+  },
+  "statusNowFriends": "You are now friends with {name}!",
+  "@statusNowFriends": {
+    "description": "Now friends status message",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "statusFriendRequestDeclined": "Friend request declined",
+  "@statusFriendRequestDeclined": {
+    "description": "Friend request declined status message"
+  },
+  "statusFriendAdded": "{name} added as friend!",
+  "@statusFriendAdded": {
+    "description": "Friend added status message",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "vsText": "VS",
+  "@vsText": {
+    "description": "VS text label"
+  },
+  "questionsLabel": "Questions",
+  "@questionsLabel": {
+    "description": "Questions label"
+  },
+  "timeLabel": "Time",
+  "@timeLabel": {
+    "description": "Time label"
+  },
+  "winnerLabel": "Winner",
+  "@winnerLabel": {
+    "description": "Winner label"
+  },
+  "answerAtOwnPace": "Answer at your own pace",
+  "@answerAtOwnPace": {
+    "description": "Answer at own pace instruction"
+  },
+  "highestScoreWins": "Highest score wins",
+  "@highestScoreWins": {
+    "description": "Highest score wins instruction"
+  },
+  "passDeviceTo": "Pass device to {playerName}",
+  "@passDeviceTo": {
+    "description": "Pass device instruction",
+    "placeholders": {
+      "playerName": {
+        "type": "String"
+      }
+    }
+  },
+  "startPlayerTurn": "START {playerName}'S TURN",
+  "@startPlayerTurn": {
+    "description": "Start player turn button",
+    "placeholders": {
+      "playerName": {
+        "type": "String"
+      }
+    }
+  },
+  "duelWith": "Duel with {playerName}",
+  "@duelWith": {
+    "description": "Duel with player label",
+    "placeholders": {
+      "playerName": {
+        "type": "String"
+      }
+    }
+  },
+  "questionProgress": "Question {current} / {total}",
+  "@questionProgress": {
+    "description": "Question progress label",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "youLabel": "You",
+  "@youLabel": {
+    "description": "You label"
+  },
+  "friendCodePlaceholder": "ABC123",
+  "@friendCodePlaceholder": {
+    "description": "Friend code placeholder text"
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "English language label"
+  },
+  "languageGerman": "Deutsch",
+  "@languageGerman": {
+    "description": "German language label"
+  },
+  "noCategoriesAvailable": "No categories available",
+  "@noCategoriesAvailable": {
+    "description": "No categories available message"
+  },
+  "pleaseLoginToViewFriends": "Please log in to view friends",
+  "@pleaseLoginToViewFriends": {
+    "description": "Login required message for friends"
+  },
+  "dayStreak": "day streak",
+  "@dayStreak": {
+    "description": "Day streak label"
+  },
+  "leading": "Leading",
+  "@leading": {
+    "description": "Leading status in head-to-head"
+  },
+  "trailing": "Trailing",
+  "@trailing": {
+    "description": "Trailing status in head-to-head"
+  },
+  "tied": "Tied",
+  "@tied": {
+    "description": "Tied status in head-to-head"
+  },
+  "headToHeadRecord": "Head-to-Head Record",
+  "@headToHeadRecord": {
+    "description": "Head-to-head record label"
+  },
+  "ties": "Ties",
+  "@ties": {
+    "description": "Ties label"
+  },
+  "pleaseSelectAvatar": "Please select an avatar",
+  "@pleaseSelectAvatar": {
+    "description": "Avatar selection validation message"
+  },
+  "friendRequests": "Friend Requests ({count})",
+  "@friendRequests": {
+    "description": "Friend requests section title with count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "wantsToBeYourFriend": "Wants to be your friend",
+  "@wantsToBeYourFriend": {
+    "description": "Friend request description"
+  },
+  "yourFriendCodeLabel": "Your Friend Code",
+  "@yourFriendCodeLabel": {
+    "description": "Your friend code section label"
+  },
+  "shareCodeWithFriends": "Share this code with friends so they can add you",
+  "@shareCodeWithFriends": {
+    "description": "Friend code sharing instruction"
+  },
+  "noFriendsYetTitle": "No friends yet",
+  "@noFriendsYetTitle": {
+    "description": "No friends title"
+  },
+  "addFriendsUsingCode": "Add friends using their friend code",
+  "@addFriendsUsingCode": {
+    "description": "Add friends instruction"
+  },
+  "viewResults": "View Results",
+  "@viewResults": {
+    "description": "View results button"
+  },
+  "sendChallenge": "Send Challenge",
+  "@sendChallenge": {
+    "description": "Send challenge button"
+  },
+  "duelWithPlayerCompleted": "Duel with {playerName} completed!",
+  "@duelWithPlayerCompleted": {
+    "description": "Duel completed message",
+    "placeholders": {
+      "playerName": {
+        "type": "String"
+      }
+    }
+  },
+  "waitingForPlayerToComplete": "Waiting for {playerName} to complete",
+  "@waitingForPlayerToComplete": {
+    "description": "Waiting for player message",
+    "placeholders": {
+      "playerName": {
+        "type": "String"
+      }
+    }
+  },
+  "duelWithPlayerReady": "Duel with {playerName} is ready!",
+  "@duelWithPlayerReady": {
+    "description": "Duel ready message",
+    "placeholders": {
+      "playerName": {
+        "type": "String"
+      }
+    }
+  },
+  "duelCompletedTapBanner": "Duel completed - tap banner to view results",
+  "@duelCompletedTapBanner": {
+    "description": "Duel completed instruction"
+  },
+  "waitingForOpponentToComplete": "Waiting for opponent to complete",
+  "@waitingForOpponentToComplete": {
+    "description": "Waiting for opponent message"
+  },
+  "duelReadyTapBanner": "Duel ready - tap banner to start",
+  "@duelReadyTapBanner": {
+    "description": "Duel ready instruction"
+  },
+  "tapBannerToAcceptDecline": "Tap banner to accept or decline",
+  "@tapBannerToAcceptDecline": {
+    "description": "Accept/decline instruction"
+  },
+  "challengeSentWaiting": "Challenge sent - waiting for response",
+  "@challengeSentWaiting": {
+    "description": "Challenge sent status"
+  },
+  "viewResultsTooltip": "View results",
+  "@viewResultsTooltip": {
+    "description": "View results tooltip"
+  },
+  "startDuelTooltip": "Start duel",
+  "@startDuelTooltip": {
+    "description": "Start duel tooltip"
+  },
+  "challengeToDuel": "Challenge to duel",
+  "@challengeToDuel": {
+    "description": "Challenge to duel tooltip"
+  },
+  "challengePending": "Challenge pending",
+  "@challengePending": {
+    "description": "Challenge pending tooltip"
+  },
+  "waitingForOpponent": "Waiting for opponent",
+  "@waitingForOpponent": {
+    "description": "Waiting for opponent tooltip"
+  },
+  "errorLoadingDuelStatus": "Error loading duel status",
+  "@errorLoadingDuelStatus": {
+    "description": "Error loading duel status message"
+  },
+  "challengePlayerQuestion": "Challenge {playerName}?",
+  "@challengePlayerQuestion": {
+    "description": "Challenge player dialog title",
+    "placeholders": {
+      "playerName": {
+        "type": "String"
+      }
+    }
+  },
+  "fiveQuestionsOwnPace": "5 questions • Answer at your own pace",
+  "@fiveQuestionsOwnPace": {
+    "description": "Duel challenge description"
+  },
+  "enterFriendCodeToAdd": "Enter your friend's code to add them",
+  "@enterFriendCodeToAdd": {
+    "description": "Add friend dialog instruction"
+  },
+  "friendCodeLabel": "Friend Code",
+  "@friendCodeLabel": {
+    "description": "Friend code input label"
+  },
+  "friendCodeHint": "e.g., ABC123",
+  "@friendCodeHint": {
+    "description": "Friend code input hint"
+  },
+  "friendRequestAlreadySent": "Friend request already sent to this user",
+  "@friendRequestAlreadySent": {
+    "description": "Friend request already sent error"
+  },
+  "playerALabel": "Player A",
+  "@playerALabel": {
+    "description": "Player A form field label"
+  },
+  "playerBLabel": "Player B",
+  "@playerBLabel": {
+    "description": "Player B form field label"
+  },
+  "questionsPerPlayer": "Questions per Player",
+  "@questionsPerPlayer": {
+    "description": "Questions per player label"
+  },
+  "questionsLowercase": "questions",
+  "@questionsLowercase": {
+    "description": "Questions label lowercase"
+  },
+  "avatarSaved": "Avatar saved",
+  "@avatarSaved": {
+    "description": "Avatar saved success message"
+  },
+  "authenticationError": "Authentication failed. Please check your credentials.",
+  "@authenticationError": {
+    "description": "Generic authentication error message"
+  },
+  "registrationError": "Registration failed. Please try again.",
+  "@registrationError": {
+    "description": "Generic registration error message"
+  },
+  "loadingCategories": "Loading categories...",
+  "@loadingCategories": {
+    "description": "Loading categories message"
+  },
+  "loadingQuestions": "Loading questions...",
+  "@loadingQuestions": {
+    "description": "Loading questions message"
+  },
+  "loadingResults": "Loading results...",
+  "@loadingResults": {
+    "description": "Loading results message"
+  },
+  "loadingFriends": "Loading friends...",
+  "@loadingFriends": {
+    "description": "Loading friends message"
+  },
+  "loadingLeaderboard": "Loading leaderboard...",
+  "@loadingLeaderboard": {
+    "description": "Loading leaderboard message"
+  },
+  "loadingStatistics": "Loading statistics...",
+  "@loadingStatistics": {
+    "description": "Loading statistics message"
+  },
+  "noDataAvailable": "No data available",
+  "@noDataAvailable": {
+    "description": "No data available message"
+  },
+  "emptyFriendsList": "Your friends list is empty",
+  "@emptyFriendsList": {
+    "description": "Empty friends list message"
+  },
+  "emptyLeaderboard": "No players on the leaderboard",
+  "@emptyLeaderboard": {
+    "description": "Empty leaderboard message"
+  },
+  "savingChanges": "Saving changes...",
+  "@savingChanges": {
+    "description": "Saving changes message"
+  },
+  "changesSaved": "Changes saved successfully",
+  "@changesSaved": {
+    "description": "Changes saved success message"
+  },
+  "operationFailed": "Operation failed. Please try again.",
+  "@operationFailed": {
+    "description": "Generic operation failed message"
+  },
+  "networkError": "Network error. Please check your connection.",
+  "@networkError": {
+    "description": "Network error message"
+  },
+  "unexpectedError": "An unexpected error occurred",
+  "@unexpectedError": {
+    "description": "Unexpected error message"
+  },
+  "dailyGoalValidationError": "Daily goal must be between 1 and 50",
+  "@dailyGoalValidationError": {
+    "description": "Daily goal validation error message"
+  },
+  "passAndPlayDuel": "Pass & Play Duel",
+  "@passAndPlayDuel": {
+    "description": "VS Mode setup title"
+  },
+  "competeWithFriendSameDevice": "Compete with a friend on the same device",
+  "@competeWithFriendSameDevice": {
+    "description": "VS Mode setup description"
+  },
+  "playerNames": "Player Names",
+  "@playerNames": {
+    "description": "Player names section title"
+  },
+  "scoreCorrect": "{score} correct",
+  "@scoreCorrect": {
+    "description": "Score display with correct count",
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "scorePlaceholder": "---",
+  "@scorePlaceholder": {
+    "description": "Score placeholder when not available"
+  },
+  "perfectTie": "Perfect Tie!",
+  "@perfectTie": {
+    "description": "Perfect tie result message"
+  },
+  "winnerWins": "{winner} Wins!",
+  "@winnerWins": {
+    "description": "Winner announcement message",
+    "placeholders": {
+      "winner": {
+        "type": "String"
+      }
+    }
+  },
+  "wonBySpeed": "Won by speed!",
+  "@wonBySpeed": {
+    "description": "Won by speed indicator"
+  },
+  "duelPointsEarned": "Duel Points Earned",
+  "@duelPointsEarned": {
+    "description": "Duel points earned section title"
+  },
+  "duelPointsTie": "+1 Duel Point (Tie)",
+  "@duelPointsTie": {
+    "description": "Duel points for tie result"
+  },
+  "duelPointsWin": "+3 Duel Points (Win)",
+  "@duelPointsWin": {
+    "description": "Duel points for win result"
+  },
+  "duelPointsLoss": "No Duel Points (Loss)",
+  "@duelPointsLoss": {
+    "description": "Duel points for loss result"
+  },
+  "youWon": "You Won!",
+  "@youWon": {
+    "description": "You won message"
+  },
+  "youLost": "You Lost",
+  "@youLost": {
+    "description": "You lost message"
+  },
+  "resultsAvailableWhenBothComplete": "Results will be available when both players complete the duel",
+  "@resultsAvailableWhenBothComplete": {
+    "description": "Results availability message"
+  },
+  "questionBreakdown": "Question Breakdown",
+  "@questionBreakdown": {
+    "description": "Question breakdown section title"
+  },
+  "done": "DONE",
+  "@done": {
+    "description": "Done button label"
+  },
+  "challengesYou": "{playerName} challenges you!",
+  "@challengesYou": {
+    "description": "Challenge message",
+    "placeholders": {
+      "playerName": {
+        "type": "String"
+      }
+    }
+  },
+  "fiveQuestions": "5 questions",
+  "@fiveQuestions": {
+    "description": "Five questions label"
+  },
+  "errorLoadingUserData": "Error loading user data",
+  "@errorLoadingUserData": {
+    "description": "Error loading user data message"
   }
 }

@@ -587,7 +587,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<String>(
-              title: const Text('English'),
+              title: Text(l10n.languageEnglish),
               value: 'en',
               groupValue: currentLocale.languageCode,
               onChanged: (value) {
@@ -598,7 +598,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
             ),
             RadioListTile<String>(
-              title: const Text('Deutsch'),
+              title: Text(l10n.languageGerman),
               value: 'de',
               groupValue: currentLocale.languageCode,
               onChanged: (value) {

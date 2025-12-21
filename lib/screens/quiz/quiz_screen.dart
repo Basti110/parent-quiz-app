@@ -224,7 +224,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     if (_isLoading || _questions == null) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.quiz)),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(l10n.loadingQuestions),
+            ],
+          ),
+        ),
       );
     }
 

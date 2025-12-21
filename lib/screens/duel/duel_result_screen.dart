@@ -8,6 +8,7 @@ import '../../models/user_model.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/duel_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// DuelResultScreen shows the results of a completed duel
 /// Requirements: 13.1, 13.2, 13.3, 13.4, 14.5
@@ -78,8 +79,9 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading results: ${e.toString()}')),
+          SnackBar(content: Text(l10n.errorLoadingResults(e.toString()))),
         );
         Navigator.of(context).pop();
       }
@@ -94,8 +96,17 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
         _opponent == null ||
         _questions == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Duel Results')),
-        body: const Center(child: CircularProgressIndicator()),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.screenTitleDuelResults)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(AppLocalizations.of(context)!.loadingResults),
+            ],
+          ),
+        ),
       );
     }
 
@@ -124,7 +135,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Duel Results'),
+        title: Text(AppLocalizations.of(context)!.screenTitleDuelResults),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
@@ -157,7 +168,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
 
                       // VS text
                       Text(
-                        'VS',
+                        AppLocalizations.of(context)!.vsText,
                         style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey.shade300,
@@ -217,10 +228,10 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                           const SizedBox(height: 12),
                           Text(
                             isTie
-                                ? 'It\'s a Tie!'
+                                ? AppLocalizations.of(context)!.tie
                                 : userWon
-                                    ? 'You Won!'
-                                    : 'You Lost',
+                                    ? AppLocalizations.of(context)!.youWon
+                                    : AppLocalizations.of(context)!.youLost,
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -255,7 +266,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Waiting for ${otherUser.displayName}...',
+                            AppLocalizations.of(context)!.waitingForPlayerToComplete(otherUser.displayName),
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -264,7 +275,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Results will be available when both players complete the duel',
+                            AppLocalizations.of(context)!.resultsAvailableWhenBothComplete,
                             style: TextStyle(
                               fontSize: 14,
                               color: isDarkMode
@@ -282,7 +293,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                   // Question breakdown (only if both completed)
                   if (bothCompleted) ...[
                     Text(
-                      'Question Breakdown',
+                      AppLocalizations.of(context)!.questionBreakdown,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -310,9 +321,9 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                         ),
                         elevation: 2,
                       ),
-                      child: const Text(
-                        'DONE',
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.done,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.0,
@@ -407,7 +418,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              completed ? '$score / 5' : '- / 5',
+              completed ? AppLocalizations.of(context)!.questionProgress(score, 5) : AppLocalizations.of(context)!.questionProgress(0, 5).replaceFirst('0', '-'),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: const Color(0xFF5C6BC0),
                 fontWeight: FontWeight.w600,

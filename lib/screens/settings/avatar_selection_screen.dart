@@ -73,7 +73,7 @@ class _AvatarSelectionScreenState extends ConsumerState<AvatarSelectionScreen> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(widget.isRegistrationFlow ? 'Continue' : l10n.save),
+                    : Text(widget.isRegistrationFlow ? l10n.continue_ : l10n.save),
               ),
           ],
         ),
@@ -127,12 +127,13 @@ class _AvatarSelectionScreenState extends ConsumerState<AvatarSelectionScreen> {
   }
 
   Future<void> _saveAvatar() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedAvatar == null) {
       // Show validation error if no avatar selected
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select an avatar'),
+          SnackBar(
+            content: Text(l10n.pleaseSelectAvatar),
             backgroundColor: Colors.orange,
           ),
         );
@@ -180,7 +181,7 @@ class _AvatarSelectionScreenState extends ConsumerState<AvatarSelectionScreen> {
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${l10n.save}d'), // "Saved"
+              content: Text(l10n.avatarSaved),
               duration: const Duration(seconds: 2),
             ),
           );

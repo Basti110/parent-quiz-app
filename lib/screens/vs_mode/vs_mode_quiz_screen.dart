@@ -6,6 +6,7 @@ import '../../models/vs_mode_session.dart';
 import '../../services/vs_mode_service.dart';
 import '../../providers/quiz_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// VSModeQuizScreen displays questions for pass-and-play VS Mode
 /// Requirements: 9.3
@@ -115,9 +116,10 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
       });
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error starting VS Mode: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorStartingVsMode(e.toString()))));
         Navigator.of(context).pop();
       }
     }
@@ -139,9 +141,10 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
 
   Future<void> _submitAnswer() async {
     if (_selectedIndices.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Please select an answer')));
+      ).showSnackBar(SnackBar(content: Text(l10n.pleaseSelectAnswer)));
       return;
     }
 
@@ -225,10 +228,20 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading || _session == null || _questionsMap == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('VS Mode')),
-        body: const Center(child: CircularProgressIndicator()),
+        appBar: AppBar(title: Text(l10n.screenTitleVsMode)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(l10n.loadingQuestions),
+            ],
+          ),
+        ),
       );
     }
 
@@ -240,7 +253,7 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Question ${_currentQuestionIndex + 1}/${_currentPlayerQuestionIds.length}',
+          l10n.questionProgress(_currentQuestionIndex + 1, _currentPlayerQuestionIds.length),
         ),
       ),
       body: Column(
@@ -300,8 +313,8 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
                   if (!_isAnswered)
                     Text(
                       question.isMultipleChoice
-                          ? 'Select all that apply'
-                          : 'Select one answer',
+                          ? AppLocalizations.of(context)!.selectAllThatApply
+                          : AppLocalizations.of(context)!.selectOneAnswer,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   const SizedBox(height: 8),
@@ -326,9 +339,9 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'Submit Answer',
-                  style: TextStyle(fontSize: 18),
+                child: Text(
+                  AppLocalizations.of(context)!.submitAnswer,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
             ),

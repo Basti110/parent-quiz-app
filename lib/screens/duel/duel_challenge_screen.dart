@@ -6,6 +6,7 @@ import '../../models/user_model.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/duel_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// DuelChallengeScreen shows a pending duel challenge and allows accept/decline
 /// Requirements: 11.1, 11.2, 11.3
@@ -45,7 +46,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
     // If duel is not pending, show error
     if (duel.status != DuelStatus.pending) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Duel Challenge')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.dialogTitleDuelChallenge)),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -53,7 +54,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
               const Icon(Icons.error_outline, size: 64, color: AppColors.error),
               const SizedBox(height: 16),
               Text(
-                'This challenge is no longer available',
+                AppLocalizations.of(context)!.challengeNoLongerAvailable,
                 style: TextStyle(
                   fontSize: 16,
                   color: isDarkMode
@@ -64,7 +65,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Go Back'),
+                child: Text(AppLocalizations.of(context)!.buttonGoBack),
               ),
             ],
           ),
@@ -76,7 +77,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Duel Challenge'),
+        title: Text(AppLocalizations.of(context)!.dialogTitleDuelChallenge),
       ),
       body: FutureBuilder<List<UserModel>>(
         future: Future.wait([
@@ -96,7 +97,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
                   const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
-                    'Error loading user data',
+                    AppLocalizations.of(context)!.errorLoadingUserData,
                     style: TextStyle(
                       fontSize: 16,
                       color: isDarkMode
@@ -137,7 +138,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
 
                           // VS text
                           Text(
-                            'VS',
+                            AppLocalizations.of(context)!.vsText,
                             style: Theme.of(context).textTheme.displaySmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Colors.grey.shade300,
@@ -177,7 +178,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              '${otherUser.displayName} challenges you!',
+                              AppLocalizations.of(context)!.challengesYou(otherUser.displayName),
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -211,24 +212,24 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
                             _buildDetailRow(
                               context,
                               Icons.quiz_outlined,
-                              'Questions',
-                              '5 questions',
+                              AppLocalizations.of(context)!.questionsLabel,
+                              AppLocalizations.of(context)!.fiveQuestions,
                               isDarkMode,
                             ),
                             const SizedBox(height: 16),
                             _buildDetailRow(
                               context,
                               Icons.timer_outlined,
-                              'Time',
-                              'Answer at your own pace',
+                              AppLocalizations.of(context)!.timeLabel,
+                              AppLocalizations.of(context)!.answerAtOwnPace,
                               isDarkMode,
                             ),
                             const SizedBox(height: 16),
                             _buildDetailRow(
                               context,
                               Icons.emoji_events_outlined,
-                              'Winner',
-                              'Highest score wins',
+                              AppLocalizations.of(context)!.winnerLabel,
+                              AppLocalizations.of(context)!.highestScoreWins,
                               isDarkMode,
                             ),
                           ],
@@ -260,9 +261,9 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
                                         AlwaysStoppedAnimation<Color>(Colors.white),
                                   ),
                                 )
-                              : const Text(
-                                  'ACCEPT CHALLENGE',
-                                  style: TextStyle(
+                              : Text(
+                                  AppLocalizations.of(context)!.buttonAcceptChallenge,
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 1.0,
@@ -286,9 +287,9 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            'Decline',
-                            style: TextStyle(
+                          child: Text(
+                            AppLocalizations.of(context)!.buttonDeclineChallenge,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
@@ -360,7 +361,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
 
         // Player name
         Text(
-          isYou ? 'You' : player.displayName,
+          isYou ? AppLocalizations.of(context)!.youLabel : player.displayName,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -372,7 +373,7 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
 
         // Placeholder score
         Text(
-          '---',
+          AppLocalizations.of(context)!.scorePlaceholder,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: const Color(0xFF5C6BC0),
             fontWeight: FontWeight.w600,
@@ -461,9 +462,10 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
           _isLoading = false;
         });
 
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to accept duel: ${e.toString()}'),
+            content: Text(l10n.errorAcceptingDuel(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -485,8 +487,9 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
 
       if (mounted) {
         Navigator.of(context).pop();
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Duel declined')),
+          SnackBar(content: Text(l10n.statusDuelDeclined)),
         );
       }
     } catch (e) {
@@ -495,9 +498,10 @@ class _DuelChallengeScreenState extends ConsumerState<DuelChallengeScreen> {
           _isLoading = false;
         });
 
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to decline duel: ${e.toString()}'),
+            content: Text(l10n.errorDecliningDuel(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

@@ -9,6 +9,7 @@ import '../../models/user_model.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/duel_providers.dart';
 import '../../theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// DuelQuestionScreen displays duel questions and handles answers
 /// Requirements: 12.1, 12.2, 16.1, 16.2, 16.3
@@ -45,8 +46,9 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
 
     if (userId == null) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User not authenticated')),
+          SnackBar(content: Text(l10n.userNotAuthenticated)),
         );
         Navigator.of(context).pop();
       }
@@ -92,8 +94,9 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
       });
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading duel: ${e.toString()}')),
+          SnackBar(content: Text(l10n.errorLoadingDuel(e.toString()))),
         );
         Navigator.of(context).pop();
       }
@@ -102,10 +105,20 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading || _duel == null || _questions == null || _opponent == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Duel')),
-        body: const Center(child: CircularProgressIndicator()),
+        appBar: AppBar(title: Text(l10n.screenTitleDuel)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(l10n.loadingQuestions),
+            ],
+          ),
+        ),
       );
     }
 
@@ -126,7 +139,7 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
         title: Column(
           children: [
             Text(
-              'Duel with ${_opponent!.displayName}',
+              AppLocalizations.of(context)!.duelWith(_opponent!.displayName),
               style: TextStyle(
                 color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontSize: 16,
@@ -134,7 +147,7 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
               ),
             ),
             Text(
-              'Question ${_currentQuestionIndex + 1} / ${_questions!.length}',
+              AppLocalizations.of(context)!.questionProgress(_currentQuestionIndex + 1, _questions!.length),
               style: TextStyle(
                 color: textSecondaryColor,
                 fontSize: 12,
@@ -250,9 +263,9 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : const Text(
-                          'SUBMIT ANSWER',
-                          style: TextStyle(
+                      : Text(
+                          AppLocalizations.of(context)!.submitAnswer.toUpperCase(),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
@@ -413,9 +426,10 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error submitting answer: ${e.toString()}'),
+            content: Text(l10n.errorSubmittingAnswer(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -453,9 +467,10 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error completing duel: ${e.toString()}'),
+            content: Text(l10n.errorCompletingDuel(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -464,17 +479,16 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
   }
 
   Future<void> _showExitConfirmation(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final shouldExit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Exit Duel?'),
-        content: const Text(
-          'Your progress will be saved and you can continue later.',
-        ),
+        title: Text(l10n.dialogTitleExitDuel),
+        content: Text(l10n.dialogContentExitDuel),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -482,7 +496,7 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
               backgroundColor: AppColors.error,
               foregroundColor: AppColors.textOnPrimary,
             ),
-            child: const Text('Exit'),
+            child: Text(l10n.buttonExit),
           ),
         ],
       ),

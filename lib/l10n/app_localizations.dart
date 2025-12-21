@@ -863,8 +863,8 @@ abstract class AppLocalizations {
   /// Error loading user data message
   ///
   /// In en, this message translates to:
-  /// **'Error loading user data: {error}'**
-  String errorLoadingUserData(String error);
+  /// **'Error loading user data'**
+  String get errorLoadingUserData;
 
   /// View source button
   ///
@@ -1057,6 +1057,828 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please try again'**
   String get pleaseTryAgain;
+
+  /// Error starting VS Mode message
+  ///
+  /// In en, this message translates to:
+  /// **'Error starting VS Mode: {error}'**
+  String errorStartingVsMode(String error);
+
+  /// Error loading duel message
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading duel: {error}'**
+  String errorLoadingDuel(String error);
+
+  /// Error submitting answer message
+  ///
+  /// In en, this message translates to:
+  /// **'Error submitting answer: {error}'**
+  String errorSubmittingAnswer(String error);
+
+  /// Error completing duel message
+  ///
+  /// In en, this message translates to:
+  /// **'Error completing duel: {error}'**
+  String errorCompletingDuel(String error);
+
+  /// Error accepting duel message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to accept duel: {error}'**
+  String errorAcceptingDuel(String error);
+
+  /// Error declining duel message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to decline duel: {error}'**
+  String errorDecliningDuel(String error);
+
+  /// Error updating stats message
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating stats: {error}'**
+  String errorUpdatingStats(String error);
+
+  /// Error loading results message
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading results: {error}'**
+  String errorLoadingResults(String error);
+
+  /// Error loading categories message
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading categories: {error}'**
+  String errorLoadingCategories(String error);
+
+  /// Error loading friends message
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading friends: {error}'**
+  String errorLoadingFriends(String error);
+
+  /// Error accepting friend request message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to accept friend request: {error}'**
+  String errorAcceptingFriendRequest(String error);
+
+  /// Error declining friend request message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to decline friend request: {error}'**
+  String errorDecliningFriendRequest(String error);
+
+  /// Error creating duel message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create duel: {error}'**
+  String errorCreatingDuel(String error);
+
+  /// Error adding friend message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add friend. Please try again.'**
+  String get errorAddingFriend;
+
+  /// Validation message for category selection
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category'**
+  String get pleaseSelectCategory;
+
+  /// Validation message for Player A name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter Player A name'**
+  String get pleaseEnterPlayerAName;
+
+  /// Validation message for Player B name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter Player B name'**
+  String get pleaseEnterPlayerBName;
+
+  /// Validation message for friend code
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a friend code'**
+  String get pleaseEnterFriendCode;
+
+  /// Validation message for friend code length
+  ///
+  /// In en, this message translates to:
+  /// **'Friend code must be 6-8 characters'**
+  String get friendCodeLength;
+
+  /// Error message when friend code not found
+  ///
+  /// In en, this message translates to:
+  /// **'No user found with this friend code'**
+  String get noUserFoundWithCode;
+
+  /// Error message when trying to add self
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot add yourself as a friend'**
+  String get cannotAddYourself;
+
+  /// Error message when already friends
+  ///
+  /// In en, this message translates to:
+  /// **'You are already friends with this user'**
+  String get alreadyFriends;
+
+  /// Exit duel dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Duel?'**
+  String get dialogTitleExitDuel;
+
+  /// Exit duel dialog content
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress will be saved and you can continue later.'**
+  String get dialogContentExitDuel;
+
+  /// Add friend dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Add Friend'**
+  String get dialogTitleAddFriend;
+
+  /// Duel challenge dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Challenge'**
+  String get dialogTitleDuelChallenge;
+
+  /// Challenge unavailable message
+  ///
+  /// In en, this message translates to:
+  /// **'This challenge is no longer available'**
+  String get challengeNoLongerAvailable;
+
+  /// Go back button label
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get buttonGoBack;
+
+  /// Home button label
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get buttonHome;
+
+  /// Accept challenge button label
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Challenge'**
+  String get buttonAcceptChallenge;
+
+  /// Decline challenge button label
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get buttonDeclineChallenge;
+
+  /// Exit button label
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get buttonExit;
+
+  /// OK button label
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get buttonOk;
+
+  /// Accept button label
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get buttonAccept;
+
+  /// Decline button label
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get buttonDecline;
+
+  /// VS Mode screen title
+  ///
+  /// In en, this message translates to:
+  /// **'VS Mode'**
+  String get screenTitleVsMode;
+
+  /// Duel screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Duel'**
+  String get screenTitleDuel;
+
+  /// Duel results screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Results'**
+  String get screenTitleDuelResults;
+
+  /// Friend request sent status message
+  ///
+  /// In en, this message translates to:
+  /// **'Friend request sent to {name}!'**
+  String statusFriendRequestSent(String name);
+
+  /// Duel challenge sent status message
+  ///
+  /// In en, this message translates to:
+  /// **'Duel challenge sent to {name}!'**
+  String statusDuelChallengeSent(String name);
+
+  /// Duel declined status message
+  ///
+  /// In en, this message translates to:
+  /// **'Duel declined'**
+  String get statusDuelDeclined;
+
+  /// Friend code copied status message
+  ///
+  /// In en, this message translates to:
+  /// **'Friend code copied to clipboard'**
+  String get statusFriendCodeCopied;
+
+  /// Now friends status message
+  ///
+  /// In en, this message translates to:
+  /// **'You are now friends with {name}!'**
+  String statusNowFriends(String name);
+
+  /// Friend request declined status message
+  ///
+  /// In en, this message translates to:
+  /// **'Friend request declined'**
+  String get statusFriendRequestDeclined;
+
+  /// Friend added status message
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added as friend!'**
+  String statusFriendAdded(String name);
+
+  /// VS text label
+  ///
+  /// In en, this message translates to:
+  /// **'VS'**
+  String get vsText;
+
+  /// Questions label
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get questionsLabel;
+
+  /// Time label
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get timeLabel;
+
+  /// Winner label
+  ///
+  /// In en, this message translates to:
+  /// **'Winner'**
+  String get winnerLabel;
+
+  /// Answer at own pace instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Answer at your own pace'**
+  String get answerAtOwnPace;
+
+  /// Highest score wins instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Highest score wins'**
+  String get highestScoreWins;
+
+  /// Pass device instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Pass device to {playerName}'**
+  String passDeviceTo(String playerName);
+
+  /// Start player turn button
+  ///
+  /// In en, this message translates to:
+  /// **'START {playerName}\'S TURN'**
+  String startPlayerTurn(String playerName);
+
+  /// Duel with player label
+  ///
+  /// In en, this message translates to:
+  /// **'Duel with {playerName}'**
+  String duelWith(String playerName);
+
+  /// Question progress label
+  ///
+  /// In en, this message translates to:
+  /// **'Question {current} / {total}'**
+  String questionProgress(int current, int total);
+
+  /// You label
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get youLabel;
+
+  /// Friend code placeholder text
+  ///
+  /// In en, this message translates to:
+  /// **'ABC123'**
+  String get friendCodePlaceholder;
+
+  /// English language label
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// German language label
+  ///
+  /// In en, this message translates to:
+  /// **'Deutsch'**
+  String get languageGerman;
+
+  /// No categories available message
+  ///
+  /// In en, this message translates to:
+  /// **'No categories available'**
+  String get noCategoriesAvailable;
+
+  /// Login required message for friends
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in to view friends'**
+  String get pleaseLoginToViewFriends;
+
+  /// Day streak label
+  ///
+  /// In en, this message translates to:
+  /// **'day streak'**
+  String get dayStreak;
+
+  /// Leading status in head-to-head
+  ///
+  /// In en, this message translates to:
+  /// **'Leading'**
+  String get leading;
+
+  /// Trailing status in head-to-head
+  ///
+  /// In en, this message translates to:
+  /// **'Trailing'**
+  String get trailing;
+
+  /// Tied status in head-to-head
+  ///
+  /// In en, this message translates to:
+  /// **'Tied'**
+  String get tied;
+
+  /// Head-to-head record label
+  ///
+  /// In en, this message translates to:
+  /// **'Head-to-Head Record'**
+  String get headToHeadRecord;
+
+  /// Ties label
+  ///
+  /// In en, this message translates to:
+  /// **'Ties'**
+  String get ties;
+
+  /// Avatar selection validation message
+  ///
+  /// In en, this message translates to:
+  /// **'Please select an avatar'**
+  String get pleaseSelectAvatar;
+
+  /// Friend requests section title with count
+  ///
+  /// In en, this message translates to:
+  /// **'Friend Requests ({count})'**
+  String friendRequests(int count);
+
+  /// Friend request description
+  ///
+  /// In en, this message translates to:
+  /// **'Wants to be your friend'**
+  String get wantsToBeYourFriend;
+
+  /// Your friend code section label
+  ///
+  /// In en, this message translates to:
+  /// **'Your Friend Code'**
+  String get yourFriendCodeLabel;
+
+  /// Friend code sharing instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code with friends so they can add you'**
+  String get shareCodeWithFriends;
+
+  /// No friends title
+  ///
+  /// In en, this message translates to:
+  /// **'No friends yet'**
+  String get noFriendsYetTitle;
+
+  /// Add friends instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Add friends using their friend code'**
+  String get addFriendsUsingCode;
+
+  /// View results button
+  ///
+  /// In en, this message translates to:
+  /// **'View Results'**
+  String get viewResults;
+
+  /// Send challenge button
+  ///
+  /// In en, this message translates to:
+  /// **'Send Challenge'**
+  String get sendChallenge;
+
+  /// Duel completed message
+  ///
+  /// In en, this message translates to:
+  /// **'Duel with {playerName} completed!'**
+  String duelWithPlayerCompleted(String playerName);
+
+  /// Waiting for player message
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {playerName} to complete'**
+  String waitingForPlayerToComplete(String playerName);
+
+  /// Duel ready message
+  ///
+  /// In en, this message translates to:
+  /// **'Duel with {playerName} is ready!'**
+  String duelWithPlayerReady(String playerName);
+
+  /// Duel completed instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Duel completed - tap banner to view results'**
+  String get duelCompletedTapBanner;
+
+  /// Waiting for opponent message
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for opponent to complete'**
+  String get waitingForOpponentToComplete;
+
+  /// Duel ready instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Duel ready - tap banner to start'**
+  String get duelReadyTapBanner;
+
+  /// Accept/decline instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Tap banner to accept or decline'**
+  String get tapBannerToAcceptDecline;
+
+  /// Challenge sent status
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge sent - waiting for response'**
+  String get challengeSentWaiting;
+
+  /// View results tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'View results'**
+  String get viewResultsTooltip;
+
+  /// Start duel tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Start duel'**
+  String get startDuelTooltip;
+
+  /// Challenge to duel tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge to duel'**
+  String get challengeToDuel;
+
+  /// Challenge pending tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge pending'**
+  String get challengePending;
+
+  /// Waiting for opponent tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for opponent'**
+  String get waitingForOpponent;
+
+  /// Error loading duel status message
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading duel status'**
+  String get errorLoadingDuelStatus;
+
+  /// Challenge player dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge {playerName}?'**
+  String challengePlayerQuestion(String playerName);
+
+  /// Duel challenge description
+  ///
+  /// In en, this message translates to:
+  /// **'5 questions • Answer at your own pace'**
+  String get fiveQuestionsOwnPace;
+
+  /// Add friend dialog instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your friend\'s code to add them'**
+  String get enterFriendCodeToAdd;
+
+  /// Friend code input label
+  ///
+  /// In en, this message translates to:
+  /// **'Friend Code'**
+  String get friendCodeLabel;
+
+  /// Friend code input hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., ABC123'**
+  String get friendCodeHint;
+
+  /// Friend request already sent error
+  ///
+  /// In en, this message translates to:
+  /// **'Friend request already sent to this user'**
+  String get friendRequestAlreadySent;
+
+  /// Player A form field label
+  ///
+  /// In en, this message translates to:
+  /// **'Player A'**
+  String get playerALabel;
+
+  /// Player B form field label
+  ///
+  /// In en, this message translates to:
+  /// **'Player B'**
+  String get playerBLabel;
+
+  /// Questions per player label
+  ///
+  /// In en, this message translates to:
+  /// **'Questions per Player'**
+  String get questionsPerPlayer;
+
+  /// Questions label lowercase
+  ///
+  /// In en, this message translates to:
+  /// **'questions'**
+  String get questionsLowercase;
+
+  /// Avatar saved success message
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar saved'**
+  String get avatarSaved;
+
+  /// Generic authentication error message
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed. Please check your credentials.'**
+  String get authenticationError;
+
+  /// Generic registration error message
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed. Please try again.'**
+  String get registrationError;
+
+  /// Loading categories message
+  ///
+  /// In en, this message translates to:
+  /// **'Loading categories...'**
+  String get loadingCategories;
+
+  /// Loading questions message
+  ///
+  /// In en, this message translates to:
+  /// **'Loading questions...'**
+  String get loadingQuestions;
+
+  /// Loading results message
+  ///
+  /// In en, this message translates to:
+  /// **'Loading results...'**
+  String get loadingResults;
+
+  /// Loading friends message
+  ///
+  /// In en, this message translates to:
+  /// **'Loading friends...'**
+  String get loadingFriends;
+
+  /// Loading leaderboard message
+  ///
+  /// In en, this message translates to:
+  /// **'Loading leaderboard...'**
+  String get loadingLeaderboard;
+
+  /// Loading statistics message
+  ///
+  /// In en, this message translates to:
+  /// **'Loading statistics...'**
+  String get loadingStatistics;
+
+  /// No data available message
+  ///
+  /// In en, this message translates to:
+  /// **'No data available'**
+  String get noDataAvailable;
+
+  /// Empty friends list message
+  ///
+  /// In en, this message translates to:
+  /// **'Your friends list is empty'**
+  String get emptyFriendsList;
+
+  /// Empty leaderboard message
+  ///
+  /// In en, this message translates to:
+  /// **'No players on the leaderboard'**
+  String get emptyLeaderboard;
+
+  /// Saving changes message
+  ///
+  /// In en, this message translates to:
+  /// **'Saving changes...'**
+  String get savingChanges;
+
+  /// Changes saved success message
+  ///
+  /// In en, this message translates to:
+  /// **'Changes saved successfully'**
+  String get changesSaved;
+
+  /// Generic operation failed message
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed. Please try again.'**
+  String get operationFailed;
+
+  /// Network error message
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please check your connection.'**
+  String get networkError;
+
+  /// Unexpected error message
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred'**
+  String get unexpectedError;
+
+  /// Daily goal validation error message
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal must be between 1 and 50'**
+  String get dailyGoalValidationError;
+
+  /// VS Mode setup title
+  ///
+  /// In en, this message translates to:
+  /// **'Pass & Play Duel'**
+  String get passAndPlayDuel;
+
+  /// VS Mode setup description
+  ///
+  /// In en, this message translates to:
+  /// **'Compete with a friend on the same device'**
+  String get competeWithFriendSameDevice;
+
+  /// Player names section title
+  ///
+  /// In en, this message translates to:
+  /// **'Player Names'**
+  String get playerNames;
+
+  /// Score display with correct count
+  ///
+  /// In en, this message translates to:
+  /// **'{score} correct'**
+  String scoreCorrect(int score);
+
+  /// Score placeholder when not available
+  ///
+  /// In en, this message translates to:
+  /// **'---'**
+  String get scorePlaceholder;
+
+  /// Perfect tie result message
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect Tie!'**
+  String get perfectTie;
+
+  /// Winner announcement message
+  ///
+  /// In en, this message translates to:
+  /// **'{winner} Wins!'**
+  String winnerWins(String winner);
+
+  /// Won by speed indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Won by speed!'**
+  String get wonBySpeed;
+
+  /// Duel points earned section title
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Points Earned'**
+  String get duelPointsEarned;
+
+  /// Duel points for tie result
+  ///
+  /// In en, this message translates to:
+  /// **'+1 Duel Point (Tie)'**
+  String get duelPointsTie;
+
+  /// Duel points for win result
+  ///
+  /// In en, this message translates to:
+  /// **'+3 Duel Points (Win)'**
+  String get duelPointsWin;
+
+  /// Duel points for loss result
+  ///
+  /// In en, this message translates to:
+  /// **'No Duel Points (Loss)'**
+  String get duelPointsLoss;
+
+  /// You won message
+  ///
+  /// In en, this message translates to:
+  /// **'You Won!'**
+  String get youWon;
+
+  /// You lost message
+  ///
+  /// In en, this message translates to:
+  /// **'You Lost'**
+  String get youLost;
+
+  /// Results availability message
+  ///
+  /// In en, this message translates to:
+  /// **'Results will be available when both players complete the duel'**
+  String get resultsAvailableWhenBothComplete;
+
+  /// Question breakdown section title
+  ///
+  /// In en, this message translates to:
+  /// **'Question Breakdown'**
+  String get questionBreakdown;
+
+  /// Done button label
+  ///
+  /// In en, this message translates to:
+  /// **'DONE'**
+  String get done;
+
+  /// Challenge message
+  ///
+  /// In en, this message translates to:
+  /// **'{playerName} challenges you!'**
+  String challengesYou(String playerName);
+
+  /// Five questions label
+  ///
+  /// In en, this message translates to:
+  /// **'5 questions'**
+  String get fiveQuestions;
 }
 
 class _AppLocalizationsDelegate

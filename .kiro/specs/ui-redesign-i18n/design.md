@@ -2,1060 +2,368 @@
 
 ## Overview
 
-This design implements a comprehensive UI redesign and internationalization system for the parent quiz application. The redesign modernizes the user interface with a bottom navigation bar, redesigned dashboard, enhanced VS Mode screen, improved settings, and full multi-language support. The implementation follows Flutter best practices and maintains the existing Riverpod state management architecture.
-
-## Design References
-
-This implementation is based on the following HTML design mockups located in the project root:
-
-- **app_navbar_vs_mode.html**: Provides the visual design for:
-
-  - Bottom navigation bar with icons and labels
-  - VS Mode/Friends League screen with leaderboard-style layout
-  - Settings screen layout and styling
-
-- **app_dashboard_questions.html**: Provides the visual design for:
-  - Dashboard header with crown icon and total correct answers
-  - Category cards displayed directly on dashboard
-  - Question flow with progress bar
-  - Explanation screen with tips display in styled card
-  - "Start Random Quiz" button placement
-
-These HTML files serve as the visual reference for styling, spacing, colors, and overall UI patterns.
+This design addresses the systematic localization of all hardcoded strings in the Flutter parenting quiz app. The analysis revealed approximately 150+ hardcoded strings across various components including error messages, dialog content, button labels, screen titles, and status messages. The solution involves creating new localization keys, updating ARB files with German translations, and refactoring all affected components to use the AppLocalizations system.
 
 ## Architecture
 
-### Component Structure
+The localization system follows Flutter's standard i18n architecture:
 
 ```
-lib/
-├── l10n/                          # Internationalization
-│   ├── app_de.arb                # German translations
-│   ├── app_en.arb                # English translations
-│   └── l10n.yaml                 # L10n configuration
-├── models/
-│   └── app_settings.dart         # Settings model (theme, language)
-├── providers/
-│   ├── theme_providers.dart      # Dark mode state
-│   └── locale_providers.dart     # Language state
-├── screens/
-│   ├── main_navigation.dart      # Bottom nav wrapper
-│   ├── home/
-│   │   └── home_screen.dart      # Redesigned dashboard
-│   ├── vs_mode/
-│   │   ├── vs_mode_friends_screen.dart  # Friends list
-│   │   └── ...                   # Existing VS mode screens
-│   ├── settings/
-│   │   ├── settings_screen.dart  # Redesigned settings
-│   │   └── avatar_selection_screen.dart
-│   └── ...
-├── widgets/
-│   ├── category_card.dart        # Category display widget
-│   ├── friend_list_item.dart     # Friend display widget
-│   └── avatar_grid.dart          # Avatar selection grid
-└── theme/
-    ├── app_theme.dart            # Light/dark themes
-    └── app_colors.dart           # Color constants
+lib/l10n/
+├── app_en.arb          # English translations (source)
+├── app_de.arb          # German translations
+├── app_localizations.dart        # Generated base class
+├── app_localizations_en.dart     # Generated English class
+└── app_localizations_de.dart     # Generated German class
 ```
 
-### State Management
-
-- **Theme State**: Managed via `themeProvider` (StateNotifierProvider)
-- **Locale State**: Managed via `localeProvider` (StateNotifierProvider)
-- **Settings Persistence**: Stored in Firestore under user document
-- **Navigation State**: Managed by Flutter's Navigator 2.0 with bottom navigation
+**Key Components:**
+- **ARB Files**: Store translation key-value pairs for each supported locale
+- **AppLocalizations**: Generated class providing type-safe access to translations
+- **LocalizationsDelegate**: Handles locale switching and loading
+- **Context Extension**: Provides easy access to translations via `AppLocalizations.of(context)`
 
 ## Components and Interfaces
 
-### 1. Main Navigation Component
+### 1. Hardcoded String Categories
 
-**File**: `lib/screens/main_navigation.dart`
+Based on the codebase analysis, hardcoded strings fall into these categories:
 
+#### A. Error Messages
+- Network/API errors: "Error loading questions", "Failed to load statistics"
+- Validation errors: "Please select an answer", "Please enter Player A name"
+- Authentication errors: "User not authenticated"
+- Generic errors: "Error starting VS Mode", "Failed to accept duel"
+
+#### B. Dialog Content
+- Titles: "Add Friend", "Exit Duel?", "Duel Challenge"
+- Content: "Your progress will be saved and you can continue later"
+- Actions: "Accept", "Decline", "Cancel", "OK"
+
+#### C. Screen Titles (AppBar)
+- "VS Mode", "VS Mode Setup", "Duel Results"
+- "Select Category", "Friends", "Duel"
+
+#### D. Button Labels
+- "Start Duel", "Go Back", "Play Again", "Home"
+- "Retry", "Exit", "Accept Challenge"
+
+#### E. Status Messages
+- Success: "Friend request sent!", "Duel challenge sent!"
+- Info: "Friend code copied to clipboard", "Duel declined"
+- Loading: Various loading states and progress indicators
+
+#### F. Form Labels and Placeholders
+- "ABC123" (friend code placeholder)
+- Language selection: "English", "Deutsch"
+- Player names and game setup labels
+
+### 2. Localization Key Naming Convention
+
+Following the existing pattern in the ARB files:
+
+```
+Category_Context_Element
+```
+
+Examples:
+- `errorLoadingQuestions` → `errorLoadingDuel`
+- `dialogTitleAddFriend` → `dialogTitleExitDuel`
+- `buttonAcceptChallenge` → `buttonDeclineChallenge`
+- `statusFriendRequestSent` → `statusDuelDeclined`
+
+### 3. Component Refactoring Strategy
+
+Each hardcoded string will be replaced following this pattern:
+
+**Before:**
 ```dart
-class MainNavigationScreen extends ConsumerStatefulWidget {
-  final int initialIndex;
-
-  @override
-  ConsumerState<MainNavigationScreen> createState() => _MainNavigationScreenState();
-}
-
-class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _screens = [
-    HomeScreen(),
-    VSModeFriendsScreen(),
-    LeaderboardScreen(),
-    SettingsScreen(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: AppLocalizations.of(context)!.dashboard,
-          ),
-          // ... other items
-        ],
-      ),
-    );
-  }
-}
+Text('Error loading duel: ${e.toString()}')
 ```
 
-### 2. Internationalization Setup
-
-**File**: `lib/l10n/app_en.arb`
-
-```json
-{
-  "@@locale": "en",
-  "dashboard": "Dashboard",
-  "vsMode": "VS Mode",
-  "leaderboard": "Leaderboard",
-  "settings": "Settings",
-  "startRandomQuiz": "Start Random Quiz",
-  "correctAnswers": "Correct Answers",
-  "darkMode": "Dark Mode",
-  "language": "Language",
-  "changeAvatar": "Change Avatar",
-  "logout": "Logout",
-  "addFriend": "Add Friend",
-  "friendCode": "Friend Code",
-  "wins": "Wins",
-  "losses": "Losses",
-  "explanation": "Explanation",
-  "tips": "Tips",
-  "correct": "Correct!",
-  "incorrect": "Incorrect",
-  "nextQuestion": "Next Question",
-  "finishQuiz": "Finish Quiz",
-  "checkAnswer": "Check Answer",
-  "cancel": "Cancel",
-  "add": "Add",
-  "save": "Save",
-  "noFriends": "No friends yet. Add friends to compete!"
-}
-```
-
-**File**: `lib/l10n/app_de.arb`
-
-```json
-{
-  "@@locale": "de",
-  "dashboard": "Dashboard",
-  "vsMode": "VS Modus",
-  "leaderboard": "Bestenliste",
-  "settings": "Einstellungen",
-  "startRandomQuiz": "Zufälliges Quiz starten",
-  "correctAnswers": "Richtige Antworten",
-  "darkMode": "Dunkler Modus",
-  "language": "Sprache",
-  "changeAvatar": "Avatar ändern",
-  "logout": "Abmelden",
-  "addFriend": "Freund hinzufügen",
-  "friendCode": "Freundescode",
-  "wins": "Siege",
-  "losses": "Niederlagen",
-  "explanation": "Erklärung",
-  "tips": "Tipps",
-  "correct": "Richtig!",
-  "incorrect": "Falsch",
-  "nextQuestion": "Nächste Frage",
-  "finishQuiz": "Quiz beenden",
-  "checkAnswer": "Antwort prüfen",
-  "cancel": "Abbrechen",
-  "add": "Hinzufügen",
-  "save": "Speichern",
-  "noFriends": "Noch keine Freunde. Füge Freunde hinzu, um zu konkurrieren!"
-}
-```
-
-**File**: `lib/l10n/l10n.yaml`
-
-```yaml
-arb-dir: lib/l10n
-template-arb-file: app_en.arb
-output-localization-file: app_localizations.dart
-```
-
-### 3. Theme Management
-
-**File**: `lib/theme/app_theme.dart`
-
+**After:**
 ```dart
-class AppTheme {
-  static ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.light,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.indigo,
-      brightness: Brightness.light,
-    ),
-    // ... additional theme properties
-  );
-
-  static ThemeData darkTheme = ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.dark,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.indigo,
-      brightness: Brightness.dark,
-    ),
-    // ... additional theme properties
-  );
-}
+Text(l10n.errorLoadingDuel(e.toString()))
 ```
 
-**File**: `lib/providers/theme_providers.dart`
-
+**Before:**
 ```dart
-class ThemeNotifier extends StateNotifier<ThemeMode> {
-  final SettingsService _settingsService;
-
-  ThemeNotifier(this._settingsService) : super(ThemeMode.system) {
-    _loadTheme();
-  }
-
-  Future<void> _loadTheme() async {
-    final isDark = await _settingsService.getDarkMode();
-    state = isDark ? ThemeMode.dark : ThemeMode.light;
-  }
-
-  Future<void> toggleTheme() async {
-    final newMode = state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    await _settingsService.setDarkMode(newMode == ThemeMode.dark);
-    state = newMode;
-  }
-}
-
-final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-  final settingsService = ref.watch(settingsServiceProvider);
-  return ThemeNotifier(settingsService);
-});
+AppBar(title: const Text('VS Mode Setup'))
 ```
 
-### 4. Locale Management
-
-**File**: `lib/providers/locale_providers.dart`
-
+**After:**
 ```dart
-class LocaleNotifier extends StateNotifier<Locale> {
-  final SettingsService _settingsService;
-
-  LocaleNotifier(this._settingsService) : super(const Locale('en')) {
-    _loadLocale();
-  }
-
-  Future<void> _loadLocale() async {
-    final languageCode = await _settingsService.getLanguage();
-    state = Locale(languageCode ?? 'en');
-  }
-
-  Future<void> setLocale(String languageCode) async {
-    await _settingsService.setLanguage(languageCode);
-    state = Locale(languageCode);
-  }
-}
-
-final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
-  final settingsService = ref.watch(settingsServiceProvider);
-  return LocaleNotifier(settingsService);
-});
-```
-
-### 5. Settings Service Extension
-
-**File**: `lib/services/settings_service.dart` (additions)
-
-```dart
-class SettingsService {
-  final FirebaseFirestore _firestore;
-  final SharedPreferences _prefs;
-
-  // Existing methods...
-
-  Future<bool> getDarkMode() async {
-    return _prefs.getBool('darkMode') ?? false;
-  }
-
-  Future<void> setDarkMode(bool value) async {
-    await _prefs.setBool('darkMode', value);
-  }
-
-  Future<String?> getLanguage() async {
-    return _prefs.getString('language');
-  }
-
-  Future<void> setLanguage(String languageCode) async {
-    await _prefs.setString('language', languageCode);
-  }
-
-  Future<String?> getAvatarPath() async {
-    return _prefs.getString('avatarPath');
-  }
-
-  Future<void> setAvatarPath(String path) async {
-    await _prefs.setString('avatarPath', path);
-  }
-}
-```
-
-### 6. Dashboard Redesign
-
-**File**: `lib/screens/home/home_screen.dart`
-
-```dart
-class HomeScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(userDataProvider);
-    final categories = ref.watch(categoriesProvider);
-    final l10n = AppLocalizations.of(context)!;
-
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header with crown and correct answers
-            _buildHeader(context, user, l10n),
-
-            // Dashboard background image
-            _buildDashboardImage(),
-
-            // Categories grid
-            Expanded(
-              child: categories.when(
-                data: (cats) => _buildCategoriesGrid(cats, l10n),
-                loading: () => CircularProgressIndicator(),
-                error: (e, st) => Text('Error: $e'),
-              ),
-            ),
-
-            // Start Random Quiz button
-            _buildRandomQuizButton(context, l10n),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, AsyncValue<UserModel> user, AppLocalizations l10n) {
-    return Padding(
-      padding: EdgeInsets.all(16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.emoji_events, color: Colors.amber, size: 32),
-          SizedBox(width: 8),
-          user.when(
-            data: (u) => Text(
-              '${u.totalCorrectAnswers} ${l10n.correctAnswers}',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            loading: () => CircularProgressIndicator(),
-            error: (_, __) => Text('--'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoriesGrid(List<Category> categories, AppLocalizations l10n) {
-    return GridView.builder(
-      padding: EdgeInsets.all(16),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 1.2,
-      ),
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        return CategoryCard(category: categories[index]);
-      },
-    );
-  }
-}
-```
-
-### 7. Category Card Widget
-
-**File**: `lib/widgets/category_card.dart`
-
-```dart
-class CategoryCard extends StatelessWidget {
-  final Category category;
-
-  const CategoryCard({required this.category});
-
-  @override
-  Widget build(BuildContext context) {
-    final iconPath = category.iconName != null
-        ? 'assets/app_images/categories/${category.iconName}.png'
-        : 'assets/app_images/categories/default.png';
-
-    return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => QuizLengthScreen(categoryId: category.id),
-            ),
-          );
-        },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              iconPath,
-              width: 64,
-              height: 64,
-              errorBuilder: (_, __, ___) => Image.asset(
-                'assets/app_images/categories/default.png',
-                width: 64,
-                height: 64,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              category.title,
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-```
-
-### 8. VS Mode Friends Screen
-
-**File**: `lib/screens/vs_mode/vs_mode_friends_screen.dart`
-
-```dart
-class VSModeFriendsScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final friends = ref.watch(friendsProvider);
-    final l10n = AppLocalizations.of(context)!;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.vsMode),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.person_add),
-            onPressed: () => _showAddFriendDialog(context, ref, l10n),
-          ),
-        ],
-      ),
-      body: friends.when(
-        data: (friendsList) {
-          if (friendsList.isEmpty) {
-            return Center(
-              child: Text(l10n.noFriends),
-            );
-          }
-          return ListView.builder(
-            itemCount: friendsList.length,
-            itemBuilder: (context, index) {
-              return FriendListItem(friend: friendsList[index]);
-            },
-          );
-        },
-        loading: () => Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error: $e')),
-      ),
-    );
-  }
-
-  void _showAddFriendDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    final controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.addFriend),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            labelText: l10n.friendCode,
-            hintText: 'ABC123',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final friendsService = ref.read(friendsServiceProvider);
-              await friendsService.addFriendByCode(controller.text);
-              Navigator.pop(context);
-            },
-            child: Text(l10n.add),
-          ),
-        ],
-      ),
-    );
-  }
-}
-```
-
-### 9. Friend List Item Widget
-
-**File**: `lib/widgets/friend_list_item.dart`
-
-```dart
-class FriendListItem extends StatelessWidget {
-  final Friend friend;
-
-  const FriendListItem({required this.friend});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage: AssetImage(
-            friend.avatarPath ?? 'assets/app_images/avatars/avatar_1.png',
-          ),
-        ),
-        title: Text(friend.displayName),
-        subtitle: Row(
-          children: [
-            Icon(Icons.emoji_events, size: 16, color: Colors.green),
-            SizedBox(width: 4),
-            Text('${friend.wins} ${l10n.wins}'),
-            SizedBox(width: 16),
-            Icon(Icons.close, size: 16, color: Colors.red),
-            SizedBox(width: 4),
-            Text('${friend.losses} ${l10n.losses}'),
-          ],
-        ),
-        trailing: Icon(Icons.chevron_right),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => VSModeSetupScreen(friendId: friend.userId),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-```
-
-### 10. Settings Screen Redesign
-
-**File**: `lib/screens/settings/settings_screen.dart`
-
-```dart
-class SettingsScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
-    final locale = ref.watch(localeProvider);
-    final l10n = AppLocalizations.of(context)!;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settings),
-      ),
-      body: ListView(
-        children: [
-          // Dark Mode Toggle
-          SwitchListTile(
-            title: Text(l10n.darkMode),
-            value: themeMode == ThemeMode.dark,
-            onChanged: (_) {
-              ref.read(themeProvider.notifier).toggleTheme();
-            },
-          ),
-
-          // Language Selection
-          ListTile(
-            title: Text(l10n.language),
-            subtitle: Text(locale.languageCode == 'de' ? 'Deutsch' : 'English'),
-            trailing: Icon(Icons.chevron_right),
-            onTap: () => _showLanguageDialog(context, ref, l10n),
-          ),
-
-          // Change Avatar
-          ListTile(
-            title: Text(l10n.changeAvatar),
-            trailing: Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => AvatarSelectionScreen()),
-              );
-            },
-          ),
-
-          Divider(),
-
-          // Logout
-          ListTile(
-            title: Text(l10n.logout),
-            leading: Icon(Icons.logout, color: Colors.red),
-            onTap: () async {
-              final authService = ref.read(authServiceProvider);
-              await authService.signOut();
-              Navigator.of(context).pushReplacementNamed('/login');
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.language),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<String>(
-              title: Text('English'),
-              value: 'en',
-              groupValue: ref.read(localeProvider).languageCode,
-              onChanged: (value) {
-                ref.read(localeProvider.notifier).setLocale(value!);
-                Navigator.pop(context);
-              },
-            ),
-            RadioListTile<String>(
-              title: Text('Deutsch'),
-              value: 'de',
-              groupValue: ref.read(localeProvider).languageCode,
-              onChanged: (value) {
-                ref.read(localeProvider.notifier).setLocale(value!);
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-```
-
-### 11. Avatar Selection Screen
-
-**File**: `lib/screens/settings/avatar_selection_screen.dart`
-
-```dart
-class AvatarSelectionScreen extends ConsumerStatefulWidget {
-  @override
-  ConsumerState<AvatarSelectionScreen> createState() => _AvatarSelectionScreenState();
-}
-
-class _AvatarSelectionScreenState extends ConsumerState<AvatarSelectionScreen> {
-  String? _selectedAvatar;
-
-  final List<String> _avatars = [
-    'assets/app_images/avatars/avatar_1.png',
-    'assets/app_images/avatars/avatar_2.png',
-    'assets/app_images/avatars/avatar_3.png',
-    'assets/app_images/avatars/avatar_4.png',
-    'assets/app_images/avatars/avatar_5.png',
-    'assets/app_images/avatars/avatar_6.png',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.changeAvatar),
-        actions: [
-          TextButton(
-            onPressed: _selectedAvatar != null ? _saveAvatar : null,
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
-      body: GridView.builder(
-        padding: EdgeInsets.all(16),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: _avatars.length,
-        itemBuilder: (context, index) {
-          final avatar = _avatars[index];
-          final isSelected = _selectedAvatar == avatar;
-
-          return GestureDetector(
-            onTap: () {
-              setState(() => _selectedAvatar = avatar);
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
-                  width: 3,
-                ),
-              ),
-              child: CircleAvatar(
-                backgroundImage: AssetImage(avatar),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _saveAvatar() async {
-    if (_selectedAvatar == null) return;
-
-    final settingsService = ref.read(settingsServiceProvider);
-    await settingsService.setAvatarPath(_selectedAvatar!);
-
-    Navigator.pop(context);
-  }
-}
-```
-
-### 12. Quiz Explanation Screen with Tips
-
-**File**: `lib/screens/quiz/quiz_explanation_screen.dart` (enhancements)
-
-The explanation screen already displays tips when available. Enhancements needed:
-
-```dart
-// Tips section styling (already implemented, needs i18n)
-if (question.tips != null) ...[
-  const SizedBox(height: 24),
-  Text(
-    l10n.tips,  // Add to ARB files
-    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-      fontWeight: FontWeight.bold,
-    ),
-  ),
-  const SizedBox(height: 12),
-  Card(
-    color: Colors.blue.shade50,
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.lightbulb, color: Colors.blue.shade700),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              question.tips!,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-        ],
-      ),
-    ),
-  ),
-],
-```
-
-**Required i18n additions:**
-
-- "Explanation" label
-- "Tips" label
-- "Correct!" / "Incorrect" messages
-- "Next Question" / "Finish Quiz" button text
-
-### 13. Main App Configuration
-
-**File**: `lib/main.dart` (modifications)
-
-```dart
-class MyApp extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
-    final locale = ref.watch(localeProvider);
-
-    return MaterialApp(
-      title: 'Parent Quiz',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
-      locale: locale,
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: [
-        Locale('en'),
-        Locale('de'),
-      ],
-      home: AuthWrapper(),
-    );
-  }
-}
+AppBar(title: Text(l10n.vsModeSetup))
 ```
 
 ## Data Models
 
-### App Settings Model
+### 1. New Localization Keys Structure
 
-**File**: `lib/models/app_settings.dart`
+The following new keys will be added to both ARB files:
 
-```dart
-class AppSettings {
-  final bool darkMode;
-  final String languageCode;
-  final String? avatarPath;
-
-  AppSettings({
-    required this.darkMode,
-    required this.languageCode,
-    this.avatarPath,
-  });
-
-  factory AppSettings.fromMap(Map<String, dynamic> map) {
-    return AppSettings(
-      darkMode: map['darkMode'] ?? false,
-      languageCode: map['languageCode'] ?? 'en',
-      avatarPath: map['avatarPath'],
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'darkMode': darkMode,
-      'languageCode': languageCode,
-      'avatarPath': avatarPath,
-    };
-  }
+#### Error Messages
+```json
+{
+  "errorStartingVsMode": "Error starting VS Mode: {error}",
+  "errorLoadingDuel": "Error loading duel: {error}",
+  "errorSubmittingAnswer": "Error submitting answer: {error}",
+  "errorCompletingDuel": "Error completing duel: {error}",
+  "errorAcceptingDuel": "Failed to accept duel: {error}",
+  "errorDecliningDuel": "Failed to decline duel: {error}",
+  "errorUpdatingStats": "Error updating stats: {error}",
+  "errorLoadingResults": "Error loading results: {error}",
+  "errorLoadingCategories": "Error loading categories: {error}",
+  "errorLoadingFriends": "Error loading friends: {error}",
+  "errorLoadingUserData": "Error loading user data: {error}",
+  "errorAcceptingFriendRequest": "Failed to accept friend request: {error}",
+  "errorDecliningFriendRequest": "Failed to decline friend request: {error}",
+  "errorCreatingDuel": "Failed to create duel: {error}",
+  "errorAddingFriend": "Failed to add friend. Please try again.",
+  "userNotAuthenticated": "User not authenticated"
 }
 ```
 
-### Friend Model Extension
-
-**File**: `lib/models/friend.dart` (additions)
-
-```dart
-class Friend {
-  final String userId;
-  final String displayName;
-  final String? avatarPath;
-  final int wins;
-  final int losses;
-  final String status;
-  final DateTime createdAt;
-
-  // Existing fields and methods...
-
-  int get totalGames => wins + losses;
-  double get winRate => totalGames > 0 ? wins / totalGames : 0.0;
+#### Validation Messages
+```json
+{
+  "pleaseSelectCategory": "Please select a category",
+  "pleaseEnterPlayerAName": "Please enter Player A name",
+  "pleaseEnterPlayerBName": "Please enter Player B name",
+  "pleaseEnterFriendCode": "Please enter a friend code",
+  "friendCodeLength": "Friend code must be 6-8 characters",
+  "noUserFoundWithCode": "No user found with this friend code",
+  "cannotAddYourself": "You cannot add yourself as a friend",
+  "alreadyFriends": "You are already friends with this user"
 }
 ```
 
+#### Dialog Content
+```json
+{
+  "dialogTitleExitDuel": "Exit Duel?",
+  "dialogContentExitDuel": "Your progress will be saved and you can continue later.",
+  "dialogTitleAddFriend": "Add Friend",
+  "dialogTitleDuelChallenge": "Duel Challenge",
+  "challengeNoLongerAvailable": "This challenge is no longer available"
+}
+```
+
+#### Button Labels
+```json
+{
+  "buttonStartDuel": "Start Duel",
+  "buttonGoBack": "Go Back",
+  "buttonPlayAgain": "Play Again",
+  "buttonHome": "Home",
+  "buttonAcceptChallenge": "Accept Challenge",
+  "buttonDeclineChallenge": "Decline",
+  "buttonExit": "Exit",
+  "buttonOk": "OK",
+  "buttonAccept": "Accept",
+  "buttonDecline": "Decline"
+}
+```
+
+#### Screen Titles
+```json
+{
+  "screenTitleVsMode": "VS Mode",
+  "screenTitleDuel": "Duel",
+  "screenTitleDuelResults": "Duel Results",
+  "screenTitleSelectCategory": "Select Category"
+}
+```
+
+#### Status Messages
+```json
+{
+  "statusFriendRequestSent": "Friend request sent to {name}!",
+  "statusDuelChallengeSent": "Duel challenge sent to {name}!",
+  "statusDuelDeclined": "Duel declined",
+  "statusFriendCodeCopied": "Friend code copied to clipboard",
+  "statusNowFriends": "You are now friends with {name}!",
+  "statusFriendRequestDeclined": "Friend request declined",
+  "statusFriendAdded": "{name} added as friend!"
+}
+```
+
+#### Game Content
+```json
+{
+  "vsText": "VS",
+  "questionsLabel": "Questions",
+  "timeLabel": "Time",
+  "winnerLabel": "Winner",
+  "answerAtOwnPace": "Answer at your own pace",
+  "highestScoreWins": "Highest score wins",
+  "passDeviceTo": "Pass device to {playerName}",
+  "startPlayerTurn": "START {playerName}'S TURN",
+  "duelWith": "Duel with {playerName}",
+  "questionProgress": "Question {current} / {total}",
+  "submitAnswer": "SUBMIT ANSWER",
+  "youLabel": "You"
+}
+```
+
+#### Form Elements
+```json
+{
+  "friendCodePlaceholder": "ABC123",
+  "languageEnglish": "English",
+  "languageGerman": "Deutsch",
+  "noCategoriesAvailable": "No categories available",
+  "pleaseLoginToViewFriends": "Please log in to view friends"
+}
+```
+
+### 2. German Translations
+
+Each English key will have a corresponding German translation:
+
+```json
+{
+  "errorStartingVsMode": "Fehler beim Starten des VS Modus: {error}",
+  "errorLoadingDuel": "Fehler beim Laden des Duells: {error}",
+  "pleaseSelectCategory": "Bitte wählen Sie eine Kategorie",
+  "dialogTitleExitDuel": "Duell beenden?",
+  "buttonStartDuel": "Duell starten",
+  "statusFriendRequestSent": "Freundschaftsanfrage an {name} gesendet!",
+  "vsText": "VS",
+  "questionsLabel": "Fragen",
+  "timeLabel": "Zeit",
+  "passDeviceTo": "Gerät an {playerName} übergeben"
+}
+```
+
+## 
 ## Correctness Properties
 
-_A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees._
+*A property is a characteristic or behavior that should hold true across all valid executions of a system—essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
 
-### Property 1: Navigation state consistency
+After analyzing the acceptance criteria, the following properties can be tested to ensure proper localization:
 
-_For any_ navigation action, the selected tab index should match the displayed screen
-**Validates: Requirements 1.2, 1.3**
+**Property 1: Language switching completeness**
+*For any* supported language selection, all visible text elements should display content in the selected language and not contain any hardcoded English strings
+**Validates: Requirements 1.1, 1.2**
 
-### Property 2: Category icon fallback
+**Property 2: Error message localization**
+*For any* error condition that displays a message to the user, the error text should be localized and not contain hardcoded English strings
+**Validates: Requirements 1.3, 3.1, 3.2, 3.3, 3.4, 3.5**
 
-_For any_ category without a specific icon, the system should display the default icon
-**Validates: Requirements 2.4**
+**Property 3: Dialog localization completeness**
+*For any* dialog that can be opened in the app, all text elements (title, content, buttons) should use localized strings
+**Validates: Requirements 1.4, 5.3**
 
-### Property 3: Language persistence
+**Property 4: Interactive element localization**
+*For any* interactive UI element (buttons, form fields, dropdowns), the displayed text should use localized strings
+**Validates: Requirements 1.5, 5.1, 5.2, 5.4**
 
-_For any_ language selection, restarting the app should preserve the selected language
-**Validates: Requirements 5.2**
+**Property 5: Navigation element localization**
+*For any* navigation element (screen titles, tab labels, menu items), the displayed text should use localized strings
+**Validates: Requirements 4.1, 4.2, 4.3, 4.4**
 
-### Property 4: Theme persistence
+**Property 6: Status message localization**
+*For any* status message or notification shown to the user, the text should be localized and not contain hardcoded strings
+**Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5**
 
-_For any_ theme toggle, restarting the app should preserve the selected theme
-**Validates: Requirements 4.2**
-
-### Property 5: Avatar selection validation
-
-_For any_ avatar selection, the saved avatar path should be a valid asset path
-**Validates: Requirements 6.3**
-
-### Property 6: Translation fallback
-
-_For any_ missing translation key, the system should fall back to English
-**Validates: Requirements 5.4**
-
-### Property 7: Friend list ordering
-
-_For any_ friends list, friends should be ordered consistently (e.g., by display name or win rate)
-**Validates: Requirements 3.2**
-
-### Property 8: Locale change propagation
-
-_For any_ locale change, all visible UI text should update to the new language
-**Validates: Requirements 4.3**
+**Property 7: Tooltip and help text localization**
+*For any* tooltip or help text displayed to the user, the content should use localized strings
+**Validates: Requirements 5.5**
 
 ## Error Handling
 
-### Translation Errors
+### 1. Missing Translation Keys
+- **Detection**: Use Flutter's debug mode to identify missing translation keys
+- **Fallback**: Display the key name with a warning prefix (e.g., "MISSING: keyName")
+- **Logging**: Log missing keys for developer attention
+- **Recovery**: Gracefully degrade to English if German translation is missing
 
-- Missing translation keys fall back to English
-- Log warnings for missing translations in development mode
-- Display key name if both primary and fallback translations are missing
+### 2. Locale Loading Failures
+- **Detection**: Catch exceptions during locale switching
+- **Fallback**: Revert to previous working locale
+- **User Feedback**: Show localized error message about language switching failure
+- **Recovery**: Allow user to retry language selection
 
-### Asset Loading Errors
+### 3. Parameterized String Errors
+- **Detection**: Validate parameter substitution in strings with placeholders
+- **Fallback**: Display string without parameters if substitution fails
+- **Logging**: Log parameter mismatch errors
+- **Recovery**: Ensure app continues functioning with degraded text display
 
-- Category icons fall back to default.png if specific icon is missing
-- Avatar images fall back to avatar_1.png if selected avatar is missing
-- Dashboard background uses a solid color if image fails to load
-
-### Settings Persistence Errors
-
-- If SharedPreferences fails, use in-memory defaults
-- Retry settings save operations with exponential backoff
-- Display error message to user if settings cannot be saved after retries
-
-### Navigation Errors
-
-- Validate navigation indices before state updates
-- Handle invalid routes gracefully with error screen
-- Log navigation errors for debugging
+### 4. ARB File Validation
+- **Build-time**: Validate ARB file syntax and key consistency
+- **Runtime**: Ensure all required keys exist in both language files
+- **Development**: Use linting rules to catch missing translations
+- **CI/CD**: Automated checks for translation completeness
 
 ## Testing Strategy
 
-### Unit Tests
+### Unit Testing Approach
+- **Widget Tests**: Test individual components with different locales
+- **Translation Tests**: Verify specific translations are loaded correctly
+- **Locale Switching Tests**: Test language switching functionality
+- **Error Scenario Tests**: Test behavior when translations are missing
 
-**Theme Management Tests**:
+### Property-Based Testing Approach
+The testing will use the `flutter_test` framework with custom property-based testing utilities to verify localization properties across different scenarios.
 
-- Test theme toggle updates state correctly
-- Test theme persistence to SharedPreferences
-- Test theme loading on app start
+**Property-Based Testing Library**: Custom implementation using Flutter's test framework with randomized locale switching and UI traversal.
 
-**Locale Management Tests**:
+**Test Configuration**: Each property-based test will run a minimum of 100 iterations with different combinations of:
+- Language selections (English/German)
+- Screen navigation paths
+- Error conditions
+- User interactions
 
-- Test locale change updates state correctly
-- Test locale persistence to SharedPreferences
-- Test locale loading on app start
-- Test fallback to device locale
+**Property Test Implementation Requirements**:
+- Each property-based test must be tagged with a comment referencing the design document property
+- Use format: `**Feature: ui-redesign-i18n, Property {number}: {property_text}**`
+- Tests will programmatically navigate through the app and verify text localization
+- Automated detection of hardcoded strings using pattern matching
 
-**Settings Service Tests**:
+### Integration Testing
+- **End-to-End Locale Tests**: Full app navigation in both languages
+- **Cross-Screen Consistency**: Verify consistent terminology across screens
+- **Real Device Testing**: Test on actual devices with different system locales
+- **Performance Testing**: Ensure locale switching doesn't impact performance
 
-- Test dark mode get/set operations
-- Test language get/set operations
-- Test avatar path get/set operations
+### Manual Testing Checklist
+- Visual inspection of all screens in both languages
+- Verification of text truncation and layout in German (typically longer)
+- Testing of edge cases like very long German compound words
+- Accessibility testing with screen readers in both languages
 
-**Category Icon Resolution Tests**:
+## Implementation Plan Overview
 
-- Test icon path resolution for existing icons
-- Test fallback to default icon for missing icons
-- Test icon path construction
+### Phase 1: Analysis and Preparation
+1. Complete audit of hardcoded strings (already done)
+2. Create comprehensive list of new localization keys
+3. Generate German translations for all new keys
+4. Update ARB files with new translations
 
-### Property-Based Tests
+### Phase 2: Core Component Updates
+1. Update error handling components
+2. Refactor dialog components
+3. Update navigation and screen titles
+4. Fix button and form element labels
 
-**Property Testing Framework**: Use `test` package with custom generators
+### Phase 3: Status and Notification Updates
+1. Update SnackBar messages
+2. Fix loading and empty state messages
+3. Update success and failure notifications
+4. Fix tooltip and help text
 
-**Property 1: Navigation Consistency**
+### Phase 4: Testing and Validation
+1. Implement property-based tests
+2. Run comprehensive testing suite
+3. Manual testing and validation
+4. Performance and accessibility testing
 
-```dart
-// Generate random navigation indices
-// Verify selected index matches displayed screen
-```
+### Phase 5: Quality Assurance
+1. German language review by native speaker
+2. UI/UX review for text layout issues
+3. Final integration testing
+4. Documentation updates
 
-**Property 2: Category Icon Fallback**
-
-```dart
-// Generate categories with and without icon names
-// Verify all categories display an icon (specific or default)
-```
-
-**Property 3: Language Persistence**
-
-```dart
-// Generate random language selections
-// Verify language persists across app restarts
-```
-
-**Property 4: Theme Persistence**
-
-```dart
-// Generate random theme toggles
-// Verify theme persists across app restarts
-```
-
-**Property 5: Avatar Selection Validation**
-
-```dart
-// Generate random avatar selections
-// Verify saved paths are valid asset paths
-```
-
-**Property 6: Translation Fallback**
-
-```dart
-// Generate random translation keys (some missing)
-// Verify fallback to English for missing keys
-```
-
-**Property 7: Friend List Ordering**
-
-```dart
-// Generate random friend lists
-// Verify consistent ordering
-```
-
-**Property 8: Locale Change Propagation**
-
-```dart
-// Generate random locale changes
-// Verify all UI text updates
-```
-
-### Integration Tests
-
-- Test complete navigation flow through all tabs
-- Test language change updates all screens
-- Test theme change updates all screens
-- Test avatar selection and display
-- Test friend addition and display in VS Mode
-- Test category selection and quiz start
-- Test settings persistence across app restarts
-
-### Widget Tests
-
-- Test BottomNavigationBar displays correct items
-- Test CategoryCard displays icon and title
-- Test FriendListItem displays friend data
-- Test SettingsScreen displays all options
-- Test AvatarSelectionScreen displays avatar grid
-- Test language dialog displays supported languages
+This systematic approach ensures complete localization coverage while maintaining code quality and user experience standards.

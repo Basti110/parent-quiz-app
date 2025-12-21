@@ -9,6 +9,7 @@ import '../../providers/duel_providers.dart';
 import '../../providers/friends_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_header.dart';
+import '../../l10n/app_localizations.dart';
 
 /// FriendsScreen displaying friend code and friends list with duel challenges
 /// Requirements: 10.1, 10.2, 10.4, 10.5, 15a.3, 15a.4
@@ -21,8 +22,8 @@ class FriendsScreen extends ConsumerWidget {
 
     if (userId == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Friends')),
-        body: const Center(child: Text('Please log in to view friends')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.friends)),
+        body: Center(child: Text(AppLocalizations.of(context)!.pleaseLoginToViewFriends)),
       );
     }
 
@@ -72,8 +73,16 @@ class FriendsScreen extends ConsumerWidget {
                           userId,
                           friendsWithData,
                         ),
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
+                        loading: () => Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const CircularProgressIndicator(),
+                              const SizedBox(height: 16),
+                              Text(AppLocalizations.of(context)!.loadingFriends),
+                            ],
+                          ),
+                        ),
                         error: (error, stack) => Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -84,13 +93,13 @@ class FriendsScreen extends ConsumerWidget {
                                 color: AppColors.error,
                               ),
                               const SizedBox(height: 16),
-                              Text('Error loading friends: $error'),
+                              Text(AppLocalizations.of(context)!.errorLoadingFriends(error.toString())),
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () {
                                   ref.invalidate(friendsWithDataProvider(userId));
                                 },
-                                child: const Text('Retry'),
+                                child: Text(AppLocalizations.of(context)!.retry),
                               ),
                             ],
                           ),
@@ -100,14 +109,23 @@ class FriendsScreen extends ConsumerWidget {
                   ],
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(AppLocalizations.of(context)!.loadingFriends),
+                  ],
+                ),
+              ),
               error: (error, stack) => Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(Icons.error_outline, size: 48, color: AppColors.error),
                     const SizedBox(height: 16),
-                    Text('Error loading user data: $error'),
+                    Text(AppLocalizations.of(context)!.errorLoadingUserData),
                   ],
                 ),
               ),
@@ -118,7 +136,7 @@ class FriendsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddFriendDialog(context, ref, userId),
         icon: const Icon(Icons.person_add),
-        label: const Text('Add Friend'),
+        label: Text(AppLocalizations.of(context)!.addFriend),
       ),
     );
   }
@@ -140,7 +158,7 @@ class FriendsScreen extends ConsumerWidget {
               const Icon(Icons.notifications, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
-                'Friend Requests (${pendingRequests.length})',
+                AppLocalizations.of(context)!.friendRequests(pendingRequests.length),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -189,7 +207,7 @@ class FriendsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Wants to be your friend',
+                            AppLocalizations.of(context)!.wantsToBeYourFriend,
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.textSecondary,
@@ -208,7 +226,7 @@ class FriendsScreen extends ConsumerWidget {
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.error,
                       ),
-                      child: const Text('Decline'),
+                      child: Text(AppLocalizations.of(context)!.buttonDecline),
                     ),
                     const SizedBox(width: 4),
                     ElevatedButton(
@@ -222,7 +240,7 @@ class FriendsScreen extends ConsumerWidget {
                         backgroundColor: AppColors.success,
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text('Accept'),
+                      child: Text(AppLocalizations.of(context)!.buttonAccept),
                     ),
                   ],
                 ),
@@ -245,7 +263,7 @@ class FriendsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Your Friend Code',
+              AppLocalizations.of(context)!.yourFriendCodeLabel,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -270,19 +288,19 @@ class FriendsScreen extends ConsumerWidget {
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: userData.friendCode));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Friend code copied to clipboard'),
-                        duration: Duration(seconds: 2),
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context)!.statusFriendCodeCopied),
+                        duration: const Duration(seconds: 2),
                       ),
                     );
                   },
-                  tooltip: 'Copy friend code',
+                  tooltip: AppLocalizations.of(context)!.statusFriendCodeCopied,
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              'Share this code with friends so they can add you',
+              AppLocalizations.of(context)!.shareCodeWithFriends,
               style: TextStyle(
                 fontSize: 12,
                 color:
@@ -315,14 +333,14 @@ class FriendsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'No friends yet',
+              AppLocalizations.of(context)!.noFriendsYetTitle,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Add friends using their friend code',
+              AppLocalizations.of(context)!.addFriendsUsingCode,
               style: TextStyle(
                 color:
                     theme.textTheme.bodySmall?.color ?? AppColors.textSecondary,
@@ -402,7 +420,7 @@ class FriendsScreen extends ConsumerWidget {
                       backgroundColor: Colors.white.withValues(alpha: 0.2),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     ),
-                    child: const Text('Accept'),
+                    child: Text(AppLocalizations.of(context)!.buttonAccept),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
@@ -418,7 +436,7 @@ class FriendsScreen extends ConsumerWidget {
                       backgroundColor: Colors.white.withValues(alpha: 0.2),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     ),
-                    child: const Text('Decline'),
+                    child: Text(AppLocalizations.of(context)!.buttonDecline),
                   ),
                 ],
               ),
@@ -462,7 +480,7 @@ class FriendsScreen extends ConsumerWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Duel with ${friend.displayName} completed!',
+                              AppLocalizations.of(context)!.duelWithPlayerCompleted(friend.displayName),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -481,8 +499,8 @@ class FriendsScreen extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               elevation: 0,
                             ),
-                            child: const Text(
-                              'View Results',
+                            child: Text(
+                              AppLocalizations.of(context)!.viewResults,
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -511,7 +529,7 @@ class FriendsScreen extends ConsumerWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Waiting for ${friend.displayName} to complete',
+                              AppLocalizations.of(context)!.waitingForPlayerToComplete(friend.displayName),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -545,7 +563,7 @@ class FriendsScreen extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Duel with ${friend.displayName} is ready!',
+                            AppLocalizations.of(context)!.duelWithPlayerReady(friend.displayName),
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -564,8 +582,8 @@ class FriendsScreen extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             elevation: 0,
                           ),
-                          child: const Text(
-                            'Start Duel',
+                          child: Text(
+                            AppLocalizations.of(context)!.startDuel,
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -605,8 +623,8 @@ class FriendsScreen extends ConsumerWidget {
                         topRight: Radius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Error loading duel status',
+                    child: Text(
+                      AppLocalizations.of(context)!.errorLoadingDuelStatus,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 12,
@@ -728,8 +746,8 @@ class FriendsScreen extends ConsumerWidget {
                                     : duel.challengerCompletedAt != null;
                                 
                                 if (userCompleted && opponentCompleted) {
-                                  return const Text(
-                                    'Duel completed - tap banner to view results',
+                                  return Text(
+                                    AppLocalizations.of(context)!.duelCompletedTapBanner,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: AppColors.primary,
@@ -737,8 +755,8 @@ class FriendsScreen extends ConsumerWidget {
                                     ),
                                   );
                                 } else if (userCompleted) {
-                                  return const Text(
-                                    'Waiting for opponent to complete',
+                                  return Text(
+                                    AppLocalizations.of(context)!.waitingForOpponentToComplete,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: AppColors.warning,
@@ -746,8 +764,8 @@ class FriendsScreen extends ConsumerWidget {
                                     ),
                                   );
                                 } else {
-                                  return const Text(
-                                    'Duel ready - tap banner to start',
+                                  return Text(
+                                    AppLocalizations.of(context)!.duelReadyTapBanner,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: AppColors.success,
@@ -762,8 +780,8 @@ class FriendsScreen extends ConsumerWidget {
                           },
                         )
                       else if (hasIncomingChallenge && isPendingChallenge)
-                        const Text(
-                          'Tap banner to accept or decline',
+                        Text(
+                          AppLocalizations.of(context)!.tapBannerToAcceptDecline,
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.primary,
@@ -771,8 +789,8 @@ class FriendsScreen extends ConsumerWidget {
                           ),
                         )
                       else if (hasOutgoingChallenge && isPendingChallenge)
-                        const Text(
-                          'Challenge sent - waiting for response',
+                        Text(
+                          AppLocalizations.of(context)!.challengeSentWaiting,
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.warning,
@@ -802,21 +820,21 @@ class FriendsScreen extends ConsumerWidget {
                             return IconButton(
                               icon: const Icon(Icons.emoji_events),
                               color: AppColors.primary,
-                              tooltip: 'View results',
+                              tooltip: AppLocalizations.of(context)!.viewResultsTooltip,
                               onPressed: () => _viewDuelResults(context, friendship.openChallenge!.duelId),
                             );
                           } else if (userCompleted) {
                             return IconButton(
                               icon: const Icon(Icons.hourglass_empty),
                               color: AppColors.warning,
-                              tooltip: 'Waiting for opponent',
+                              tooltip: AppLocalizations.of(context)!.waitingForOpponent,
                               onPressed: null,
                             );
                           } else {
                             return IconButton(
                               icon: const Icon(Icons.play_arrow),
                               color: AppColors.success,
-                              tooltip: 'Start duel',
+                              tooltip: AppLocalizations.of(context)!.startDuelTooltip,
                               onPressed: () => _startAcceptedDuel(context, friendship.openChallenge!.duelId),
                             );
                           }
@@ -838,7 +856,7 @@ class FriendsScreen extends ConsumerWidget {
                   IconButton(
                     icon: const Icon(Icons.sports_mma),
                     color: isPendingChallenge ? AppColors.textSecondary : AppColors.primary,
-                    tooltip: isPendingChallenge ? 'Challenge pending' : 'Challenge to duel',
+                    tooltip: isPendingChallenge ? AppLocalizations.of(context)!.challengePending : AppLocalizations.of(context)!.challengeToDuel,
                     onPressed: isPendingChallenge ? null : () => _showDuelChallengeDialog(
                       context,
                       ref,
@@ -869,7 +887,7 @@ class FriendsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('You are now friends with ${requester.displayName}!'),
+            content: Text(AppLocalizations.of(context)!.statusNowFriends(requester.displayName)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -878,7 +896,7 @@ class FriendsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to accept friend request: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.errorAcceptingFriendRequest(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -900,8 +918,8 @@ class FriendsScreen extends ConsumerWidget {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Friend request declined'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.statusFriendRequestDeclined),
             backgroundColor: AppColors.textSecondary,
           ),
         );
@@ -910,7 +928,7 @@ class FriendsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to decline friend request: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.errorDecliningFriendRequest(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -946,8 +964,8 @@ class FriendsScreen extends ConsumerWidget {
         
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Challenge declined'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.statusDuelDeclined),
               backgroundColor: AppColors.textSecondary,
             ),
           );
@@ -955,9 +973,10 @@ class FriendsScreen extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to ${accept ? 'accept' : 'decline'} challenge: ${e.toString()}'),
+            content: Text(accept ? l10n.errorAcceptingDuel(e.toString()) : l10n.errorDecliningDuel(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1041,7 +1060,7 @@ class FriendsScreen extends ConsumerWidget {
                   const SizedBox(height: 32),
 
                   Text(
-                    'Challenge ${friend.displayName}?',
+                    AppLocalizations.of(context)!.challengePlayerQuestion(friend.displayName),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -1051,7 +1070,7 @@ class FriendsScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
 
                   Text(
-                    '5 questions • Answer at your own pace',
+                    AppLocalizations.of(context)!.fiveQuestionsOwnPace,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -1072,7 +1091,7 @@ class FriendsScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Cancel'),
+                          child: Text(AppLocalizations.of(context)!.cancel),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1090,8 +1109,8 @@ class FriendsScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            'Send Challenge',
+                          child: Text(
+                            AppLocalizations.of(context)!.sendChallenge,
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -1158,7 +1177,7 @@ class FriendsScreen extends ConsumerWidget {
 
         // Player name
         Text(
-          isYou ? 'You' : player.displayName,
+          isYou ? AppLocalizations.of(context)!.youLabel : player.displayName,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -1184,7 +1203,7 @@ class FriendsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Duel challenge sent to ${friend.displayName}!'),
+            content: Text(AppLocalizations.of(context)!.statusDuelChallengeSent(friend.displayName)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -1193,7 +1212,7 @@ class FriendsScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create duel: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.errorCreatingDuel(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -1241,7 +1260,7 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: const Text('Add Friend'),
+      title: Text(AppLocalizations.of(context)!.dialogTitleAddFriend),
       content: Form(
         key: _formKey,
         child: Column(
@@ -1249,7 +1268,7 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Enter your friend\'s code to add them',
+              AppLocalizations.of(context)!.enterFriendCodeToAdd,
               style: TextStyle(
                 fontSize: 14,
                 color:
@@ -1259,19 +1278,20 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _friendCodeController,
-              decoration: const InputDecoration(
-                labelText: 'Friend Code',
-                hintText: 'e.g., ABC123',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.friendCodeLabel,
+                hintText: AppLocalizations.of(context)!.friendCodeHint,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.code),
               ),
               textCapitalization: TextCapitalization.characters,
               validator: (value) {
+                final l10n = AppLocalizations.of(context)!;
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a friend code';
+                  return l10n.pleaseEnterFriendCode;
                 }
                 if (value.length < 6 || value.length > 8) {
-                  return 'Friend code must be 6-8 characters';
+                  return l10n.friendCodeLength;
                 }
                 return null;
               },
@@ -1306,7 +1326,7 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _handleAddFriend,
@@ -1316,7 +1336,7 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Add Friend'),
+              : Text(AppLocalizations.of(context)!.addFriend),
         ),
       ],
     );
@@ -1346,7 +1366,7 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
 
       if (friendUser == null) {
         setState(() {
-          _errorMessage = 'No user found with this friend code';
+          _errorMessage = AppLocalizations.of(context)!.noUserFoundWithCode;
           _isLoading = false;
         });
         return;
@@ -1360,22 +1380,23 @@ class _AddFriendDialogState extends ConsumerState<AddFriendDialog> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Friend request sent to ${friendUser.displayName}!'),
+            content: Text(AppLocalizations.of(context)!.statusFriendRequestSent(friendUser.displayName)),
             backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       setState(() {
+        final l10n = AppLocalizations.of(context)!;
         // Handle specific error messages
         if (e.toString().contains('Cannot add yourself')) {
-          _errorMessage = 'You cannot add yourself as a friend';
+          _errorMessage = l10n.cannotAddYourself;
         } else if (e.toString().contains('Friend request already sent')) {
-          _errorMessage = 'Friend request already sent to this user';
+          _errorMessage = AppLocalizations.of(context)!.friendRequestAlreadySent;
         } else if (e.toString().contains('Already friends')) {
-          _errorMessage = 'You are already friends with this user';
+          _errorMessage = l10n.alreadyFriends;
         } else {
-          _errorMessage = 'Failed to send friend request. Please try again.';
+          _errorMessage = l10n.errorAddingFriend;
         }
         _isLoading = false;
       });

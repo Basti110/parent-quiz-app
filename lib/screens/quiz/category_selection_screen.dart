@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/quiz_providers.dart';
 import '../../models/category.dart';
 import '../../theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// CategorySelectionScreen displays available quiz categories
 /// Requirements: 3.2, 3.3
@@ -11,14 +12,15 @@ class CategorySelectionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Select Category')),
+      appBar: AppBar(title: Text(l10n.selectCategory)),
       body: categoriesAsync.when(
         data: (categories) {
           if (categories.isEmpty) {
-            return const Center(child: Text('No categories available'));
+            return Center(child: Text(l10n.noCategoriesAvailable));
           }
 
           return ListView.builder(
@@ -30,20 +32,29 @@ class CategorySelectionScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(l10n.loadingCategories),
+            ],
+          ),
+        ),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
-              Text('Error loading categories: $error'),
+              Text(l10n.errorLoadingCategories(error.toString())),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   ref.invalidate(categoriesProvider);
                 },
-                child: const Text('Retry'),
+                child: Text(l10n.retry),
               ),
             ],
           ),

@@ -270,7 +270,7 @@ class QuizResultScreen extends ConsumerWidget {
                   children: [
                     Icon(Icons.error_outline, size: 48, color: AppColors.error),
                     const SizedBox(height: 16),
-                    Text(l10n.errorLoadingUserData(error.toString())),
+                    Text(l10n.errorLoadingUserData),
                   ],
                 ),
               ),

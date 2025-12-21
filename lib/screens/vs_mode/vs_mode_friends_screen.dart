@@ -69,7 +69,16 @@ class VSModeFriendsScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(l10n.loadingFriends),
+            ],
+          ),
+        ),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -138,7 +147,7 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
             controller: _controller,
             decoration: InputDecoration(
               labelText: widget.l10n.friendCode,
-              hintText: 'ABC123',
+              hintText: AppLocalizations.of(context)!.friendCodePlaceholder,
               border: const OutlineInputBorder(),
             ),
             textCapitalization: TextCapitalization.characters,
@@ -193,14 +202,14 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
 
     if (friendCode.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter a friend code';
+        _errorMessage = widget.l10n.pleaseEnterFriendCode;
       });
       return;
     }
 
     if (friendCode.length < 6 || friendCode.length > 8) {
       setState(() {
-        _errorMessage = 'Friend code must be 6-8 characters';
+        _errorMessage = widget.l10n.friendCodeLength;
       });
       return;
     }
@@ -218,7 +227,7 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
 
       if (friendUser == null) {
         setState(() {
-          _errorMessage = 'No user found with this friend code';
+          _errorMessage = widget.l10n.noUserFoundWithCode;
           _isLoading = false;
         });
         return;
@@ -232,7 +241,7 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${friendUser.displayName} added as friend!'),
+            content: Text(widget.l10n.statusFriendAdded(friendUser.displayName)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -241,11 +250,11 @@ class _AddFriendDialogState extends ConsumerState<_AddFriendDialog> {
       setState(() {
         // Handle specific error messages
         if (e.toString().contains('Cannot add yourself')) {
-          _errorMessage = 'You cannot add yourself as a friend';
+          _errorMessage = widget.l10n.cannotAddYourself;
         } else if (e.toString().contains('Already friends')) {
-          _errorMessage = 'You are already friends with this user';
+          _errorMessage = widget.l10n.alreadyFriends;
         } else {
-          _errorMessage = 'Failed to add friend. Please try again.';
+          _errorMessage = widget.l10n.errorAddingFriend;
         }
         _isLoading = false;
       });

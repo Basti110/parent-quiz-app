@@ -406,9 +406,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String errorLoadingUserData(String error) {
-    return 'Error loading user data: $error';
-  }
+  String get errorLoadingUserData => 'Error loading user data';
 
   @override
   String get viewSource => 'View Source';
@@ -513,4 +511,481 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pleaseTryAgain => 'Please try again';
+
+  @override
+  String errorStartingVsMode(String error) {
+    return 'Error starting VS Mode: $error';
+  }
+
+  @override
+  String errorLoadingDuel(String error) {
+    return 'Error loading duel: $error';
+  }
+
+  @override
+  String errorSubmittingAnswer(String error) {
+    return 'Error submitting answer: $error';
+  }
+
+  @override
+  String errorCompletingDuel(String error) {
+    return 'Error completing duel: $error';
+  }
+
+  @override
+  String errorAcceptingDuel(String error) {
+    return 'Failed to accept duel: $error';
+  }
+
+  @override
+  String errorDecliningDuel(String error) {
+    return 'Failed to decline duel: $error';
+  }
+
+  @override
+  String errorUpdatingStats(String error) {
+    return 'Error updating stats: $error';
+  }
+
+  @override
+  String errorLoadingResults(String error) {
+    return 'Error loading results: $error';
+  }
+
+  @override
+  String errorLoadingCategories(String error) {
+    return 'Error loading categories: $error';
+  }
+
+  @override
+  String errorLoadingFriends(String error) {
+    return 'Error loading friends: $error';
+  }
+
+  @override
+  String errorAcceptingFriendRequest(String error) {
+    return 'Failed to accept friend request: $error';
+  }
+
+  @override
+  String errorDecliningFriendRequest(String error) {
+    return 'Failed to decline friend request: $error';
+  }
+
+  @override
+  String errorCreatingDuel(String error) {
+    return 'Failed to create duel: $error';
+  }
+
+  @override
+  String get errorAddingFriend => 'Failed to add friend. Please try again.';
+
+  @override
+  String get pleaseSelectCategory => 'Please select a category';
+
+  @override
+  String get pleaseEnterPlayerAName => 'Please enter Player A name';
+
+  @override
+  String get pleaseEnterPlayerBName => 'Please enter Player B name';
+
+  @override
+  String get pleaseEnterFriendCode => 'Please enter a friend code';
+
+  @override
+  String get friendCodeLength => 'Friend code must be 6-8 characters';
+
+  @override
+  String get noUserFoundWithCode => 'No user found with this friend code';
+
+  @override
+  String get cannotAddYourself => 'You cannot add yourself as a friend';
+
+  @override
+  String get alreadyFriends => 'You are already friends with this user';
+
+  @override
+  String get dialogTitleExitDuel => 'Exit Duel?';
+
+  @override
+  String get dialogContentExitDuel =>
+      'Your progress will be saved and you can continue later.';
+
+  @override
+  String get dialogTitleAddFriend => 'Add Friend';
+
+  @override
+  String get dialogTitleDuelChallenge => 'Duel Challenge';
+
+  @override
+  String get challengeNoLongerAvailable =>
+      'This challenge is no longer available';
+
+  @override
+  String get buttonGoBack => 'Go Back';
+
+  @override
+  String get buttonHome => 'Home';
+
+  @override
+  String get buttonAcceptChallenge => 'Accept Challenge';
+
+  @override
+  String get buttonDeclineChallenge => 'Decline';
+
+  @override
+  String get buttonExit => 'Exit';
+
+  @override
+  String get buttonOk => 'OK';
+
+  @override
+  String get buttonAccept => 'Accept';
+
+  @override
+  String get buttonDecline => 'Decline';
+
+  @override
+  String get screenTitleVsMode => 'VS Mode';
+
+  @override
+  String get screenTitleDuel => 'Duel';
+
+  @override
+  String get screenTitleDuelResults => 'Duel Results';
+
+  @override
+  String statusFriendRequestSent(String name) {
+    return 'Friend request sent to $name!';
+  }
+
+  @override
+  String statusDuelChallengeSent(String name) {
+    return 'Duel challenge sent to $name!';
+  }
+
+  @override
+  String get statusDuelDeclined => 'Duel declined';
+
+  @override
+  String get statusFriendCodeCopied => 'Friend code copied to clipboard';
+
+  @override
+  String statusNowFriends(String name) {
+    return 'You are now friends with $name!';
+  }
+
+  @override
+  String get statusFriendRequestDeclined => 'Friend request declined';
+
+  @override
+  String statusFriendAdded(String name) {
+    return '$name added as friend!';
+  }
+
+  @override
+  String get vsText => 'VS';
+
+  @override
+  String get questionsLabel => 'Questions';
+
+  @override
+  String get timeLabel => 'Time';
+
+  @override
+  String get winnerLabel => 'Winner';
+
+  @override
+  String get answerAtOwnPace => 'Answer at your own pace';
+
+  @override
+  String get highestScoreWins => 'Highest score wins';
+
+  @override
+  String passDeviceTo(String playerName) {
+    return 'Pass device to $playerName';
+  }
+
+  @override
+  String startPlayerTurn(String playerName) {
+    return 'START $playerName\'S TURN';
+  }
+
+  @override
+  String duelWith(String playerName) {
+    return 'Duel with $playerName';
+  }
+
+  @override
+  String questionProgress(int current, int total) {
+    return 'Question $current / $total';
+  }
+
+  @override
+  String get youLabel => 'You';
+
+  @override
+  String get friendCodePlaceholder => 'ABC123';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get noCategoriesAvailable => 'No categories available';
+
+  @override
+  String get pleaseLoginToViewFriends => 'Please log in to view friends';
+
+  @override
+  String get dayStreak => 'day streak';
+
+  @override
+  String get leading => 'Leading';
+
+  @override
+  String get trailing => 'Trailing';
+
+  @override
+  String get tied => 'Tied';
+
+  @override
+  String get headToHeadRecord => 'Head-to-Head Record';
+
+  @override
+  String get ties => 'Ties';
+
+  @override
+  String get pleaseSelectAvatar => 'Please select an avatar';
+
+  @override
+  String friendRequests(int count) {
+    return 'Friend Requests ($count)';
+  }
+
+  @override
+  String get wantsToBeYourFriend => 'Wants to be your friend';
+
+  @override
+  String get yourFriendCodeLabel => 'Your Friend Code';
+
+  @override
+  String get shareCodeWithFriends =>
+      'Share this code with friends so they can add you';
+
+  @override
+  String get noFriendsYetTitle => 'No friends yet';
+
+  @override
+  String get addFriendsUsingCode => 'Add friends using their friend code';
+
+  @override
+  String get viewResults => 'View Results';
+
+  @override
+  String get sendChallenge => 'Send Challenge';
+
+  @override
+  String duelWithPlayerCompleted(String playerName) {
+    return 'Duel with $playerName completed!';
+  }
+
+  @override
+  String waitingForPlayerToComplete(String playerName) {
+    return 'Waiting for $playerName to complete';
+  }
+
+  @override
+  String duelWithPlayerReady(String playerName) {
+    return 'Duel with $playerName is ready!';
+  }
+
+  @override
+  String get duelCompletedTapBanner =>
+      'Duel completed - tap banner to view results';
+
+  @override
+  String get waitingForOpponentToComplete => 'Waiting for opponent to complete';
+
+  @override
+  String get duelReadyTapBanner => 'Duel ready - tap banner to start';
+
+  @override
+  String get tapBannerToAcceptDecline => 'Tap banner to accept or decline';
+
+  @override
+  String get challengeSentWaiting => 'Challenge sent - waiting for response';
+
+  @override
+  String get viewResultsTooltip => 'View results';
+
+  @override
+  String get startDuelTooltip => 'Start duel';
+
+  @override
+  String get challengeToDuel => 'Challenge to duel';
+
+  @override
+  String get challengePending => 'Challenge pending';
+
+  @override
+  String get waitingForOpponent => 'Waiting for opponent';
+
+  @override
+  String get errorLoadingDuelStatus => 'Error loading duel status';
+
+  @override
+  String challengePlayerQuestion(String playerName) {
+    return 'Challenge $playerName?';
+  }
+
+  @override
+  String get fiveQuestionsOwnPace => '5 questions • Answer at your own pace';
+
+  @override
+  String get enterFriendCodeToAdd => 'Enter your friend\'s code to add them';
+
+  @override
+  String get friendCodeLabel => 'Friend Code';
+
+  @override
+  String get friendCodeHint => 'e.g., ABC123';
+
+  @override
+  String get friendRequestAlreadySent =>
+      'Friend request already sent to this user';
+
+  @override
+  String get playerALabel => 'Player A';
+
+  @override
+  String get playerBLabel => 'Player B';
+
+  @override
+  String get questionsPerPlayer => 'Questions per Player';
+
+  @override
+  String get questionsLowercase => 'questions';
+
+  @override
+  String get avatarSaved => 'Avatar saved';
+
+  @override
+  String get authenticationError =>
+      'Authentication failed. Please check your credentials.';
+
+  @override
+  String get registrationError => 'Registration failed. Please try again.';
+
+  @override
+  String get loadingCategories => 'Loading categories...';
+
+  @override
+  String get loadingQuestions => 'Loading questions...';
+
+  @override
+  String get loadingResults => 'Loading results...';
+
+  @override
+  String get loadingFriends => 'Loading friends...';
+
+  @override
+  String get loadingLeaderboard => 'Loading leaderboard...';
+
+  @override
+  String get loadingStatistics => 'Loading statistics...';
+
+  @override
+  String get noDataAvailable => 'No data available';
+
+  @override
+  String get emptyFriendsList => 'Your friends list is empty';
+
+  @override
+  String get emptyLeaderboard => 'No players on the leaderboard';
+
+  @override
+  String get savingChanges => 'Saving changes...';
+
+  @override
+  String get changesSaved => 'Changes saved successfully';
+
+  @override
+  String get operationFailed => 'Operation failed. Please try again.';
+
+  @override
+  String get networkError => 'Network error. Please check your connection.';
+
+  @override
+  String get unexpectedError => 'An unexpected error occurred';
+
+  @override
+  String get dailyGoalValidationError => 'Daily goal must be between 1 and 50';
+
+  @override
+  String get passAndPlayDuel => 'Pass & Play Duel';
+
+  @override
+  String get competeWithFriendSameDevice =>
+      'Compete with a friend on the same device';
+
+  @override
+  String get playerNames => 'Player Names';
+
+  @override
+  String scoreCorrect(int score) {
+    return '$score correct';
+  }
+
+  @override
+  String get scorePlaceholder => '---';
+
+  @override
+  String get perfectTie => 'Perfect Tie!';
+
+  @override
+  String winnerWins(String winner) {
+    return '$winner Wins!';
+  }
+
+  @override
+  String get wonBySpeed => 'Won by speed!';
+
+  @override
+  String get duelPointsEarned => 'Duel Points Earned';
+
+  @override
+  String get duelPointsTie => '+1 Duel Point (Tie)';
+
+  @override
+  String get duelPointsWin => '+3 Duel Points (Win)';
+
+  @override
+  String get duelPointsLoss => 'No Duel Points (Loss)';
+
+  @override
+  String get youWon => 'You Won!';
+
+  @override
+  String get youLost => 'You Lost';
+
+  @override
+  String get resultsAvailableWhenBothComplete =>
+      'Results will be available when both players complete the duel';
+
+  @override
+  String get questionBreakdown => 'Question Breakdown';
+
+  @override
+  String get done => 'DONE';
+
+  @override
+  String challengesYou(String playerName) {
+    return '$playerName challenges you!';
+  }
+
+  @override
+  String get fiveQuestions => '5 questions';
 }

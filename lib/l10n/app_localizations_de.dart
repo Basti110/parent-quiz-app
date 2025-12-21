@@ -229,7 +229,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get selectAvatar => 'Avatar auswählen';
 
   @override
-  String get confirmLogout => 'Möchten Sie sich wirklich abmelden?';
+  String get confirmLogout => 'Möchtest du dich wirklich abmelden?';
 
   @override
   String get yes => 'Ja';
@@ -259,16 +259,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get parentQuiz => 'Eltern-Quiz';
 
   @override
-  String get pleaseEnterEmail => 'Bitte geben Sie Ihre E-Mail ein';
+  String get pleaseEnterEmail => 'Bitte gib deine E-Mail ein';
 
   @override
-  String get pleaseEnterValidEmail => 'Bitte geben Sie eine gültige E-Mail ein';
+  String get pleaseEnterValidEmail => 'Bitte gib eine gültige E-Mail ein';
 
   @override
-  String get pleaseEnterPassword => 'Bitte geben Sie Ihr Passwort ein';
+  String get pleaseEnterPassword => 'Bitte gib dein Passwort ein';
 
   @override
-  String get pleaseEnterName => 'Bitte geben Sie Ihren Namen ein';
+  String get pleaseEnterName => 'Bitte gib deinen Namen ein';
 
   @override
   String get nameTooShort => 'Name muss mindestens 2 Zeichen lang sein';
@@ -277,7 +277,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get passwordTooShort => 'Passwort muss mindestens 6 Zeichen lang sein';
 
   @override
-  String get pleaseConfirmPassword => 'Bitte bestätigen Sie Ihr Passwort';
+  String get pleaseConfirmPassword => 'Bitte bestätige dein Passwort';
 
   @override
   String get passwordsDoNotMatch => 'Passwörter stimmen nicht überein';
@@ -290,21 +290,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingWelcomeDescription =>
-      'Lernen Sie evidenzbasierte Elternschaft durch lustige, mundgerechte Quiz';
+      'Lerne evidenzbasierte Elternschaft durch lustige, mundgerechte Quizzes';
 
   @override
   String get earnXpLevelUp => 'EP verdienen & aufsteigen';
 
   @override
   String get onboardingXpDescription =>
-      'Beantworten Sie Fragen richtig, halten Sie Serien aufrecht und verfolgen Sie Ihren Fortschritt';
+      'Beantworte Fragen richtig, halte Serien aufrecht und verfolge deinen Fortschritt';
 
   @override
   String get competeWithFriends => 'Mit Freunden konkurrieren';
 
   @override
   String get onboardingFriendsDescription =>
-      'Fügen Sie Freunde hinzu, vergleichen Sie Punktzahlen auf Bestenlisten und fordern Sie sie im VS Modus heraus';
+      'Füge Freunde hinzu, vergleiche Punktzahlen auf Bestenlisten und fordere sie im VS Modus heraus';
 
   @override
   String get back => 'Zurück';
@@ -322,7 +322,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get selectOneAnswer => 'Wählen Sie eine Antwort';
 
   @override
-  String get pleaseSelectAnswer => 'Bitte wählen Sie eine Antwort';
+  String get pleaseSelectAnswer => 'Bitte wähle eine Antwort';
 
   @override
   String get submitAnswer => 'Antwort absenden';
@@ -369,7 +369,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get keepLearning => 'Weiter lernen! 📚';
 
   @override
-  String get yourScore => 'Ihre Punktzahl';
+  String get yourScore => 'Deine Punktzahl';
 
   @override
   String percentCorrect(int percent) {
@@ -408,9 +408,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String errorLoadingUserData(String error) {
-    return 'Fehler beim Laden der Benutzerdaten: $error';
-  }
+  String get errorLoadingUserData => 'Fehler beim Laden der Benutzerdaten';
 
   @override
   String get viewSource => 'Quelle anzeigen';
@@ -420,7 +418,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get pleaseLoginToViewLeaderboard =>
-      'Bitte melden Sie sich an, um die Bestenliste anzuzeigen';
+      'Bitte melde dich an, um die Bestenliste anzuzeigen';
 
   @override
   String get global => 'Global';
@@ -449,7 +447,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get yourRank => 'Ihr Rang';
+  String get yourRank => 'Dein Rang';
 
   @override
   String get weeklyXp => 'Wöchentliche EP';
@@ -462,7 +460,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get exitQuizConfirmation =>
-      'Möchten Sie wirklich beenden? Ihr Fortschritt geht verloren.';
+      'Möchtest du wirklich beenden? Dein Fortschritt geht verloren.';
 
   @override
   String get dailyGoal => 'Tagesziel';
@@ -472,7 +470,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dailyGoalDescription =>
-      'Legen Sie fest, wie viele Fragen Sie jeden Tag beantworten möchten';
+      'Lege fest, wie viele Fragen du jeden Tag beantworten möchtest';
 
   @override
   String get dailyGoalUpdated => 'Tagesziel erfolgreich aktualisiert';
@@ -517,4 +515,494 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get pleaseTryAgain => 'Bitte versuchen Sie es erneut';
+
+  @override
+  String errorStartingVsMode(String error) {
+    return 'Fehler beim Starten des VS Modus: $error';
+  }
+
+  @override
+  String errorLoadingDuel(String error) {
+    return 'Fehler beim Laden des Duells: $error';
+  }
+
+  @override
+  String errorSubmittingAnswer(String error) {
+    return 'Fehler beim Übermitteln der Antwort: $error';
+  }
+
+  @override
+  String errorCompletingDuel(String error) {
+    return 'Fehler beim Abschließen des Duells: $error';
+  }
+
+  @override
+  String errorAcceptingDuel(String error) {
+    return 'Duell konnte nicht angenommen werden: $error';
+  }
+
+  @override
+  String errorDecliningDuel(String error) {
+    return 'Duell konnte nicht abgelehnt werden: $error';
+  }
+
+  @override
+  String errorUpdatingStats(String error) {
+    return 'Fehler beim Aktualisieren der Statistiken: $error';
+  }
+
+  @override
+  String errorLoadingResults(String error) {
+    return 'Fehler beim Laden der Ergebnisse: $error';
+  }
+
+  @override
+  String errorLoadingCategories(String error) {
+    return 'Fehler beim Laden der Kategorien: $error';
+  }
+
+  @override
+  String errorLoadingFriends(String error) {
+    return 'Fehler beim Laden der Freunde: $error';
+  }
+
+  @override
+  String errorAcceptingFriendRequest(String error) {
+    return 'Freundschaftsanfrage konnte nicht angenommen werden: $error';
+  }
+
+  @override
+  String errorDecliningFriendRequest(String error) {
+    return 'Freundschaftsanfrage konnte nicht abgelehnt werden: $error';
+  }
+
+  @override
+  String errorCreatingDuel(String error) {
+    return 'Duell konnte nicht erstellt werden: $error';
+  }
+
+  @override
+  String get errorAddingFriend =>
+      'Freund konnte nicht hinzugefügt werden. Bitte versuchen Sie es erneut.';
+
+  @override
+  String get pleaseSelectCategory => 'Bitte wähle eine Kategorie';
+
+  @override
+  String get pleaseEnterPlayerAName => 'Bitte gib den Namen von Spieler A ein';
+
+  @override
+  String get pleaseEnterPlayerBName => 'Bitte gib den Namen von Spieler B ein';
+
+  @override
+  String get pleaseEnterFriendCode => 'Bitte gib einen Freundescode ein';
+
+  @override
+  String get friendCodeLength => 'Freundescode muss 6-8 Zeichen lang sein';
+
+  @override
+  String get noUserFoundWithCode =>
+      'Kein Benutzer mit diesem Freundescode gefunden';
+
+  @override
+  String get cannotAddYourself =>
+      'Du kannst dich nicht selbst als Freund hinzufügen';
+
+  @override
+  String get alreadyFriends => 'Du bist bereits mit diesem Benutzer befreundet';
+
+  @override
+  String get dialogTitleExitDuel => 'Duell beenden?';
+
+  @override
+  String get dialogContentExitDuel =>
+      'Dein Fortschritt wird gespeichert und du kannst später fortfahren.';
+
+  @override
+  String get dialogTitleAddFriend => 'Freund hinzufügen';
+
+  @override
+  String get dialogTitleDuelChallenge => 'Duell-Herausforderung';
+
+  @override
+  String get challengeNoLongerAvailable =>
+      'Diese Herausforderung ist nicht mehr verfügbar';
+
+  @override
+  String get buttonGoBack => 'Zurück';
+
+  @override
+  String get buttonHome => 'Startseite';
+
+  @override
+  String get buttonAcceptChallenge => 'Herausforderung annehmen';
+
+  @override
+  String get buttonDeclineChallenge => 'Ablehnen';
+
+  @override
+  String get buttonExit => 'Beenden';
+
+  @override
+  String get buttonOk => 'OK';
+
+  @override
+  String get buttonAccept => 'Annehmen';
+
+  @override
+  String get buttonDecline => 'Ablehnen';
+
+  @override
+  String get screenTitleVsMode => 'VS Modus';
+
+  @override
+  String get screenTitleDuel => 'Duell';
+
+  @override
+  String get screenTitleDuelResults => 'Duell-Ergebnisse';
+
+  @override
+  String statusFriendRequestSent(String name) {
+    return 'Freundschaftsanfrage an $name gesendet!';
+  }
+
+  @override
+  String statusDuelChallengeSent(String name) {
+    return 'Duell-Herausforderung an $name gesendet!';
+  }
+
+  @override
+  String get statusDuelDeclined => 'Duell abgelehnt';
+
+  @override
+  String get statusFriendCodeCopied =>
+      'Freundescode in die Zwischenablage kopiert';
+
+  @override
+  String statusNowFriends(String name) {
+    return 'Du bist jetzt mit $name befreundet!';
+  }
+
+  @override
+  String get statusFriendRequestDeclined => 'Freundschaftsanfrage abgelehnt';
+
+  @override
+  String statusFriendAdded(String name) {
+    return '$name als Freund hinzugefügt!';
+  }
+
+  @override
+  String get vsText => 'VS';
+
+  @override
+  String get questionsLabel => 'Fragen';
+
+  @override
+  String get timeLabel => 'Zeit';
+
+  @override
+  String get winnerLabel => 'Gewinner';
+
+  @override
+  String get answerAtOwnPace => 'Antworte in deinem eigenen Tempo';
+
+  @override
+  String get highestScoreWins => 'Höchste Punktzahl gewinnt';
+
+  @override
+  String passDeviceTo(String playerName) {
+    return 'Gerät an $playerName übergeben';
+  }
+
+  @override
+  String startPlayerTurn(String playerName) {
+    return '${playerName}S ZUG STARTEN';
+  }
+
+  @override
+  String duelWith(String playerName) {
+    return 'Duell mit $playerName';
+  }
+
+  @override
+  String questionProgress(int current, int total) {
+    return 'Frage $current / $total';
+  }
+
+  @override
+  String get youLabel => 'Du';
+
+  @override
+  String get friendCodePlaceholder => 'ABC123';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get noCategoriesAvailable => 'Keine Kategorien verfügbar';
+
+  @override
+  String get pleaseLoginToViewFriends =>
+      'Bitte melde dich an, um Freunde anzuzeigen';
+
+  @override
+  String get dayStreak => 'Tage-Serie';
+
+  @override
+  String get leading => 'Führend';
+
+  @override
+  String get trailing => 'Rückständig';
+
+  @override
+  String get tied => 'Unentschieden';
+
+  @override
+  String get headToHeadRecord => 'Direkter Vergleich';
+
+  @override
+  String get ties => 'Unentschieden';
+
+  @override
+  String get pleaseSelectAvatar => 'Bitte wähle einen Avatar';
+
+  @override
+  String friendRequests(int count) {
+    return 'Freundschaftsanfragen ($count)';
+  }
+
+  @override
+  String get wantsToBeYourFriend => 'Möchte Ihr Freund werden';
+
+  @override
+  String get yourFriendCodeLabel => 'Ihr Freundescode';
+
+  @override
+  String get shareCodeWithFriends =>
+      'Teile diesen Code mit Freunden, damit sie dich hinzufügen können';
+
+  @override
+  String get noFriendsYetTitle => 'Noch keine Freunde';
+
+  @override
+  String get addFriendsUsingCode => 'Freunde mit ihrem Freundescode hinzufügen';
+
+  @override
+  String get viewResults => 'Ergebnisse anzeigen';
+
+  @override
+  String get sendChallenge => 'Herausforderung senden';
+
+  @override
+  String duelWithPlayerCompleted(String playerName) {
+    return 'Duell mit $playerName abgeschlossen!';
+  }
+
+  @override
+  String waitingForPlayerToComplete(String playerName) {
+    return 'Warten auf $playerName zum Abschluss';
+  }
+
+  @override
+  String duelWithPlayerReady(String playerName) {
+    return 'Duell mit $playerName ist bereit!';
+  }
+
+  @override
+  String get duelCompletedTapBanner =>
+      'Duell abgeschlossen - Banner antippen für Ergebnisse';
+
+  @override
+  String get waitingForOpponentToComplete => 'Warten auf Gegner zum Abschluss';
+
+  @override
+  String get duelReadyTapBanner => 'Duell bereit - Banner antippen zum Starten';
+
+  @override
+  String get tapBannerToAcceptDecline =>
+      'Banner antippen zum Annehmen oder Ablehnen';
+
+  @override
+  String get challengeSentWaiting =>
+      'Herausforderung gesendet - warten auf Antwort';
+
+  @override
+  String get viewResultsTooltip => 'Ergebnisse anzeigen';
+
+  @override
+  String get startDuelTooltip => 'Duell starten';
+
+  @override
+  String get challengeToDuel => 'Zum Duell herausfordern';
+
+  @override
+  String get challengePending => 'Herausforderung ausstehend';
+
+  @override
+  String get waitingForOpponent => 'Warten auf Gegner';
+
+  @override
+  String get errorLoadingDuelStatus => 'Fehler beim Laden des Duell-Status';
+
+  @override
+  String challengePlayerQuestion(String playerName) {
+    return '$playerName herausfordern?';
+  }
+
+  @override
+  String get fiveQuestionsOwnPace =>
+      '5 Fragen • Antworten Sie in Ihrem eigenen Tempo';
+
+  @override
+  String get enterFriendCodeToAdd =>
+      'Geben Sie den Code Ihres Freundes ein, um ihn hinzuzufügen';
+
+  @override
+  String get friendCodeLabel => 'Freundescode';
+
+  @override
+  String get friendCodeHint => 'z.B. ABC123';
+
+  @override
+  String get friendRequestAlreadySent =>
+      'Freundschaftsanfrage bereits an diesen Benutzer gesendet';
+
+  @override
+  String get playerALabel => 'Spieler A';
+
+  @override
+  String get playerBLabel => 'Spieler B';
+
+  @override
+  String get questionsPerPlayer => 'Fragen pro Spieler';
+
+  @override
+  String get questionsLowercase => 'fragen';
+
+  @override
+  String get avatarSaved => 'Avatar gespeichert';
+
+  @override
+  String get authenticationError =>
+      'Authentifizierung fehlgeschlagen. Bitte überprüfe deine Anmeldedaten.';
+
+  @override
+  String get registrationError =>
+      'Registrierung fehlgeschlagen. Bitte versuche es erneut.';
+
+  @override
+  String get loadingCategories => 'Kategorien werden geladen...';
+
+  @override
+  String get loadingQuestions => 'Fragen werden geladen...';
+
+  @override
+  String get loadingResults => 'Ergebnisse werden geladen...';
+
+  @override
+  String get loadingFriends => 'Freunde werden geladen...';
+
+  @override
+  String get loadingLeaderboard => 'Bestenliste wird geladen...';
+
+  @override
+  String get loadingStatistics => 'Statistiken werden geladen...';
+
+  @override
+  String get noDataAvailable => 'Keine Daten verfügbar';
+
+  @override
+  String get emptyFriendsList => 'Ihre Freundesliste ist leer';
+
+  @override
+  String get emptyLeaderboard => 'Keine Spieler auf der Bestenliste';
+
+  @override
+  String get savingChanges => 'Änderungen werden gespeichert...';
+
+  @override
+  String get changesSaved => 'Änderungen erfolgreich gespeichert';
+
+  @override
+  String get operationFailed =>
+      'Vorgang fehlgeschlagen. Bitte versuche es erneut.';
+
+  @override
+  String get networkError =>
+      'Netzwerkfehler. Bitte überprüfe deine Verbindung.';
+
+  @override
+  String get unexpectedError => 'Ein unerwarteter Fehler ist aufgetreten';
+
+  @override
+  String get dailyGoalValidationError =>
+      'Tagesziel muss zwischen 1 und 50 liegen';
+
+  @override
+  String get passAndPlayDuel => 'Pass & Play Duell';
+
+  @override
+  String get competeWithFriendSameDevice =>
+      'Konkurrieren Sie mit einem Freund auf demselben Gerät';
+
+  @override
+  String get playerNames => 'Spielernamen';
+
+  @override
+  String scoreCorrect(int score) {
+    return '$score richtig';
+  }
+
+  @override
+  String get scorePlaceholder => '---';
+
+  @override
+  String get perfectTie => 'Perfektes Unentschieden!';
+
+  @override
+  String winnerWins(String winner) {
+    return '$winner gewinnt!';
+  }
+
+  @override
+  String get wonBySpeed => 'Durch Geschwindigkeit gewonnen!';
+
+  @override
+  String get duelPointsEarned => 'Duell-Punkte verdient';
+
+  @override
+  String get duelPointsTie => '+1 Duell-Punkt (Unentschieden)';
+
+  @override
+  String get duelPointsWin => '+3 Duell-Punkte (Sieg)';
+
+  @override
+  String get duelPointsLoss => 'Keine Duell-Punkte (Niederlage)';
+
+  @override
+  String get youWon => 'Du hast gewonnen!';
+
+  @override
+  String get youLost => 'Du hast verloren';
+
+  @override
+  String get resultsAvailableWhenBothComplete =>
+      'Ergebnisse sind verfügbar, wenn beide Spieler das Duell abgeschlossen haben';
+
+  @override
+  String get questionBreakdown => 'Fragen-Aufschlüsselung';
+
+  @override
+  String get done => 'FERTIG';
+
+  @override
+  String challengesYou(String playerName) {
+    return '$playerName fordert Sie heraus!';
+  }
+
+  @override
+  String get fiveQuestions => '5 Fragen';
 }
