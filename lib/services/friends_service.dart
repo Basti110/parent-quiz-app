@@ -101,17 +101,17 @@ class FriendsService {
 
   /// Accept a friend request by creating friendship documents and deleting the request
   /// Requirements: 10.4
-  Future<void> acceptFriendRequest(String userId, String friendUserId) async {
+  Future<void> acceptFriendRequest(String userId, String requesterUserId) async {
     try {
       final now = DateTime.now();
       final batch = _firestore.batch();
 
       // Create friendship document for user (who is accepting)
       final userFriend = Friend(
-        friendUserId: friendUserId,
+        friendUserId: requesterUserId,
         status: 'accepted',
         createdAt: now,
-        createdBy: friendUserId, // Original requester
+        createdBy: requesterUserId, // Original requester
       );
 
       batch.set(
@@ -119,7 +119,7 @@ class FriendsService {
             .collection('users')
             .doc(userId)
             .collection('friends')
-            .doc(friendUserId),
+            .doc(requesterUserId),
         userFriend.toMap(),
       );
 
@@ -128,25 +128,25 @@ class FriendsService {
         friendUserId: userId,
         status: 'accepted',
         createdAt: now,
-        createdBy: friendUserId, // Original requester
+        createdBy: requesterUserId, // Original requester
       );
 
       batch.set(
         _firestore
             .collection('users')
-            .doc(friendUserId)
+            .doc(requesterUserId)
             .collection('friends')
             .doc(userId),
         friendFriend.toMap(),
       );
 
-      // Delete the request document
+      // Delete the request document - the document ID is the requester's ID
       batch.delete(
         _firestore
             .collection('users')
             .doc(userId)
             .collection('requests')
-            .doc(friendUserId),
+            .doc(requesterUserId),
       );
 
       await batch.commit();
@@ -163,14 +163,14 @@ class FriendsService {
 
   /// Decline a friend request by deleting the request document
   /// Requirements: 10.4
-  Future<void> declineFriendRequest(String userId, String friendUserId) async {
+  Future<void> declineFriendRequest(String userId, String requesterUserId) async {
     try {
-      // Delete the request document
+      // Delete the request document - the document ID is the requester's ID
       await _firestore
           .collection('users')
           .doc(userId)
           .collection('requests')
-          .doc(friendUserId)
+          .doc(requesterUserId)
           .delete();
     } on FirebaseException catch (e) {
       print('Firebase error declining friend request: ${e.code} - ${e.message}');
