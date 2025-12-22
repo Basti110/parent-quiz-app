@@ -1,0 +1,3 @@
+# Firebase Admin SDK for question migration
+firebase-admin>=6.0.0
+google-cloud-firestore>=2.0.0
