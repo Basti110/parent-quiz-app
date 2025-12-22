@@ -10,6 +10,7 @@ class Question {
   final String? sourceUrl;
   final int difficulty;
   final bool isActive;
+  final int sequence;
 
   Question({
     required this.id,
@@ -23,6 +24,7 @@ class Question {
     this.sourceUrl,
     required this.difficulty,
     required this.isActive,
+    required this.sequence,
   });
 
   bool get isSingleChoice => correctIndices.length == 1;
@@ -46,6 +48,7 @@ class Question {
       'sourceUrl': sourceUrl,
       'difficulty': difficulty,
       'isActive': isActive,
+      'sequence': sequence,
     };
   }
 
@@ -62,6 +65,7 @@ class Question {
       sourceUrl: map['sourceUrl'] as String?,
       difficulty: map['difficulty'] as int,
       isActive: map['isActive'] as bool,
+      sequence: map['sequence'] as int? ?? 0, // Default to 0 if missing
     );
   }
 }

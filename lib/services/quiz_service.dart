@@ -2,15 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
 import '../models/question.dart';
 import '../models/question_state.dart';
+import 'question_pool_service.dart';
 import 'dart:math';
 
 class QuizService {
   final FirebaseFirestore _firestore;
   final Random _random;
+  final QuestionPoolService? _questionPoolService;
+  final bool _usePoolArchitecture;
 
-  QuizService({FirebaseFirestore? firestore, Random? random})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _random = random ?? Random();
+  QuizService({
+    FirebaseFirestore? firestore, 
+    Random? random,
+    QuestionPoolService? questionPoolService,
+    bool usePoolArchitecture = true, // Feature flag for gradual rollout
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _random = random ?? Random(),
+       _questionPoolService = questionPoolService,
+       _usePoolArchitecture = usePoolArchitecture;
 
   /// Get all active categories
   /// Requirements: 3.2, 11.4
@@ -36,10 +45,50 @@ class QuizService {
   }
 
   /// Get questions for a quiz session with intelligent selection
+  /// 
+  /// Uses the new pool architecture when available and enabled, otherwise falls back
+  /// to the legacy algorithm for backward compatibility.
+  /// 
+  /// Pool architecture provides:
+  /// - Three-tier priority system (unseen -> unmastered -> mastered)
+  /// - Automatic pool expansion when needed
+  /// - Better performance through pre-populated question states
+  /// 
+  /// Legacy algorithm provides:
+  /// - Two-tier priority system (unseen -> oldest seen)
+  /// - Direct query of all questions and states
+  /// 
+  /// Requirements: 1.1, 1.2, 1.3, 1.4
+  Future<List<Question>> getQuestionsForSession(
+    String categoryId,
+    int count,
+    String userId,
+  ) async {
+    // Use pool architecture if available and enabled
+    if (_usePoolArchitecture && _questionPoolService != null) {
+      try {
+        return await _questionPoolService.getQuestionsForSession(
+          userId: userId,
+          count: count,
+          categoryId: categoryId,
+        );
+      } catch (e) {
+        print('Warning: Pool architecture failed, falling back to legacy: $e');
+        // Fall back to legacy algorithm on error
+      }
+    }
+
+    // Legacy algorithm (original implementation)
+    return await _getQuestionsForSessionLegacy(categoryId, count, userId);
+  }
+
+  /// Legacy implementation of getQuestionsForSession
+  /// 
+  /// Maintains the original algorithm for backward compatibility.
   /// Property 5: Unseen question prioritization - prioritize seenCount = 0
   /// Property 6: Oldest question fallback - use oldest lastSeenAt when no unseen
   /// Requirements: 4.1, 4.2
-  Future<List<Question>> getQuestionsForSession(
+  Future<List<Question>> _getQuestionsForSessionLegacy(
     String categoryId,
     int count,
     String userId,
@@ -96,7 +145,17 @@ class QuizService {
       seenQuestions.sort((a, b) {
         final stateA = questionStates[a.id]!;
         final stateB = questionStates[b.id]!;
-        return stateA.lastSeenAt.compareTo(stateB.lastSeenAt);
+        
+        // Handle nullable lastSeenAt - null values go to the end
+        if (stateA.lastSeenAt == null && stateB.lastSeenAt == null) {
+          return 0;
+        } else if (stateA.lastSeenAt == null) {
+          return 1;
+        } else if (stateB.lastSeenAt == null) {
+          return -1;
+        } else {
+          return stateA.lastSeenAt!.compareTo(stateB.lastSeenAt!);
+        }
       });
 
       // Take oldest questions and shuffle them for variety
@@ -116,12 +175,51 @@ class QuizService {
   }
 
   /// Get questions from ALL categories with intelligent cross-category selection
+  /// 
+  /// Uses the new pool architecture when available and enabled, otherwise falls back
+  /// to the legacy algorithm for backward compatibility.
+  /// 
+  /// Pool architecture provides:
+  /// - Three-tier priority system across all categories
+  /// - Automatic pool expansion when needed
+  /// - Better performance through pre-populated question states
+  /// 
+  /// Legacy algorithm provides:
+  /// - Three-tier priority system (unseen -> unmastered -> mastered)
+  /// - Direct query of all questions and states
+  /// 
+  /// Requirements: 1.1, 1.2, 1.3, 1.4
+  Future<List<Question>> getQuestionsFromAllCategories(
+    int count,
+    String userId,
+  ) async {
+    // Use pool architecture if available and enabled
+    if (_usePoolArchitecture && _questionPoolService != null) {
+      try {
+        return await _questionPoolService.getQuestionsForSession(
+          userId: userId,
+          count: count,
+          // No categoryId filter = all categories
+        );
+      } catch (e) {
+        print('Warning: Pool architecture failed, falling back to legacy: $e');
+        // Fall back to legacy algorithm on error
+      }
+    }
+
+    // Legacy algorithm (original implementation)
+    return await _getQuestionsFromAllCategoriesLegacy(count, userId);
+  }
+
+  /// Legacy implementation of getQuestionsFromAllCategories
+  /// 
+  /// Maintains the original algorithm for backward compatibility.
   /// Priority order:
   /// 1. Unseen questions (seenCount = 0) - random from all categories
   /// 2. Unmastered questions (mastered = false) - random from all categories  
   /// 3. All questions - random from all categories
   /// Requirements: Cross-category question selection for "Jetzt Lernen"
-  Future<List<Question>> getQuestionsFromAllCategories(
+  Future<List<Question>> _getQuestionsFromAllCategoriesLegacy(
     int count,
     String userId,
   ) async {
@@ -198,6 +296,101 @@ class QuizService {
     } catch (e) {
       print('Error loading questions from all categories: $e');
       throw Exception('Failed to load questions. Please try again.');
+    }
+  }
+
+  /// Record an answer for a question and update the question state
+  /// 
+  /// Uses the new pool architecture when available and enabled, otherwise falls back
+  /// to updating question states directly for backward compatibility.
+  /// 
+  /// Pool architecture provides:
+  /// - Automatic pool metadata updates
+  /// - Mastery threshold enforcement
+  /// - Lazy migration support
+  /// 
+  /// Legacy behavior:
+  /// - Direct question state updates without pool metadata
+  /// 
+  /// Requirements: 3.1, 3.2, 3.3, 3.4
+  Future<void> recordAnswer({
+    required String userId,
+    required String questionId,
+    required bool isCorrect,
+  }) async {
+    // Use pool architecture if available and enabled
+    if (_usePoolArchitecture && _questionPoolService != null) {
+      try {
+        return await _questionPoolService.recordAnswer(
+          userId: userId,
+          questionId: questionId,
+          isCorrect: isCorrect,
+        );
+      } catch (e) {
+        print('Warning: Pool architecture answer recording failed, falling back to legacy: $e');
+        // Fall back to legacy behavior on error
+      }
+    }
+
+    // Legacy behavior - direct question state update without pool metadata
+    await _recordAnswerLegacy(userId: userId, questionId: questionId, isCorrect: isCorrect);
+  }
+
+  /// Legacy implementation of answer recording
+  /// 
+  /// Updates question state directly without pool metadata management.
+  /// Maintains backward compatibility for users not yet migrated to pool architecture.
+  Future<void> _recordAnswerLegacy({
+    required String userId,
+    required String questionId,
+    required bool isCorrect,
+  }) async {
+    try {
+      final stateRef = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('questionStates')
+          .doc(questionId);
+
+      await _firestore.runTransaction((transaction) async {
+        final stateDoc = await transaction.get(stateRef);
+        
+        QuestionState currentState;
+        if (stateDoc.exists) {
+          currentState = QuestionState.fromMap(stateDoc.data()!);
+        } else {
+          // Create new state for first-time answer
+          currentState = QuestionState(
+            questionId: questionId,
+            seenCount: 0,
+            correctCount: 0,
+            lastSeenAt: null,
+            mastered: false,
+          );
+        }
+
+        // Update state fields
+        final newSeenCount = currentState.seenCount + 1;
+        final newCorrectCount = isCorrect ? currentState.correctCount + 1 : currentState.correctCount;
+        final newMastered = newCorrectCount >= 3; // Mastery threshold
+
+        final updatedState = QuestionState(
+          questionId: currentState.questionId,
+          seenCount: newSeenCount,
+          correctCount: newCorrectCount,
+          lastSeenAt: DateTime.now(),
+          mastered: newMastered,
+        );
+
+        transaction.set(stateRef, updatedState.toMap());
+      });
+
+    } on FirebaseException catch (e) {
+      print('Firebase error recording answer: ${e.code} - ${e.message}');
+      throw Exception('Failed to record answer. Please check your connection and try again.');
+    } catch (e) {
+      print('Error recording answer: $e');
+      throw Exception('Failed to record answer. Please try again.');
     }
   }
 

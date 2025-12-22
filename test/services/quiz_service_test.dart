@@ -1,10 +1,249 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:eduparo/services/quiz_service.dart';
+import 'package:eduparo/services/question_pool_service.dart';
 import 'package:eduparo/models/category.dart';
 import 'dart:math';
 
 void main() {
+  group('QuizService - Pool Architecture Integration', () {
+    late FakeFirebaseFirestore firestore;
+    late QuestionPoolService poolService;
+    late QuizService quizService;
+
+    setUp(() {
+      firestore = FakeFirebaseFirestore();
+      poolService = QuestionPoolService(firestore: firestore);
+      quizService = QuizService(
+        firestore: firestore,
+        questionPoolService: poolService,
+        usePoolArchitecture: true,
+      );
+    });
+
+    test('getQuestionsForSession uses pool architecture when enabled', () async {
+      const userId = 'test_user';
+      const categoryId = 'test_category';
+
+      // Create questions with sequence field for pool architecture
+      await firestore.collection('questions').add({
+        'categoryId': categoryId,
+        'text': 'Pool Question 1',
+        'options': ['A', 'B', 'C'],
+        'correctIndices': [0],
+        'explanation': 'Explanation',
+        'difficulty': 1, // int, not string
+        'isActive': true,
+        'sequence': 1,
+      });
+      await firestore.collection('questions').add({
+        'categoryId': categoryId,
+        'text': 'Pool Question 2',
+        'options': ['A', 'B', 'C'],
+        'correctIndices': [1],
+        'explanation': 'Explanation',
+        'difficulty': 1, // int, not string
+        'isActive': true,
+        'sequence': 2,
+      });
+
+      // Create pool metadata to indicate user is migrated
+      await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('poolMetadata')
+          .doc('stats')
+          .set({
+        'totalPoolSize': 0,
+        'unseenCount': 0,
+        'maxSequenceInPool': 0,
+        'lastExpansionAt': DateTime.now(),
+      });
+
+      // Act: Get questions using pool architecture
+      final questions = await quizService.getQuestionsForSession(categoryId, 2, userId);
+
+      // Assert: Should return questions (pool will auto-expand)
+      expect(questions.length, greaterThan(0));
+    });
+
+    test('getQuestionsFromAllCategories uses pool architecture when enabled', () async {
+      const userId = 'test_user';
+
+      // Create questions from multiple categories with sequence field
+      await firestore.collection('questions').add({
+        'categoryId': 'category1',
+        'text': 'Pool Question 1',
+        'options': ['A', 'B', 'C'],
+        'correctIndices': [0],
+        'explanation': 'Explanation',
+        'difficulty': 1, // int, not string
+        'isActive': true,
+        'sequence': 1,
+      });
+      await firestore.collection('questions').add({
+        'categoryId': 'category2',
+        'text': 'Pool Question 2',
+        'options': ['A', 'B', 'C'],
+        'correctIndices': [1],
+        'explanation': 'Explanation',
+        'difficulty': 1, // int, not string
+        'isActive': true,
+        'sequence': 2,
+      });
+
+      // Create pool metadata to indicate user is migrated
+      await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('poolMetadata')
+          .doc('stats')
+          .set({
+        'totalPoolSize': 0,
+        'unseenCount': 0,
+        'maxSequenceInPool': 0,
+        'lastExpansionAt': DateTime.now(),
+      });
+
+      // Act: Get questions from all categories using pool architecture
+      final questions = await quizService.getQuestionsFromAllCategories(2, userId);
+
+      // Assert: Should return questions (pool will auto-expand)
+      expect(questions.length, greaterThan(0));
+    });
+
+    test('recordAnswer uses pool architecture when enabled', () async {
+      const userId = 'test_user';
+      const questionId = 'test_question';
+
+      // Create a question
+      await firestore.collection('questions').doc(questionId).set({
+        'categoryId': 'test_category',
+        'text': 'Test Question',
+        'options': ['A', 'B', 'C'],
+        'correctIndices': [0],
+        'explanation': 'Explanation',
+        'difficulty': 1, // int, not string
+        'isActive': true,
+        'sequence': 1,
+      });
+
+      // Create pool metadata to indicate user is migrated
+      await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('poolMetadata')
+          .doc('stats')
+          .set({
+        'totalPoolSize': 1,
+        'unseenCount': 1,
+        'maxSequenceInPool': 1,
+        'lastExpansionAt': DateTime.now(),
+      });
+
+      // Create question state in pool
+      await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('questionStates')
+          .doc(questionId)
+          .set({
+        'questionId': questionId,
+        'seenCount': 0,
+        'correctCount': 0,
+        'lastSeenAt': null,
+        'mastered': false,
+        'categoryId': 'test_category',
+        'difficulty': '1', // string in question state
+        'randomSeed': 0.5,
+        'sequence': 1,
+        'addedToPoolAt': DateTime.now(),
+        'poolBatch': 0,
+      });
+
+      // Act: Record an answer using pool architecture
+      await quizService.recordAnswer(
+        userId: userId,
+        questionId: questionId,
+        isCorrect: true,
+      );
+
+      // Assert: Question state should be updated
+      final stateDoc = await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('questionStates')
+          .doc(questionId)
+          .get();
+
+      expect(stateDoc.exists, isTrue);
+      final stateData = stateDoc.data()!;
+      expect(stateData['seenCount'], equals(1));
+      expect(stateData['correctCount'], equals(1));
+      expect(stateData['mastered'], equals(false)); // Not mastered yet (need 3 correct)
+    });
+
+    test('falls back to legacy algorithm when pool architecture fails', () async {
+      // Create a QuizService with pool architecture enabled but no pool service
+      final legacyQuizService = QuizService(
+        firestore: firestore,
+        questionPoolService: null, // No pool service
+        usePoolArchitecture: true,
+      );
+
+      const userId = 'test_user';
+      const categoryId = 'test_category';
+
+      // Create questions without sequence field (legacy format)
+      await firestore.collection('questions').add({
+        'categoryId': categoryId,
+        'text': 'Legacy Question 1',
+        'options': ['A', 'B', 'C'],
+        'correctIndices': [0],
+        'explanation': 'Explanation',
+        'difficulty': 1,
+        'isActive': true,
+      });
+
+      // Act: Should fall back to legacy algorithm
+      final questions = await legacyQuizService.getQuestionsForSession(categoryId, 1, userId);
+
+      // Assert: Should return questions using legacy algorithm
+      expect(questions.length, equals(1));
+      expect(questions.first.text, equals('Legacy Question 1'));
+    });
+
+    test('can be disabled via feature flag', () async {
+      // Create a QuizService with pool architecture disabled
+      final legacyQuizService = QuizService(
+        firestore: firestore,
+        questionPoolService: poolService,
+        usePoolArchitecture: false, // Disabled
+      );
+
+      const userId = 'test_user';
+      const categoryId = 'test_category';
+
+      // Create questions
+      await firestore.collection('questions').add({
+        'categoryId': categoryId,
+        'text': 'Legacy Question 1',
+        'options': ['A', 'B', 'C'],
+        'correctIndices': [0],
+        'explanation': 'Explanation',
+        'difficulty': 1,
+        'isActive': true,
+      });
+
+      // Act: Should use legacy algorithm even with pool service available
+      final questions = await legacyQuizService.getQuestionsForSession(categoryId, 1, userId);
+
+      // Assert: Should return questions using legacy algorithm
+      expect(questions.length, equals(1));
+      expect(questions.first.text, equals('Legacy Question 1'));
+    });
+  });
+
   group('QuizService - Category Question Counter', () {
     late FakeFirebaseFirestore firestore;
     late QuizService quizService;

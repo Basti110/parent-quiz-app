@@ -165,7 +165,7 @@ class StatisticsScreen extends ConsumerWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, color: iconColor, size: 24),
+        Icon(icon, color: iconColor, size: 32),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -194,7 +194,7 @@ class StatisticsScreen extends ConsumerWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, color: iconColor, size: 24),
+        Icon(icon, color: iconColor, size: 32),
         const SizedBox(width: 12),
         Expanded(
           child: Row(
@@ -293,22 +293,22 @@ class StatisticsScreen extends ConsumerWidget {
               children: [
                 // Category icon
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Center(
                     child: Image.asset(
                       'assets/app_images/categories/${categoryStat.categoryIconName}.png',
-                      width: 32,
-                      height: 32,
+                      width: 48,
+                      height: 48,
                       errorBuilder: (context, error, stackTrace) {
                         return const Icon(
                           Icons.category,
                           color: AppColors.primary,
-                          size: 32,
+                          size: 48,
                         );
                       },
                     ),

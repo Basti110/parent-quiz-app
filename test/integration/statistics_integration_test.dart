@@ -83,6 +83,7 @@ void main() {
             sourceUrl: null,
             difficulty: 1,
             isActive: true,
+            sequence: i + 1, // Add sequence field
           );
 
           await firestore

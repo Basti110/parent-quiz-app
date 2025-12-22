@@ -1,125 +1,181 @@
 # Firestore Indexes
 
-This document explains the Firestore indexes required for the simplified gamification system.
+This document explains the Firestore indexes required for the question pool architecture and other app features.
 
 ## Index Configuration
 
-The `firestore.indexes.json` file defines all composite indexes required for optimal query performance.
+The indexes are defined in `firestore.indexes.json` and are automatically deployed with Firebase CLI.
 
-## Indexes Defined
+## Question Pool Architecture Indexes
 
-### 1. Users Collection - Streak Points Index
+### QuestionStates Collection Indexes
 
-**Purpose**: Enables efficient leaderboard queries sorted by streak points
+The question pool architecture requires several composite indexes for the `questionStates` subcollection to support efficient querying:
 
-**Fields**:
-- `streakPoints` (DESCENDING)
+#### 1. Basic Pool Queries
+- **Fields**: `mastered (ASC)`, `seenCount (ASC)`, `randomSeed (ASC)`
+- **Purpose**: Three-tier priority selection (unseen → unmastered → mastered)
+- **Query**: Select questions by mastery status and seen count for randomization
 
-**Used by**: Leaderboard screen to rank users by total streak points
+#### 2. Category-Filtered Queries
+- **Fields**: `categoryId (ASC)`, `mastered (ASC)`, `seenCount (ASC)`
+- **Purpose**: Filter questions by specific category during selection
+- **Query**: Get questions from a specific category with priority ordering
 
-### 2. Duels Collection - Challenger + Status Index
+#### 3. Difficulty-Filtered Queries
+- **Fields**: `difficulty (ASC)`, `mastered (ASC)`, `seenCount (ASC)`
+- **Purpose**: Filter questions by difficulty level during selection
+- **Query**: Get questions of specific difficulty with priority ordering
 
-**Purpose**: Enables efficient queries for duels created by a specific user filtered by status
+#### 4. Combined Filter Queries
+- **Fields**: `categoryId (ASC)`, `difficulty (ASC)`, `mastered (ASC)`, `seenCount (ASC)`
+- **Purpose**: Filter by both category and difficulty simultaneously
+- **Query**: Most specific filtering for targeted question selection
 
-**Fields**:
-- `challengerId` (ASCENDING)
-- `status` (ASCENDING)
+#### 5. Counting Indexes
+Additional indexes for efficient counting operations:
+- **Unseen Count**: `seenCount (ASC)` - Count questions with seenCount = 0
+- **Mastery Count**: `mastered (ASC)` - Count mastered vs unmastered questions
+- **Category Counts**: Various combinations with `categoryId` for per-category statistics
+- **Difficulty Counts**: Various combinations with `difficulty` for difficulty-based statistics
 
-**Used by**: DuelService to fetch pending/active duels created by the user
+#### 6. Duplicate Prevention
+- **Fields**: `questionId (ASC)`
+- **Purpose**: Efficiently check for existing question states during pool expansion
+- **Query**: Batch queries using `whereIn` to prevent duplicate state creation
 
-### 3. Duels Collection - Opponent + Status Index
+### Questions Collection Indexes
 
-**Purpose**: Enables efficient queries for duels where a user is the opponent, filtered by status
+The global questions collection requires indexes for efficient pool expansion:
 
-**Fields**:
-- `opponentId` (ASCENDING)
-- `status` (ASCENDING)
+#### 1. Sequence-Based Expansion
+- **Fields**: `isActive (ASC)`, `sequence (ASC)`
+- **Purpose**: Load questions in batches using sequence-based pagination
+- **Query**: Get next batch of active questions after a specific sequence number
 
-**Used by**: DuelService to fetch pending/active duels where the user is challenged
+#### 2. Category-Filtered Expansion
+- **Fields**: `categoryId (ASC)`, `isActive (ASC)`, `sequence (ASC)`
+- **Purpose**: Load questions from specific category during expansion
+- **Query**: Batch loading with category filter
 
-### 4. Duels Collection - Status + Created Date Index
+#### 3. Difficulty-Filtered Expansion
+- **Fields**: `difficulty (ASC)`, `isActive (ASC)`, `sequence (ASC)`
+- **Purpose**: Load questions of specific difficulty during expansion
+- **Query**: Batch loading with difficulty filter
 
-**Purpose**: Enables efficient queries for duels by status, sorted by creation date
+#### 4. Combined Filter Expansion
+- **Fields**: `categoryId (ASC)`, `difficulty (ASC)`, `isActive (ASC)`, `sequence (ASC)`
+- **Purpose**: Most specific expansion queries with both filters
+- **Query**: Targeted batch loading for specific category and difficulty
 
-**Fields**:
-- `status` (ASCENDING)
-- `createdAt` (DESCENDING)
+## Existing App Indexes
 
-**Used by**: DuelService for cleanup operations and displaying duels in chronological order
+### User Leaderboard
+- **Fields**: `streakPoints (DESC)`
+- **Purpose**: Leaderboard ranking by streak points
+- **Collection**: `users`
 
-## Deploying Indexes
+### Duel System
+Multiple indexes for the asynchronous duel system:
 
-### Option 1: Firebase Console (Manual)
+#### 1. Challenger's Duels
+- **Fields**: `challengerId (ASC)`, `status (ASC)`
+- **Purpose**: Find duels created by a specific user
+- **Collection**: `duels`
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your project
-3. Navigate to Firestore Database → Indexes
-4. Click "Add Index" for each index defined above
-5. Configure the fields and sort orders as specified
+#### 2. Opponent's Duels
+- **Fields**: `opponentId (ASC)`, `status (ASC)`
+- **Purpose**: Find duels where user is the opponent
+- **Collection**: `duels`
 
-### Option 2: Firebase CLI (Recommended)
+#### 3. Duel Cleanup
+- **Fields**: `status (ASC)`, `createdAt (DESC)`
+- **Purpose**: Find expired duels for cleanup operations
+- **Collection**: `duels`
 
-1. Install Firebase CLI if not already installed:
-   ```bash
-   npm install -g firebase-tools
-   ```
+## Performance Considerations
 
-2. Login to Firebase:
-   ```bash
-   firebase login
-   ```
+### Query Optimization
+1. **Limit Results**: All queries use `.limit()` to prevent excessive data loading
+2. **Composite Indexes**: Every filter combination has a dedicated composite index
+3. **Batch Operations**: Pool expansion uses batch writes for efficiency
+4. **Pagination**: Sequence-based pagination for scalable pool expansion
 
-3. Initialize Firebase in your project (if not already done):
-   ```bash
-   firebase init firestore
-   ```
+### Index Efficiency
+1. **Selective Fields**: Indexes include only necessary fields for each query pattern
+2. **Proper Ordering**: Field order optimized for query selectivity
+3. **Minimal Redundancy**: Indexes cover multiple related query patterns where possible
 
-4. Deploy the indexes:
-   ```bash
-   firebase deploy --only firestore:indexes
-   ```
+### Monitoring
+Track these metrics for index performance:
+- Query execution time (should be < 100ms for pool queries)
+- Index usage statistics in Firebase Console
+- Pool expansion batch timing
+- Question selection latency
 
-5. Monitor index build progress in the Firebase Console
+## Deployment
 
-## Index Build Time
+### Firebase CLI Deployment
+```bash
+# Deploy indexes (takes time to build in production)
+firebase deploy --only firestore:indexes
 
-- Indexes are built asynchronously by Firebase
-- Build time depends on the amount of existing data in your collections
-- For new collections: indexes build almost instantly
-- For collections with existing data: may take several minutes to hours
-- You can monitor build progress in the Firebase Console under Firestore → Indexes
+# Check index build status
+firebase firestore:indexes
+```
 
-## Testing Indexes
+### Index Build Time
+- **Development**: Indexes build quickly with small datasets
+- **Production**: Large collections may take hours to build new indexes
+- **Strategy**: Deploy indexes before deploying code that uses them
 
-After deploying indexes, verify they're working:
+### Rollback Strategy
+If new indexes cause issues:
+1. Keep old indexes active during transition
+2. Monitor query performance after deployment
+3. Remove old indexes only after confirming new ones work
+4. Have rollback plan for code changes
 
-1. Check the Firebase Console to ensure all indexes show "Enabled" status
-2. Run queries that use these indexes in your app
-3. Monitor Firestore usage in the console to ensure queries are efficient
+## Testing Index Performance
+
+### Local Testing
+```bash
+# Start Firestore emulator with indexes
+firebase emulators:start --only firestore
+
+# Run tests that exercise the queries
+flutter test test/services/question_pool_service_test.dart
+```
+
+### Production Monitoring
+1. **Firebase Console**: Monitor query performance and index usage
+2. **Application Logs**: Track query execution times
+3. **User Experience**: Monitor app responsiveness during pool operations
+4. **Alerts**: Set up alerts for slow queries (> 2 seconds)
+
+## Index Maintenance
+
+### Regular Reviews
+- **Monthly**: Review index usage statistics
+- **Quarterly**: Analyze query patterns for optimization opportunities
+- **After Features**: Update indexes when adding new query patterns
+
+### Cleanup
+- Remove unused indexes to reduce storage costs
+- Consolidate overlapping indexes where possible
+- Monitor for queries that don't use indexes (appear in Firebase Console warnings)
 
 ## Troubleshooting
 
-### Index Build Failures
+### Common Issues
+1. **Missing Index Error**: Add the exact index shown in Firebase Console error
+2. **Slow Queries**: Check if queries are using the expected indexes
+3. **Index Build Failures**: Verify field names and types match the schema
+4. **Query Limits**: Ensure queries don't exceed Firestore limits (e.g., 'in' queries limited to 10 values)
 
-If an index fails to build:
-- Check the Firebase Console for error messages
-- Ensure field names match exactly (case-sensitive)
-- Verify you have sufficient permissions
-- Try deleting and recreating the index
-
-### Query Performance Issues
-
-If queries are still slow after deploying indexes:
-- Verify the index is in "Enabled" state (not "Building")
-- Check that your query exactly matches the index fields and order
-- Review the Firestore usage metrics in the console
-- Consider adding additional indexes for specific query patterns
-
-## Future Indexes
-
-As the application evolves, you may need additional indexes for:
-- Filtering duels by multiple criteria
-- Sorting users by different metrics
-- Complex queries involving multiple collections
-
-Always test new queries in development and check the Firebase Console for index suggestions.
+### Debug Steps
+1. Check Firebase Console for index build status
+2. Verify query structure matches index field order
+3. Test queries in Firestore Console
+4. Review application logs for query performance
+5. Use Firebase Performance Monitoring for detailed metrics
