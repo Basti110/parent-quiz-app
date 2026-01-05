@@ -15,6 +15,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   bool _obscurePassword = true;
 
   @override
@@ -57,6 +58,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isGoogleLoading = true;
+    });
+
+    try {
+      final authService = ref.read(authServiceProvider);
+      final user = await authService.signInWithGoogle();
+
+      if (user == null) {
+        // User cancelled
+        return;
+      }
+
+      if (mounted) {
+        // Check if new user needs onboarding
+        final isNew = await authService.isNewUser(user.uid);
+        if (isNew) {
+          // New Google users go through welcome onboarding first
+          Navigator.of(context).pushReplacementNamed(
+            '/welcome',
+            arguments: {'userId': user.uid},
+          );
+        } else {
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
+      }
+    } catch (e) {
+      print('=== Google Sign-In Error in LoginScreen ===');
+      print('Error: $e');
+      print('Error type: ${e.runtimeType}');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In fehlgeschlagen: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: const Duration(seconds: 10),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
         });
       }
     }
@@ -111,7 +161,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       }
                       return null;
                     },
-                    enabled: !_isLoading,
+                    enabled: !_isLoading && !_isGoogleLoading,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -140,11 +190,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       }
                       return null;
                     },
-                    enabled: !_isLoading,
+                    enabled: !_isLoading && !_isGoogleLoading,
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
+                    onPressed: _isLoading || _isGoogleLoading ? null : _handleLogin,
                     child: _isLoading
                         ? const SizedBox(
                             height: 20,
@@ -155,11 +205,48 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   Row(
+                    children: [
+                      const Expanded(child: Divider()),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'oder',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: _isLoading || _isGoogleLoading ? null : _handleGoogleSignIn,
+                    icon: _isGoogleLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Image.network(
+                            'https://www.google.com/favicon.ico',
+                            height: 20,
+                            width: 20,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.g_mobiledata, size: 20),
+                          ),
+                    label: const Text('Mit Google anmelden'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text('${l10n.dontHaveAccount} '),
                       TextButton(
-                        onPressed: _isLoading ? null : _navigateToRegister,
+                        onPressed: _isLoading || _isGoogleLoading ? null : _navigateToRegister,
                         child: Text(l10n.register),
                       ),
                     ],

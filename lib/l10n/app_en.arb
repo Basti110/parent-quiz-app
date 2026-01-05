@@ -1384,5 +1384,169 @@
   "errorLoadingUserData": "Error loading user data",
   "@errorLoadingUserData": {
     "description": "Error loading user data message"
+  },
+  "feedback": "Feedback",
+  "@feedback": {
+    "description": "Feedback screen title"
+  },
+  "reportIssue": "Report an issue with this question",
+  "@reportIssue": {
+    "description": "Report issue button text"
+  },
+  "issueType": "Issue Type",
+  "@issueType": {
+    "description": "Issue type selection label"
+  },
+  "typo": "Typo",
+  "@typo": {
+    "description": "Typo issue type"
+  },
+  "contentOutdated": "Content Outdated",
+  "@contentOutdated": {
+    "description": "Content outdated issue type"
+  },
+  "brokenLink": "Broken Link",
+  "@brokenLink": {
+    "description": "Broken link issue type"
+  },
+  "other": "Other",
+  "@other": {
+    "description": "Other issue type"
+  },
+  "additionalComments": "Additional Comments",
+  "@additionalComments": {
+    "description": "Additional comments field label"
+  },
+  "describeIssue": "Please describe the issue you found...",
+  "@describeIssue": {
+    "description": "Describe issue placeholder text"
+  },
+  "pleaseDescribeIssue": "Please describe the issue",
+  "@pleaseDescribeIssue": {
+    "description": "Validation message for issue description"
+  },
+  "commentTooShort": "Comment must be at least 10 characters",
+  "@commentTooShort": {
+    "description": "Validation message for short comments"
+  },
+  "submitFeedback": "Submit Feedback",
+  "@submitFeedback": {
+    "description": "Submit feedback button text"
+  },
+  "feedbackSubmitted": "Feedback submitted successfully!",
+  "@feedbackSubmitted": {
+    "description": "Feedback submitted success message"
+  },
+  "feedbackSubmittedThankYou": "Thank you for your feedback! We'll review it soon.",
+  "@feedbackSubmittedThankYou": {
+    "description": "Feedback submitted thank you message"
+  },
+  "pleaseSignIn": "Please sign in to submit feedback",
+  "@pleaseSignIn": {
+    "description": "Sign in required message"
+  },
+  "yourFeedbackMatters": "Your Feedback Matters",
+  "@yourFeedbackMatters": {
+    "description": "Feedback form introduction title"
+  },
+  "feedbackDescription": "Help us improve the app by sharing your thoughts and experiences.",
+  "@feedbackDescription": {
+    "description": "Feedback form introduction description"
+  },
+  "overallExperience": "Overall Experience",
+  "@overallExperience": {
+    "description": "Overall experience section title"
+  },
+  "appRating": "App Rating",
+  "@appRating": {
+    "description": "App rating slider label"
+  },
+  "appRatingDescription": "How would you rate the overall app experience?",
+  "@appRatingDescription": {
+    "description": "App rating description"
+  },
+  "themeRating": "Theme & Design",
+  "@themeRating": {
+    "description": "Theme rating slider label"
+  },
+  "themeRatingDescription": "How do you like the app's visual design and theme?",
+  "@themeRatingDescription": {
+    "description": "Theme rating description"
+  },
+  "duelModeRating": "Duel Mode",
+  "@duelModeRating": {
+    "description": "Duel mode rating slider label"
+  },
+  "duelModeRatingDescription": "How enjoyable is the duel mode with friends?",
+  "@duelModeRatingDescription": {
+    "description": "Duel mode rating description"
+  },
+  "learningAndTrust": "Learning & Trust",
+  "@learningAndTrust": {
+    "description": "Learning and trust section title"
+  },
+  "learningFactor": "Learning Factor",
+  "@learningFactor": {
+    "description": "Learning factor slider label"
+  },
+  "learningFactorDescription": "How much are you learning from the questions?",
+  "@learningFactorDescription": {
+    "description": "Learning factor description"
+  },
+  "scientificTrust": "Scientific Trust",
+  "@scientificTrust": {
+    "description": "Scientific trust slider label"
+  },
+  "scientificTrustDescription": "How much do you trust the scientific accuracy of the content?",
+  "@scientificTrustDescription": {
+    "description": "Scientific trust description"
+  },
+  "additionalFeedback": "Additional Feedback",
+  "@additionalFeedback": {
+    "description": "Additional feedback section title"
+  },
+  "generalComment": "General Comment",
+  "@generalComment": {
+    "description": "General comment field label"
+  },
+  "shareYourThoughts": "Share your overall thoughts about the app...",
+  "@shareYourThoughts": {
+    "description": "General comment placeholder"
+  },
+  "pleaseShareThoughts": "Please share your thoughts",
+  "@pleaseShareThoughts": {
+    "description": "Validation message for general comment"
+  },
+  "whatCanWeDoBetter": "What can we do better?",
+  "@whatCanWeDoBetter": {
+    "description": "Improvement suggestions field label"
+  },
+  "suggestImprovements": "Suggest improvements or report issues...",
+  "@suggestImprovements": {
+    "description": "Improvement suggestions placeholder"
+  },
+  "futureFeatures": "Future Features",
+  "@futureFeatures": {
+    "description": "Future features field label"
+  },
+  "suggestFeatures": "What features would you like to see in the future?",
+  "@suggestFeatures": {
+    "description": "Future features placeholder"
+  },
+  "feedbackPrivacyNote": "Your feedback is anonymous and helps us improve the app. We may contact you if you've provided contact information.",
+  "@feedbackPrivacyNote": {
+    "description": "Feedback privacy note"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Generic error label"
+  },
+  "confirmLogout": "Are you sure you want to logout?",
+  "@confirmLogout": {
+    "description": "Logout confirmation message"
+  },
+  "optional": "optional",
+  "@optional": {
+    "description": "Optional field indicator"
   }
 }

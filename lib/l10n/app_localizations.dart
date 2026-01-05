@@ -548,7 +548,7 @@ abstract class AppLocalizations {
   /// **'No'**
   String get no;
 
-  /// Error label
+  /// Generic error label
   ///
   /// In en, this message translates to:
   /// **'Error'**
@@ -1879,6 +1879,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'5 questions'**
   String get fiveQuestions;
+
+  /// Feedback screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get feedback;
+
+  /// Report issue button text
+  ///
+  /// In en, this message translates to:
+  /// **'Report an issue with this question'**
+  String get reportIssue;
+
+  /// Issue type selection label
+  ///
+  /// In en, this message translates to:
+  /// **'Issue Type'**
+  String get issueType;
+
+  /// Typo issue type
+  ///
+  /// In en, this message translates to:
+  /// **'Typo'**
+  String get typo;
+
+  /// Content outdated issue type
+  ///
+  /// In en, this message translates to:
+  /// **'Content Outdated'**
+  String get contentOutdated;
+
+  /// Broken link issue type
+  ///
+  /// In en, this message translates to:
+  /// **'Broken Link'**
+  String get brokenLink;
+
+  /// Other issue type
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// Additional comments field label
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Comments'**
+  String get additionalComments;
+
+  /// Describe issue placeholder text
+  ///
+  /// In en, this message translates to:
+  /// **'Please describe the issue you found...'**
+  String get describeIssue;
+
+  /// Validation message for issue description
+  ///
+  /// In en, this message translates to:
+  /// **'Please describe the issue'**
+  String get pleaseDescribeIssue;
+
+  /// Validation message for short comments
+  ///
+  /// In en, this message translates to:
+  /// **'Comment must be at least 10 characters'**
+  String get commentTooShort;
+
+  /// Submit feedback button text
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Feedback'**
+  String get submitFeedback;
+
+  /// Feedback submitted success message
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback submitted successfully!'**
+  String get feedbackSubmitted;
+
+  /// Feedback submitted thank you message
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your feedback! We\'ll review it soon.'**
+  String get feedbackSubmittedThankYou;
+
+  /// Sign in required message
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to submit feedback'**
+  String get pleaseSignIn;
+
+  /// Feedback form introduction title
+  ///
+  /// In en, this message translates to:
+  /// **'Your Feedback Matters'**
+  String get yourFeedbackMatters;
+
+  /// Feedback form introduction description
+  ///
+  /// In en, this message translates to:
+  /// **'Help us improve the app by sharing your thoughts and experiences.'**
+  String get feedbackDescription;
+
+  /// Overall experience section title
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Experience'**
+  String get overallExperience;
+
+  /// App rating slider label
+  ///
+  /// In en, this message translates to:
+  /// **'App Rating'**
+  String get appRating;
+
+  /// App rating description
+  ///
+  /// In en, this message translates to:
+  /// **'How would you rate the overall app experience?'**
+  String get appRatingDescription;
+
+  /// Theme rating slider label
+  ///
+  /// In en, this message translates to:
+  /// **'Theme & Design'**
+  String get themeRating;
+
+  /// Theme rating description
+  ///
+  /// In en, this message translates to:
+  /// **'How do you like the app\'s visual design and theme?'**
+  String get themeRatingDescription;
+
+  /// Duel mode rating slider label
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Mode'**
+  String get duelModeRating;
+
+  /// Duel mode rating description
+  ///
+  /// In en, this message translates to:
+  /// **'How enjoyable is the duel mode with friends?'**
+  String get duelModeRatingDescription;
+
+  /// Learning and trust section title
+  ///
+  /// In en, this message translates to:
+  /// **'Learning & Trust'**
+  String get learningAndTrust;
+
+  /// Learning factor slider label
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Factor'**
+  String get learningFactor;
+
+  /// Learning factor description
+  ///
+  /// In en, this message translates to:
+  /// **'How much are you learning from the questions?'**
+  String get learningFactorDescription;
+
+  /// Scientific trust slider label
+  ///
+  /// In en, this message translates to:
+  /// **'Scientific Trust'**
+  String get scientificTrust;
+
+  /// Scientific trust description
+  ///
+  /// In en, this message translates to:
+  /// **'How much do you trust the scientific accuracy of the content?'**
+  String get scientificTrustDescription;
+
+  /// Additional feedback section title
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Feedback'**
+  String get additionalFeedback;
+
+  /// General comment field label
+  ///
+  /// In en, this message translates to:
+  /// **'General Comment'**
+  String get generalComment;
+
+  /// General comment placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Share your overall thoughts about the app...'**
+  String get shareYourThoughts;
+
+  /// Validation message for general comment
+  ///
+  /// In en, this message translates to:
+  /// **'Please share your thoughts'**
+  String get pleaseShareThoughts;
+
+  /// Improvement suggestions field label
+  ///
+  /// In en, this message translates to:
+  /// **'What can we do better?'**
+  String get whatCanWeDoBetter;
+
+  /// Improvement suggestions placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest improvements or report issues...'**
+  String get suggestImprovements;
+
+  /// Future features field label
+  ///
+  /// In en, this message translates to:
+  /// **'Future Features'**
+  String get futureFeatures;
+
+  /// Future features placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'What features would you like to see in the future?'**
+  String get suggestFeatures;
+
+  /// Feedback privacy note
+  ///
+  /// In en, this message translates to:
+  /// **'Your feedback is anonymous and helps us improve the app. We may contact you if you\'ve provided contact information.'**
+  String get feedbackPrivacyNote;
+
+  /// Optional field indicator
+  ///
+  /// In en, this message translates to:
+  /// **'optional'**
+  String get optional;
 }
 
 class _AppLocalizationsDelegate

@@ -988,4 +988,131 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fiveQuestions => '5 questions';
+
+  @override
+  String get feedback => 'Feedback';
+
+  @override
+  String get reportIssue => 'Report an issue with this question';
+
+  @override
+  String get issueType => 'Issue Type';
+
+  @override
+  String get typo => 'Typo';
+
+  @override
+  String get contentOutdated => 'Content Outdated';
+
+  @override
+  String get brokenLink => 'Broken Link';
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get additionalComments => 'Additional Comments';
+
+  @override
+  String get describeIssue => 'Please describe the issue you found...';
+
+  @override
+  String get pleaseDescribeIssue => 'Please describe the issue';
+
+  @override
+  String get commentTooShort => 'Comment must be at least 10 characters';
+
+  @override
+  String get submitFeedback => 'Submit Feedback';
+
+  @override
+  String get feedbackSubmitted => 'Feedback submitted successfully!';
+
+  @override
+  String get feedbackSubmittedThankYou =>
+      'Thank you for your feedback! We\'ll review it soon.';
+
+  @override
+  String get pleaseSignIn => 'Please sign in to submit feedback';
+
+  @override
+  String get yourFeedbackMatters => 'Your Feedback Matters';
+
+  @override
+  String get feedbackDescription =>
+      'Help us improve the app by sharing your thoughts and experiences.';
+
+  @override
+  String get overallExperience => 'Overall Experience';
+
+  @override
+  String get appRating => 'App Rating';
+
+  @override
+  String get appRatingDescription =>
+      'How would you rate the overall app experience?';
+
+  @override
+  String get themeRating => 'Theme & Design';
+
+  @override
+  String get themeRatingDescription =>
+      'How do you like the app\'s visual design and theme?';
+
+  @override
+  String get duelModeRating => 'Duel Mode';
+
+  @override
+  String get duelModeRatingDescription =>
+      'How enjoyable is the duel mode with friends?';
+
+  @override
+  String get learningAndTrust => 'Learning & Trust';
+
+  @override
+  String get learningFactor => 'Learning Factor';
+
+  @override
+  String get learningFactorDescription =>
+      'How much are you learning from the questions?';
+
+  @override
+  String get scientificTrust => 'Scientific Trust';
+
+  @override
+  String get scientificTrustDescription =>
+      'How much do you trust the scientific accuracy of the content?';
+
+  @override
+  String get additionalFeedback => 'Additional Feedback';
+
+  @override
+  String get generalComment => 'General Comment';
+
+  @override
+  String get shareYourThoughts =>
+      'Share your overall thoughts about the app...';
+
+  @override
+  String get pleaseShareThoughts => 'Please share your thoughts';
+
+  @override
+  String get whatCanWeDoBetter => 'What can we do better?';
+
+  @override
+  String get suggestImprovements => 'Suggest improvements or report issues...';
+
+  @override
+  String get futureFeatures => 'Future Features';
+
+  @override
+  String get suggestFeatures =>
+      'What features would you like to see in the future?';
+
+  @override
+  String get feedbackPrivacyNote =>
+      'Your feedback is anonymous and helps us improve the app. We may contact you if you\'ve provided contact information.';
+
+  @override
+  String get optional => 'optional';
 }

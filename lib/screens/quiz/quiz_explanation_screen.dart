@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../models/question.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/simple_question_feedback_widget.dart';
 
 /// QuizExplanationScreen shows the explanation after answering a question
-class QuizExplanationScreen extends StatelessWidget {
+class QuizExplanationScreen extends ConsumerWidget {
   const QuizExplanationScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
@@ -514,6 +516,14 @@ class QuizExplanationScreen extends StatelessWidget {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 16),
+
+                  // Simple feedback widget for reporting issues
+                  SimpleQuestionFeedbackWidget(
+                    question: question,
+                    categoryName: _getCategoryName(args),
+                  ),
+
                   const SizedBox(height: 20),
                 ],
               ),
@@ -566,6 +576,22 @@ class QuizExplanationScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getCategoryName(Map<String, dynamic> args) {
+    // Check if this is VS Mode or Duel
+    final isVSMode = args['isVSMode'] as bool? ?? false;
+    if (isVSMode) {
+      return 'VS Mode';
+    }
+    
+    // Check if categoryName is passed directly (for Duel mode)
+    if (args.containsKey('categoryName')) {
+      return args['categoryName'] as String;
+    }
+    
+    // Default fallback
+    return 'Quiz';
   }
 
   String _getButtonText(

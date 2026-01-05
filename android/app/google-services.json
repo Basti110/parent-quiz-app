@@ -7,20 +7,38 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:596941524882:android:7b0edc324397db70ad7b4b",
+        "mobilesdk_app_id": "1:596941524882:android:77552d0b10e988d7ad7b4b",
         "android_client_info": {
           "package_name": "com.invested.eduparo"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "596941524882-4hau8bhsgcumb9kb6re7dnakv7jrtev1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.invested.eduparo",
+            "certificate_hash": "180277b8931eb66f010197f29cc9ddb00a4e034b"
+          }
+        },
+        {
+          "client_id": "596941524882-v66k7nmln2faaktinm5tpeg5eb3o6ah7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDoKT2Kh0adRlQDAKKcymFulVp_2-vsiKg"
+          "current_key": "AIzaSyCVaPDL1iA2Cg0SkU4lSPSXz1R3aoKVk54"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "596941524882-v66k7nmln2faaktinm5tpeg5eb3o6ah7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

@@ -1,15 +1,21 @@
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+  final GoogleSignIn _googleSignIn;
 
-  AuthService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-    : _auth = auth ?? FirebaseAuth.instance,
-      _firestore = firestore ?? FirebaseFirestore.instance;
+  AuthService({
+    FirebaseAuth? auth,
+    FirebaseFirestore? firestore,
+    GoogleSignIn? googleSignIn,
+  })  : _auth = auth ?? FirebaseAuth.instance,
+        _firestore = firestore ?? FirebaseFirestore.instance,
+        _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   /// Stream of authentication state changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -127,7 +133,120 @@ class AuthService {
 
   /// Sign out the current user
   Future<void> signOut() async {
+    await _googleSignIn.signOut();
     await _auth.signOut();
+  }
+
+  /// Sign in with Google
+  /// Returns the user if successful, null if cancelled
+  /// If an account with the same email exists (email/password), it will be linked
+  Future<User?> signInWithGoogle() async {
+    try {
+      print('=== Google Sign-In gestartet ===');
+      
+      // Trigger the Google Sign-In flow
+      print('Starte Google Sign-In Flow...');
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        print('Google Sign-In abgebrochen vom Benutzer');
+        // User cancelled the sign-in
+        return null;
+      }
+
+      print('Google User erhalten: ${googleUser.email}');
+
+      // Obtain the auth details from the request
+      print('Hole Google Auth Details...');
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      print('Access Token erhalten: ${googleAuth.accessToken != null}');
+      print('ID Token erhalten: ${googleAuth.idToken != null}');
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      print('Melde bei Firebase an...');
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user;
+
+      if (user == null) {
+        print('Firebase User ist null');
+        return null;
+      }
+
+      print('Firebase User erhalten: ${user.uid}');
+
+      // Check if this is a new user (no Firestore document yet)
+      print('Prüfe ob Benutzer existiert...');
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+      final isNewUser = !userDoc.exists;
+
+      if (isNewUser) {
+        print('Neuer Benutzer - erstelle Firestore Dokument...');
+        // Create user document for new Google users
+        final friendCode = await _generateUniqueFriendCode();
+        final now = DateTime.now();
+
+        final userModel = UserModel(
+          id: user.uid,
+          displayName: user.displayName ?? googleUser.displayName ?? 'User',
+          email: user.email ?? googleUser.email,
+          avatarUrl: null, // Don't use Google photo, let user pick avatar
+          createdAt: now,
+          lastActiveAt: now,
+          friendCode: friendCode,
+          streakCurrent: 0,
+          streakLongest: 0,
+          streakPoints: 0,
+          dailyGoal: 10,
+          questionsAnsweredToday: 0,
+          lastDailyReset: now,
+          totalQuestionsAnswered: 0,
+          totalCorrectAnswers: 0,
+          totalMasteredQuestions: 0,
+          duelsCompleted: 0,
+          duelsWon: 0,
+        );
+
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(userModel.toMap());
+        print('Firestore Dokument erstellt');
+      } else {
+        print('Bestehender Benutzer - aktualisiere lastActiveAt...');
+        // Update lastActiveAt for existing users
+        await _firestore.collection('users').doc(user.uid).update({
+          'lastActiveAt': Timestamp.fromDate(DateTime.now()),
+        });
+      }
+
+      print('=== Google Sign-In erfolgreich ===');
+      return user;
+    } on FirebaseAuthException catch (e) {
+      print('Firebase Auth Exception: ${e.code} - ${e.message}');
+      throw _handleAuthException(e);
+    } catch (e, stackTrace) {
+      print('Google Sign-In Fehler: $e');
+      print('Stack Trace: $stackTrace');
+      throw 'Google Sign-In fehlgeschlagen: $e';
+    }
+  }
+
+  /// Check if this is a new user (for navigation purposes)
+  Future<bool> isNewUser(String userId) async {
+    final userDoc = await _firestore.collection('users').doc(userId).get();
+    if (!userDoc.exists) return true;
+
+    // Check if user has completed onboarding (has avatar)
+    final data = userDoc.data();
+    return data?['avatarUrl'] == null;
   }
 
   /// Generate a unique 6-8 character alphanumeric friend code

@@ -140,6 +140,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           'isCorrect': isCorrect,
           'isLastQuestion': isLastQuestion,
           'selectedIndices': _selectedIndices.toList(),
+          'categoryName': _getCategoryName(),
         },
       );
 
@@ -170,19 +171,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     if (userId == null) return;
 
     try {
-      // Calculate session XP
-      final quizService = ref.read(quizServiceProvider);
-      final sessionXP = quizService.calculateSessionXP(
-        correctAnswers: _correctAnswers,
-        explanationViewed: _explanationViewed,
-        questionCount: questionCount,
-      );
-
-      // Update user XP and weekly XP
-      await quizService.updateUserXP(userId, sessionXP);
-
       final userService = ref.read(userServiceProvider);
-      await userService.updateWeeklyXP(userId, sessionXP);
+      
+      // Update streak based on daily goal completion (simplified gamification)
       await userService.updateStreak(userId);
 
       // Update category progress only for single-category mode
@@ -203,7 +194,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           arguments: {
             'correctCount': _correctAnswers.where((c) => c).length,
             'totalCount': _correctAnswers.length,
-            'xpEarned': sessionXP,
           },
         );
       }
@@ -503,6 +493,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         _selectedIndices = {index};
       }
     });
+  }
+
+  String _getCategoryName() {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final category = args['category'] as Category?;
+    return category?.title ?? 'Gemischte Kategorien';
   }
 
   Future<void> _showExitConfirmation(BuildContext context) async {

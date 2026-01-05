@@ -414,6 +414,7 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
             'isLastQuestion': isLastQuestion,
             'selectedIndices': _selectedIndices.toList(),
             'isVSMode': true, // Skip user stat updates for duels
+            'categoryName': 'Duel',
           },
         );
 

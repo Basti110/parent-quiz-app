@@ -17,6 +17,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -75,6 +76,55 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isGoogleLoading = true;
+    });
+
+    try {
+      final authService = ref.read(authServiceProvider);
+      final user = await authService.signInWithGoogle();
+
+      if (user == null) {
+        // User cancelled
+        return;
+      }
+
+      if (mounted) {
+        // Check if new user needs onboarding
+        final isNew = await authService.isNewUser(user.uid);
+        if (isNew) {
+          // New Google users go through welcome onboarding first
+          Navigator.of(context).pushReplacementNamed(
+            '/welcome',
+            arguments: {'userId': user.uid},
+          );
+        } else {
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
+      }
+    } catch (e) {
+      print('=== Google Sign-In Error in RegisterScreen ===');
+      print('Error: $e');
+      print('Error type: ${e.runtimeType}');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In fehlgeschlagen: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: const Duration(seconds: 10),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
   void _navigateToLogin() {
     Navigator.of(context).pushReplacementNamed('/login');
   }
@@ -82,6 +132,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isAnyLoading = _isLoading || _isGoogleLoading;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.register)),
@@ -106,7 +157,45 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     style: Theme.of(context).textTheme.headlineMedium,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
+                  // Google Sign-In Button at top
+                  OutlinedButton.icon(
+                    onPressed: isAnyLoading ? null : _handleGoogleSignIn,
+                    icon: _isGoogleLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Image.network(
+                            'https://www.google.com/favicon.ico',
+                            height: 20,
+                            width: 20,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.g_mobiledata, size: 20),
+                          ),
+                    label: const Text('Mit Google registrieren'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      const Expanded(child: Divider()),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'oder mit E-Mail',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
                   TextFormField(
                     controller: _nameController,
                     keyboardType: TextInputType.name,
@@ -124,7 +213,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       }
                       return null;
                     },
-                    enabled: !_isLoading,
+                    enabled: !isAnyLoading,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -144,7 +233,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       }
                       return null;
                     },
-                    enabled: !_isLoading,
+                    enabled: !isAnyLoading,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -176,7 +265,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       }
                       return null;
                     },
-                    enabled: !_isLoading,
+                    enabled: !isAnyLoading,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -208,11 +297,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       }
                       return null;
                     },
-                    enabled: !_isLoading,
+                    enabled: !isAnyLoading,
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _handleRegister,
+                    onPressed: isAnyLoading ? null : _handleRegister,
                     child: _isLoading
                         ? const SizedBox(
                             height: 20,
@@ -227,7 +316,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     children: [
                       Text('${l10n.alreadyHaveAccount} '),
                       TextButton(
-                        onPressed: _isLoading ? null : _navigateToLogin,
+                        onPressed: isAnyLoading ? null : _navigateToLogin,
                         child: Text(l10n.login),
                       ),
                     ],

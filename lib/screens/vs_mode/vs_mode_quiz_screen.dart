@@ -184,6 +184,7 @@ class _VSModeQuizScreenState extends ConsumerState<VSModeQuizScreen> {
         'isLastQuestion': isLastQuestion,
         'selectedIndices': _selectedIndices.toList(),
         'isVSMode': true,
+        'categoryName': 'VS Mode',
       },
     );
 

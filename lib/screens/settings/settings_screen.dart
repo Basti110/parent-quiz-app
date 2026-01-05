@@ -7,6 +7,7 @@ import '../../providers/locale_providers.dart';
 import '../../providers/theme_providers.dart';
 import '../../theme/app_colors.dart';
 import 'avatar_selection_screen.dart';
+import 'feedback_form_screen.dart';
 
 /// State notifier for managing daily goal in settings
 class DailyGoalNotifier extends StateNotifier<int> {
@@ -243,6 +244,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const AvatarSelectionScreen(),
+                      ),
+                    );
+                  },
+                  showDivider: true,
+                ),
+
+                // Feedback
+                _SettingsTile(
+                  title: l10n.feedback,
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textTertiary,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const FeedbackFormScreen(),
                       ),
                     );
                   },
