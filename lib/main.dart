@@ -90,6 +90,7 @@ class MainApp extends ConsumerWidget {
         '/vs-mode-quiz': (context) => const VSModeQuizScreen(),
         '/vs-mode-handoff': (context) => const VSModeHandoffScreen(),
         '/vs-mode-result': (context) => const VSModeResultScreen(),
+        '/vs-mode-result-test': (context) => const VSModeResultScreen(), // Test route
         '/duel-challenge': (context) => const DuelChallengeScreen(),
         '/duel-question': (context) => const DuelQuestionScreen(),
         '/duel-result': (context) => const DuelResultScreen(),

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/duel_model.dart';
 
@@ -620,17 +621,20 @@ class DuelService {
       final challengerViewed = data?['challengerViewedResults'] ?? false;
       final opponentViewed = data?['opponentViewedResults'] ?? false;
 
-      // If both have viewed, clear the openChallenge field
+      debugPrint('Results viewed status: challenger=$challengerViewed, opponent=$opponentViewed');
+
+      // If both have viewed, clear the openChallenge field from BOTH friendship documents
       if (challengerViewed && opponentViewed) {
+        debugPrint('Both users have viewed results, clearing openChallenge from both friendship documents');
         await _clearOpenChallenge(duel.challengerId, duel.opponentId);
       }
     } on FirebaseException catch (e) {
-      print('Firebase error marking results viewed: ${e.code} - ${e.message}');
+      debugPrint('Firebase error marking results viewed: ${e.code} - ${e.message}');
       throw Exception(
         'Failed to mark results viewed. Please check your connection and try again.',
       );
     } catch (e) {
-      print('Error marking results viewed: $e');
+      debugPrint('Error marking results viewed: $e');
       rethrow;
     }
   }
@@ -638,6 +642,8 @@ class DuelService {
   /// Clear the openChallenge field from both friendship documents
   Future<void> _clearOpenChallenge(String challengerId, String opponentId) async {
     try {
+      debugPrint('Clearing openChallenge from both friendship documents: challenger=$challengerId, opponent=$opponentId');
+      
       // Clear from challenger's friendship document
       await _firestore
           .collection('users')
@@ -647,6 +653,7 @@ class DuelService {
           .update({
         'openChallenge': FieldValue.delete(),
       });
+      debugPrint('Cleared openChallenge from challenger\'s friendship document');
 
       // Clear from opponent's friendship document
       await _firestore
@@ -657,13 +664,16 @@ class DuelService {
           .update({
         'openChallenge': FieldValue.delete(),
       });
+      debugPrint('Cleared openChallenge from opponent\'s friendship document');
+      
+      debugPrint('Successfully cleared openChallenge from both friendship documents');
     } on FirebaseException catch (e) {
-      print('Firebase error clearing open challenge: ${e.code} - ${e.message}');
+      debugPrint('Firebase error clearing open challenge: ${e.code} - ${e.message}');
       throw Exception(
         'Failed to clear open challenge. Please check your connection and try again.',
       );
     } catch (e) {
-      print('Error clearing open challenge: $e');
+      debugPrint('Error clearing open challenge: $e');
       throw Exception('Failed to clear open challenge. Please try again.');
     }
   }

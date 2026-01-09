@@ -152,6 +152,27 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                 children: [
                   const SizedBox(height: 20),
 
+                  // Test indicator to verify we're using the updated duel result screen
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green),
+                    ),
+                    child: const Text(
+                      '🎉 DUEL RESULT - EXPANDABLE FRAGEN JETZT AKTIV! 🎉',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
                   // VS Mode display with scores
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -440,6 +461,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
 
 
 
+  /// Build expandable question breakdown showing detailed results
   List<Widget> _buildQuestionBreakdown(bool isDarkMode) {
     final userId = ref.read(currentUserIdProvider);
     final isChallenger = _duel!.challengerId == userId;
@@ -453,106 +475,416 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
       final userCorrect = userAnswers[question.id] ?? false;
       final opponentCorrect = opponentAnswers[question.id] ?? false;
 
-      return Container(
-        margin: const EdgeInsets.only(bottom: 12.0),
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: isDarkMode 
-              ? const Color(0xFF2A3647) 
-              : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDarkMode
-                ? Colors.grey.shade700
-                : Colors.grey.shade300,
-            width: 1,
+      return Card(
+        margin: const EdgeInsets.only(bottom: 8.0),
+        elevation: 1,
+        child: ExpansionTile(
+          leading: CircleAvatar(
+            radius: 16,
+            backgroundColor: const Color(0xFF00897B),
+            child: Text(
+              '${index + 1}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            // Question number in circle
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFF00897B),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  '${index + 1}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+          title: Text(
+            'Frage ${index + 1}',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            question.text.replaceAll(RegExp(r'[*_#]'), '').trim(),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.grey.shade600),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // User result
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: userCorrect 
+                      ? Colors.green 
+                      : Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  userCorrect ? Icons.check : Icons.close,
+                  color: Colors.white,
+                  size: 16,
                 ),
               ),
-            ),
-            const SizedBox(width: 16),
-
-            // Question text (truncated)
-            Expanded(
-              child: Text(
-                question.text.replaceAll(RegExp(r'[*_#]'), '').trim(),
+              const SizedBox(width: 8),
+              Text(
+                'vs',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                  fontSize: 12,
+                  color: Colors.grey.shade500,
+                  fontWeight: FontWeight.w600,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            const SizedBox(width: 16),
-
-            // User result
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: userCorrect 
-                    ? const Color(0xFF4CAF50) 
-                    : const Color(0xFFE57373),
-                shape: BoxShape.circle,
+              const SizedBox(width: 8),
+              // Opponent result
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: opponentCorrect 
+                      ? Colors.green 
+                      : Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  opponentCorrect ? Icons.check : Icons.close,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
-              child: Icon(
-                userCorrect ? Icons.check : Icons.close,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // VS text
-            Text(
-              'vs',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // Opponent result
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: opponentCorrect 
-                    ? const Color(0xFF4CAF50) 
-                    : const Color(0xFFE57373),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                opponentCorrect ? Icons.check : Icons.close,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
+            ],
+          ),
+          children: [
+            _buildExpandedQuestionDetails(question, userCorrect, opponentCorrect, isChallenger),
           ],
         ),
       );
     });
+  }
+
+  /// Build the expanded question details showing full question, answers, and explanations
+  Widget _buildExpandedQuestionDetails(Question question, bool userCorrect, bool opponentCorrect, bool isChallenger) {
+    final l10n = AppLocalizations.of(context)!;
+    final currentUser = isChallenger ? _challenger! : _opponent!;
+    final opponent = isChallenger ? _opponent! : _challenger!;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Full question text
+          Text(
+            question.text.replaceAll(RegExp(r'[*_#]'), '').trim(),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Answer options with A, B, C, D labels
+          ...question.options.asMap().entries.map((entry) {
+            final optionIndex = entry.key;
+            final optionText = entry.value;
+            final isCorrectOption = question.correctIndices.contains(optionIndex);
+            final optionLabel = String.fromCharCode(65 + optionIndex); // A, B, C, D
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8.0),
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: isCorrectOption 
+                    ? Colors.green.shade50 
+                    : Colors.grey.shade50,
+                border: Border.all(
+                  color: isCorrectOption 
+                      ? Colors.green 
+                      : Colors.grey.shade300,
+                  width: isCorrectOption ? 2 : 1,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  // Option label (A, B, C, D)
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: isCorrectOption 
+                          ? Colors.green 
+                          : Colors.grey.shade400,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        optionLabel,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Correct answer indicator
+                  if (isCorrectOption)
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 20,
+                    )
+                  else
+                    Icon(
+                      Icons.radio_button_unchecked,
+                      color: Colors.grey.shade400,
+                      size: 20,
+                    ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      optionText,
+                      style: TextStyle(
+                        fontWeight: isCorrectOption 
+                            ? FontWeight.w600 
+                            : FontWeight.normal,
+                        color: isCorrectOption 
+                            ? Colors.green.shade800 
+                            : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+          
+          const SizedBox(height: 16),
+          
+          // Results comparison with note about data limitation
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.orange.shade700,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Antwort-Ergebnisse',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange.shade700,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Grün markierte Optionen (A, B, C, D) sind die korrekten Antworten. Die angezeigten Antworten (z.B. "Nele wählte A") sind simuliert, da nur gespeichert wird, ob richtig oder falsch beantwortet wurde.',
+                  style: TextStyle(
+                    color: Colors.orange.shade800,
+                    fontSize: 12,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: userCorrect ? Colors.green.shade100 : Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        userCorrect ? Icons.check_circle : Icons.cancel,
+                        color: userCorrect ? Colors.green : Colors.red,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${currentUser.displayName}: ${_getAnswerChoice(question, userCorrect)}',
+                          style: TextStyle(
+                            color: userCorrect ? Colors.green.shade800 : Colors.red.shade800,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: opponentCorrect ? Colors.green.shade100 : Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        opponentCorrect ? Icons.check_circle : Icons.cancel,
+                        color: opponentCorrect ? Colors.green : Colors.red,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${opponent.displayName}: ${_getAnswerChoice(question, opponentCorrect)}',
+                          style: TextStyle(
+                            color: opponentCorrect ? Colors.green.shade800 : Colors.red.shade800,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Explanation
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.lightbulb_outline,
+                      color: Colors.blue.shade700,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.explanation,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  question.explanation,
+                  style: TextStyle(
+                    color: Colors.blue.shade800,
+                    height: 1.4,
+                  ),
+                ),
+                
+                // Tips if available
+                if (question.tips != null && question.tips!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.amber.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.tips_and_updates,
+                              color: Colors.amber.shade700,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.tips,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.amber.shade700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          question.tips!,
+                          style: TextStyle(
+                            color: Colors.amber.shade800,
+                            fontSize: 14,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Simulate which answer choice was selected based on correctness
+  /// Since we only store correct/incorrect, we simulate the choice:
+  /// - If correct: show one of the correct answers
+  /// - If incorrect: show one of the incorrect answers
+  String _getAnswerChoice(Question question, bool wasCorrect) {
+    if (wasCorrect) {
+      // Show the first correct answer
+      final correctIndex = question.correctIndices.first;
+      final correctLabel = String.fromCharCode(65 + correctIndex); // A, B, C, D
+      return 'wählte $correctLabel ✓';
+    } else {
+      // Show a random incorrect answer
+      final incorrectIndices = <int>[];
+      for (int i = 0; i < question.options.length; i++) {
+        if (!question.correctIndices.contains(i)) {
+          incorrectIndices.add(i);
+        }
+      }
+      
+      if (incorrectIndices.isNotEmpty) {
+        // Use question ID as seed for consistent "random" choice per question
+        final seed = question.id.hashCode;
+        final randomIndex = incorrectIndices[seed % incorrectIndices.length];
+        final incorrectLabel = String.fromCharCode(65 + randomIndex); // A, B, C, D
+        return 'wählte $incorrectLabel ✗';
+      } else {
+        return 'falsch beantwortet ✗';
+      }
+    }
   }
 }

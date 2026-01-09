@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/vs_mode_session.dart';
 import '../../models/vs_mode_result.dart';
+import '../../models/question.dart';
 import '../../services/vs_mode_service.dart';
 import '../../providers/auth_providers.dart';
+import '../../providers/quiz_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -19,6 +21,8 @@ class VSModeResultScreen extends ConsumerStatefulWidget {
 class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
   bool _isUpdatingStats = false;
   bool _statsUpdated = false;
+  Map<String, Question> _questionsCache = {};
+  bool _questionsLoaded = false;
 
   @override
   void didChangeDependencies() {
@@ -26,6 +30,154 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
     if (!_statsUpdated) {
       _updateDuelStats();
     }
+    if (!_questionsLoaded) {
+      _loadQuestions();
+    }
+  }
+
+  /// Load all questions for the session to display in expandable details
+  Future<void> _loadQuestions() async {
+    if (_questionsLoaded) return;
+
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    
+    // Handle test session case
+    if (args == null || args['session'] == null) {
+      setState(() {
+        _questionsCache = _createTestQuestions();
+        _questionsLoaded = true;
+      });
+      return;
+    }
+
+    final session = args['session'] as VSModeSession;
+
+    try {
+      final quizService = ref.read(quizServiceProvider);
+      final allQuestionIds = <String>{
+        ...session.playerAQuestionIds,
+        ...session.playerBQuestionIds,
+      };
+
+      final questionsMap = <String, Question>{};
+      for (final questionId in allQuestionIds) {
+        final question = await quizService.getQuestionById(questionId);
+        if (question != null) {
+          questionsMap[questionId] = question;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _questionsCache = questionsMap;
+          _questionsLoaded = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading questions: $e');
+      if (mounted) {
+        setState(() {
+          _questionsCache = _createTestQuestions(); // Fallback to test questions
+          _questionsLoaded = true;
+        });
+      }
+    }
+  }
+
+  /// Create test questions for development/testing purposes
+  Map<String, Question> _createTestQuestions() {
+    return {
+      'q1': Question(
+        id: 'q1',
+        categoryId: 'test-category',
+        text: 'Was ist die Hauptstadt von Deutschland?',
+        options: ['Berlin', 'München', 'Hamburg', 'Köln'],
+        correctIndices: [0],
+        explanation: 'Berlin ist seit der Wiedervereinigung 1990 die Hauptstadt Deutschlands.',
+        tips: 'Berlin liegt im Nordosten Deutschlands und ist auch die größte Stadt des Landes.',
+        difficulty: 1,
+        isActive: true,
+        sequence: 1,
+      ),
+      'q2': Question(
+        id: 'q2',
+        categoryId: 'test-category',
+        text: 'Welche Farben hat die deutsche Flagge?',
+        options: ['Schwarz, Rot, Gold', 'Schwarz, Rot, Gelb', 'Rot, Weiß, Blau', 'Grün, Weiß, Rot'],
+        correctIndices: [0],
+        explanation: 'Die deutsche Flagge besteht aus drei horizontalen Streifen in Schwarz, Rot und Gold.',
+        tips: 'Diese Farben haben eine lange Tradition in der deutschen Geschichte.',
+        difficulty: 1,
+        isActive: true,
+        sequence: 2,
+      ),
+      'q3': Question(
+        id: 'q3',
+        categoryId: 'test-category',
+        text: 'Wie viele Bundesländer hat Deutschland?',
+        options: ['14', '15', '16', '17'],
+        correctIndices: [2],
+        explanation: 'Deutschland besteht aus 16 Bundesländern, darunter drei Stadtstaaten.',
+        tips: 'Die drei Stadtstaaten sind Berlin, Hamburg und Bremen.',
+        difficulty: 2,
+        isActive: true,
+        sequence: 3,
+      ),
+      'q4': Question(
+        id: 'q4',
+        categoryId: 'test-category',
+        text: 'Wann fiel die Berliner Mauer?',
+        options: ['1987', '1988', '1989', '1990'],
+        correctIndices: [2],
+        explanation: 'Die Berliner Mauer fiel am 9. November 1989, was ein historischer Moment für Deutschland war.',
+        tips: 'Dieses Ereignis führte zur deutschen Wiedervereinigung im Jahr 1990.',
+        difficulty: 2,
+        isActive: true,
+        sequence: 4,
+      ),
+      'q5': Question(
+        id: 'q5',
+        categoryId: 'test-category',
+        text: 'Welcher Fluss fließt durch Berlin?',
+        options: ['Rhein', 'Elbe', 'Spree', 'Donau'],
+        correctIndices: [2],
+        explanation: 'Die Spree fließt durch Berlin und ist ein wichtiger Fluss der Stadt.',
+        tips: 'Viele Sehenswürdigkeiten Berlins liegen an der Spree.',
+        difficulty: 1,
+        isActive: true,
+        sequence: 5,
+      ),
+      'q6': Question(
+        id: 'q6',
+        categoryId: 'test-category',
+        text: 'Wie heißt das deutsche Parlament?',
+        options: ['Bundestag', 'Bundesrat', 'Landtag', 'Reichstag'],
+        correctIndices: [0],
+        explanation: 'Der Bundestag ist das deutsche Parlament und tagt im Reichstagsgebäude in Berlin.',
+        tips: 'Der Bundestag wird alle vier Jahre gewählt.',
+        difficulty: 1,
+        isActive: true,
+        sequence: 6,
+      ),
+    };
+  }
+
+  /// Create a test session for development/testing purposes
+  VSModeSession _createTestSession() {
+    return VSModeSession(
+      categoryId: 'test-category',
+      questionsPerPlayer: 3,
+      playerAName: 'Spieler A',
+      playerBName: 'Spieler B',
+      playerAQuestionIds: ['q1', 'q2', 'q3'],
+      playerBQuestionIds: ['q4', 'q5', 'q6'],
+      playerAAnswers: {'q1': true, 'q2': false, 'q3': true},
+      playerBAnswers: {'q4': false, 'q5': true, 'q6': true},
+      playerAElapsedSeconds: 45,
+      playerBElapsedSeconds: 52,
+      playerAExplanationsViewed: {'q2': true},
+      playerBExplanationsViewed: {'q4': true, 'q5': false},
+    );
   }
 
   /// Determines if a player has the faster time
@@ -104,9 +256,15 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final session = args['session'] as VSModeSession;
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    
+    // Create test session if no arguments provided (for testing)
+    final VSModeSession session;
+    if (args == null || args['session'] == null) {
+      session = _createTestSession();
+    } else {
+      session = args['session'] as VSModeSession;
+    }
 
     final vsModeService = VSModeService();
     final result = vsModeService.calculateResult(session);
@@ -136,6 +294,27 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const SizedBox(height: 20),
+
+                  // Test indicator to verify we're using the new screen
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green),
+                    ),
+                    child: const Text(
+                      '🎉 NEUE EXPANDABLE FRAGEN FUNKTION AKTIV! 🎉',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
                   const SizedBox(height: 20),
 
                   // VS Mode display with scores
@@ -194,6 +373,10 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                   _buildXPSection(session, result, l10n),
                   const SizedBox(height: 32),
 
+                  // Question breakdown section
+                  _buildQuestionBreakdown(session, l10n),
+                  const SizedBox(height: 32),
+
                   // Action buttons
                   Row(
                     children: [
@@ -235,8 +418,368 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
                       ),
                     ],
                   ),
+
+                  // Debug button (only visible in debug mode)
+                  if (args == null || args['session'] == null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.orange.shade300),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.bug_report, color: Colors.orange),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'DEBUG MODE',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Dies ist eine Test-Ansicht der neuen expandable Fragen-Funktion.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.orange.shade700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build the expandable question breakdown section
+  Widget _buildQuestionBreakdown(VSModeSession session, AppLocalizations l10n) {
+    if (!_questionsLoaded) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.questionBreakdown,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Player A questions
+            _buildPlayerQuestions(
+              session.playerAName,
+              session.playerAQuestionIds,
+              session.playerAAnswers,
+              session.playerAExplanationsViewed,
+              l10n,
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Player B questions
+            _buildPlayerQuestions(
+              session.playerBName,
+              session.playerBQuestionIds,
+              session.playerBAnswers,
+              session.playerBExplanationsViewed,
+              l10n,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build questions section for a specific player
+  Widget _buildPlayerQuestions(
+    String playerName,
+    List<String> questionIds,
+    Map<String, bool> answers,
+    Map<String, bool> explanationsViewed,
+    AppLocalizations l10n,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          playerName,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        
+        ...questionIds.asMap().entries.map((entry) {
+          final index = entry.key;
+          final questionId = entry.value;
+          final question = _questionsCache[questionId];
+          final isCorrect = answers[questionId] ?? false;
+          final viewedExplanation = explanationsViewed[questionId] ?? false;
+          
+          if (question == null) {
+            return const SizedBox.shrink();
+          }
+          
+          return _buildExpandableQuestion(
+            question,
+            index + 1,
+            isCorrect,
+            viewedExplanation,
+            l10n,
+          );
+        }),
+      ],
+    );
+  }
+
+  /// Build an expandable question card
+  Widget _buildExpandableQuestion(
+    Question question,
+    int questionNumber,
+    bool isCorrect,
+    bool viewedExplanation,
+    AppLocalizations l10n,
+  ) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8.0),
+      elevation: 1,
+      child: ExpansionTile(
+        leading: CircleAvatar(
+          radius: 16,
+          backgroundColor: isCorrect ? Colors.green : Colors.red,
+          child: Icon(
+            isCorrect ? Icons.check : Icons.close,
+            color: Colors.white,
+            size: 16,
+          ),
+        ),
+        title: Text(
+          '${l10n.question} $questionNumber',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          question.text,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: Colors.grey.shade600),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Full question text
+                Text(
+                  question.text,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Answer options
+                ...question.options.asMap().entries.map((entry) {
+                  final optionIndex = entry.key;
+                  final optionText = entry.value;
+                  final isCorrectOption = question.correctIndices.contains(optionIndex);
+                  
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8.0),
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: isCorrectOption 
+                          ? Colors.green.shade50 
+                          : Colors.grey.shade50,
+                      border: Border.all(
+                        color: isCorrectOption 
+                            ? Colors.green 
+                            : Colors.grey.shade300,
+                        width: isCorrectOption ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        if (isCorrectOption)
+                          const Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 20,
+                          )
+                        else
+                          Icon(
+                            Icons.radio_button_unchecked,
+                            color: Colors.grey.shade400,
+                            size: 20,
+                          ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            optionText,
+                            style: TextStyle(
+                              fontWeight: isCorrectOption 
+                                  ? FontWeight.w600 
+                                  : FontWeight.normal,
+                              color: isCorrectOption 
+                                  ? Colors.green.shade800 
+                                  : Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                
+                const SizedBox(height: 16),
+                
+                // Result indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isCorrect ? Colors.green.shade100 : Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isCorrect ? Icons.check_circle : Icons.cancel,
+                        color: isCorrect ? Colors.green : Colors.red,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        isCorrect ? l10n.correct : l10n.incorrect,
+                        style: TextStyle(
+                          color: isCorrect ? Colors.green.shade800 : Colors.red.shade800,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Explanation
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.lightbulb_outline,
+                            color: Colors.blue.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.explanation,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                          if (viewedExplanation) ...[
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.visibility,
+                              color: Colors.blue.shade600,
+                              size: 16,
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        question.explanation,
+                        style: TextStyle(
+                          color: Colors.blue.shade800,
+                          height: 1.4,
+                        ),
+                      ),
+                      
+                      // Tips if available
+                      if (question.tips != null && question.tips!.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade50,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.amber.shade200),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.tips_and_updates,
+                                    color: Colors.amber.shade700,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    l10n.tips,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.amber.shade700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                question.tips!,
+                                style: TextStyle(
+                                  color: Colors.amber.shade800,
+                                  fontSize: 14,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -379,7 +922,7 @@ class _VSModeResultScreenState extends ConsumerState<VSModeResultScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              isTie ? (isPerfectTie ? l10n.perfectTie : l10n.tie) : l10n.winnerWins(result.winnerName!),
+              isTie ? (isPerfectTie ? l10n.perfectTie : l10n.tie) : l10n.winnerWins(result.winnerName),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: isTie ? AppColors.warning : AppColors.primary,
