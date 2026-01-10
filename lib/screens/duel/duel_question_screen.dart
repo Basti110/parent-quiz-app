@@ -398,6 +398,7 @@ class _DuelQuestionScreenState extends ConsumerState<DuelQuestionScreen> {
         userId: userId,
         questionIndex: _currentQuestionIndex,
         questionId: question.id,
+        selectedIndex: _selectedIndices.first, // For single-choice questions
         isCorrect: isCorrect,
       );
 

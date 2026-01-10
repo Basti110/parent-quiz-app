@@ -21,13 +21,13 @@ class DuelModel {
   final List<String> questionIds;
 
   // Challenger's data
-  final Map<String, bool> challengerAnswers;  // questionId -> isCorrect
-  final int challengerScore;                   // Calculated incrementally
+  final Map<String, Map<String, dynamic>> challengerAnswers;  // questionId -> {'selectedIndex': int, 'isCorrect': bool}
+  final int challengerScore;                                   // Calculated incrementally
   final DateTime? challengerCompletedAt;
 
   // Opponent's data
-  final Map<String, bool> opponentAnswers;     // questionId -> isCorrect
-  final int opponentScore;                     // Calculated incrementally
+  final Map<String, Map<String, dynamic>> opponentAnswers;     // questionId -> {'selectedIndex': int, 'isCorrect': bool}
+  final int opponentScore;                                     // Calculated incrementally
   final DateTime? opponentCompletedAt;
 
   DuelModel({
@@ -86,12 +86,30 @@ class DuelModel {
           ? (map['completedAt'] as Timestamp).toDate() 
           : null,
       questionIds: List<String>.from(map['questionIds'] as List),
-      challengerAnswers: Map<String, bool>.from(map['challengerAnswers'] as Map? ?? {}),
+      challengerAnswers: Map<String, Map<String, dynamic>>.from(
+        (map['challengerAnswers'] as Map? ?? {}).map(
+          (key, value) => MapEntry(
+            key as String,
+            value is Map<String, dynamic> 
+                ? Map<String, dynamic>.from(value)
+                : {'selectedIndex': -1, 'isCorrect': value as bool}, // Backward compatibility
+          ),
+        ),
+      ),
       challengerScore: map['challengerScore'] as int? ?? 0,
       challengerCompletedAt: map['challengerCompletedAt'] != null 
           ? (map['challengerCompletedAt'] as Timestamp).toDate() 
           : null,
-      opponentAnswers: Map<String, bool>.from(map['opponentAnswers'] as Map? ?? {}),
+      opponentAnswers: Map<String, Map<String, dynamic>>.from(
+        (map['opponentAnswers'] as Map? ?? {}).map(
+          (key, value) => MapEntry(
+            key as String,
+            value is Map<String, dynamic> 
+                ? Map<String, dynamic>.from(value)
+                : {'selectedIndex': -1, 'isCorrect': value as bool}, // Backward compatibility
+          ),
+        ),
+      ),
       opponentScore: map['opponentScore'] as int? ?? 0,
       opponentCompletedAt: map['opponentCompletedAt'] != null 
           ? (map['opponentCompletedAt'] as Timestamp).toDate() 

@@ -472,8 +472,11 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
 
     return List.generate(_questions!.length, (index) {
       final question = _questions![index];
-      final userCorrect = userAnswers[question.id] ?? false;
-      final opponentCorrect = opponentAnswers[question.id] ?? false;
+      final userAnswerData = userAnswers[question.id];
+      final opponentAnswerData = opponentAnswers[question.id];
+      
+      final userCorrect = userAnswerData?['isCorrect'] as bool? ?? false;
+      final opponentCorrect = opponentAnswerData?['isCorrect'] as bool? ?? false;
 
       return Card(
         margin: const EdgeInsets.only(bottom: 8.0),
@@ -549,7 +552,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
             ],
           ),
           children: [
-            _buildExpandedQuestionDetails(question, userCorrect, opponentCorrect, isChallenger),
+            _buildExpandedQuestionDetails(question, userAnswerData, opponentAnswerData, isChallenger),
           ],
         ),
       );
@@ -557,10 +560,13 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
   }
 
   /// Build the expanded question details showing full question, answers, and explanations
-  Widget _buildExpandedQuestionDetails(Question question, bool userCorrect, bool opponentCorrect, bool isChallenger) {
+  Widget _buildExpandedQuestionDetails(Question question, Map<String, dynamic>? userAnswerData, Map<String, dynamic>? opponentAnswerData, bool isChallenger) {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = isChallenger ? _challenger! : _opponent!;
     final opponent = isChallenger ? _opponent! : _challenger!;
+    
+    final userCorrect = userAnswerData?['isCorrect'] as bool? ?? false;
+    final opponentCorrect = opponentAnswerData?['isCorrect'] as bool? ?? false;
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -687,7 +693,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Grün markierte Optionen (A, B, C, D) sind die korrekten Antworten. Die angezeigten Antworten (z.B. "Nele wählte A") sind simuliert, da nur gespeichert wird, ob richtig oder falsch beantwortet wurde.',
+                  'Grün markierte Optionen (A, B, C, D) sind die korrekten Antworten. Die angezeigten Antworten (z.B. "Nele wählte A") zeigen die tatsächlich gewählten Optionen.',
                   style: TextStyle(
                     color: Colors.orange.shade800,
                     fontSize: 12,
@@ -720,7 +726,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '${currentUser.displayName}: ${_getAnswerChoice(question, userCorrect)}',
+                          '${currentUser.displayName}: ${_getAnswerChoice(question, userAnswerData)}',
                           style: TextStyle(
                             color: userCorrect ? Colors.green.shade800 : Colors.red.shade800,
                             fontWeight: FontWeight.w600,
@@ -751,7 +757,7 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '${opponent.displayName}: ${_getAnswerChoice(question, opponentCorrect)}',
+                          '${opponent.displayName}: ${_getAnswerChoice(question, opponentAnswerData)}',
                           style: TextStyle(
                             color: opponentCorrect ? Colors.green.shade800 : Colors.red.shade800,
                             fontWeight: FontWeight.w600,
@@ -857,34 +863,23 @@ class _DuelResultScreenState extends ConsumerState<DuelResultScreen> {
     );
   }
 
-  /// Simulate which answer choice was selected based on correctness
-  /// Since we only store correct/incorrect, we simulate the choice:
-  /// - If correct: show one of the correct answers
-  /// - If incorrect: show one of the incorrect answers
-  String _getAnswerChoice(Question question, bool wasCorrect) {
-    if (wasCorrect) {
-      // Show the first correct answer
-      final correctIndex = question.correctIndices.first;
-      final correctLabel = String.fromCharCode(65 + correctIndex); // A, B, C, D
-      return 'wählte $correctLabel ✓';
-    } else {
-      // Show a random incorrect answer
-      final incorrectIndices = <int>[];
-      for (int i = 0; i < question.options.length; i++) {
-        if (!question.correctIndices.contains(i)) {
-          incorrectIndices.add(i);
-        }
-      }
-      
-      if (incorrectIndices.isNotEmpty) {
-        // Use question ID as seed for consistent "random" choice per question
-        final seed = question.id.hashCode;
-        final randomIndex = incorrectIndices[seed % incorrectIndices.length];
-        final incorrectLabel = String.fromCharCode(65 + randomIndex); // A, B, C, D
-        return 'wählte $incorrectLabel ✗';
-      } else {
-        return 'falsch beantwortet ✗';
-      }
+  /// Get the actual answer choice that was selected
+  /// Now uses real data from the new answer format
+  String _getAnswerChoice(Question question, Map<String, dynamic>? answerData) {
+    if (answerData == null) {
+      return 'keine Antwort';
     }
+    
+    final selectedIndex = answerData['selectedIndex'] as int?;
+    final isCorrect = answerData['isCorrect'] as bool? ?? false;
+    
+    if (selectedIndex == null || selectedIndex < 0) {
+      return isCorrect ? 'richtig beantwortet ✓' : 'falsch beantwortet ✗';
+    }
+    
+    final selectedLabel = String.fromCharCode(65 + selectedIndex); // A, B, C, D
+    return isCorrect 
+        ? 'wählte $selectedLabel ✓' 
+        : 'wählte $selectedLabel ✗';
   }
 }

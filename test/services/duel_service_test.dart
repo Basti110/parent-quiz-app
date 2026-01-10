@@ -222,6 +222,7 @@ void main() {
                 userId: challengerId,
                 questionIndex: j,
                 questionId: duel.questionIds[j],
+                selectedIndex: challengerAnswers[j] ? 0 : 1, // Simulate correct/incorrect choice
                 isCorrect: challengerAnswers[j],
               );
             }
@@ -233,6 +234,7 @@ void main() {
                 userId: opponentId,
                 questionIndex: j,
                 questionId: duel.questionIds[j],
+                selectedIndex: opponentAnswers[j] ? 0 : 1, // Simulate correct/incorrect choice
                 isCorrect: opponentAnswers[j],
               );
             }
@@ -311,6 +313,7 @@ void main() {
                 userId: challengerId,
                 questionIndex: j,
                 questionId: duel.questionIds[j],
+                selectedIndex: challengerAnswers[j] ? 0 : 1, // Simulate correct/incorrect choice
                 isCorrect: challengerAnswers[j],
               );
 
@@ -319,6 +322,7 @@ void main() {
                 userId: opponentId,
                 questionIndex: j,
                 questionId: duel.questionIds[j],
+                selectedIndex: opponentAnswers[j] ? 0 : 1, // Simulate correct/incorrect choice
                 isCorrect: opponentAnswers[j],
               );
             }
@@ -427,6 +431,7 @@ void main() {
                 userId: challengerId,
                 questionIndex: q,
                 questionId: duel.questionIds[q],
+                selectedIndex: q % 2 == 0 ? 0 : 1, // Simulate choice based on correctness
                 isCorrect: q % 2 == 0, // Alternate correct/incorrect
               );
               await duelService.submitAnswer(
@@ -434,6 +439,7 @@ void main() {
                 userId: opponentId,
                 questionIndex: q,
                 questionId: duel.questionIds[q],
+                selectedIndex: q % 3 == 0 ? 0 : 2, // Simulate different choice pattern
                 isCorrect: q % 3 == 0, // Different pattern
               );
             }

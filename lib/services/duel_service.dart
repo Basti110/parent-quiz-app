@@ -195,6 +195,7 @@ class DuelService {
     required String userId,
     required int questionIndex,
     required String questionId,
+    required int selectedIndex,
     required bool isCorrect,
   }) async {
     try {
@@ -221,13 +222,19 @@ class DuelService {
       final answersField = isChallenger ? 'challengerAnswers' : 'opponentAnswers';
       final scoreField = isChallenger ? 'challengerScore' : 'opponentScore';
 
+      // Create answer data with both selected index and correctness
+      final answerData = {
+        'selectedIndex': selectedIndex,
+        'isCorrect': isCorrect,
+      };
+
       // Update the answer map and increment score if correct
       await _firestore.collection('duels').doc(duelId).update({
-        '$answersField.$questionId': isCorrect,
+        '$answersField.$questionId': answerData,
         if (isCorrect) scoreField: FieldValue.increment(1),
       });
     } on FirebaseException catch (e) {
-      print('Firebase error submitting answer: ${e.code} - ${e.message}');
+      debugPrint('Firebase error submitting answer: ${e.code} - ${e.message}');
       throw Exception(
         'Failed to submit answer. Please check your connection and try again.',
       );
